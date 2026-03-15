@@ -5,8 +5,8 @@
  * Add business logic and additional endpoints here.
  */
 
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
 
 // Example API endpoints. Add more as your application grows.
 router.get("/ping", (req, res) => {
@@ -17,4 +17,4 @@ router.get("/status", (req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
 
-module.exports = router;
+export default router;

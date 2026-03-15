@@ -44,7 +44,7 @@ function getPool() {
   return pool;
 }
 
-module.exports = {
+export default {
   connect,
   getPool,
 };
