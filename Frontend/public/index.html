@@ -3,14 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My App</title>
+    <title>Dashboard</title>
 </head>
 <body>
 
 <div id="header"></div>
 
 <main>
-  <h1>Welcome to My App</h1>
+  <section class="search-hero">
+    <div class="search-hero__inner">
+      <span class="search-hero__badge">Ejendomsinvestering Simulator</span>
+    
+      <h1 class="search-hero__title">Analyser din næste <span>ejendomsinvestering</span>
+      </h1>
+
+      <p class="search-hero__text">
+        Søg efter en dansk adresse, opret en investeringscase og simulér afkast over tid.
+      </p>
+
+      <div class="search-block">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="Søg efter en adresse..."/>
+          <button class="search-button">Søg</button>
+        </div>
+      <div class="search-state">
+        
+    </div>
+  </section>
+
+<section class="property-section">
+  <div class="property-section__header">
+    <h2> Dine ejendomme </h2>
+    <span id="propertyCount" class="property-count">0 ejendomme</span>
+  </div>
+
+  <div id="propertyGrid" class="property-grid">
+    <!-- Dynamisk indhold for ejendomme vil blive tilføjet her -->
+    <!--  Eksempel: {
+  id: 1,
+  adresse: "Ringstedgade 4",
+  postnummer: "2100",
+  by: "København Ø",
+  antalCases: 1,
+  datoOprettet: "16.3.2026"
+} -->
+    
+  </div>
+</section>
+
 </main>
 
 <div id="footer"></div>

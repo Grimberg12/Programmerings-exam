@@ -4,29 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register</title>
+  <link rel="stylesheet" href="../css/general.css">
 </head>
     <body>
 
     <div id="header"></div>
 
         <main>
-    <h1>Register</h1>
+    <h1>Opret en gratis bruger idag!</h1>
 
     <form action="/register" method="POST">
-      <label for="username">Username:</label>
+      <label for="name">Fornavn:</label>
+      <input type="text" id="name" name="name" required>
+      <br>
+      <label for="lastname">Efternavn:</label>
+      <input type="text" id="lastname" name="lastname" required>
+      <br>
+      <label for="phone">Telefonnummer:</label> <!--Vi kan tilføje country code picker her-->
+      <input type="tel" id="phone" name="phone" minlength="8" maxlength="11" required> <!--mulighed for at tilføje +45 derfor max-->
+      <br>
+      <label for="username">Email:</label>
       <input type="email" id="username" name="username" required>
       <br>
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" required>
+      <label for="password">Opret din adgangskode:</label>
+      <input type="password" id="password" name="password" minlength="6" pattern="^(?=.*[A-Za-z])(?=.*\d).+$" required>
+      <small id="passwordError" class="error-text hidden">
+  Adgangskoden skal være mindst 8 tegn og indeholde mindst 1 bogstav og 1 tal.
+  </small>
       <br>
-      <button type="submit">Register</button>
+      <label for="confirm_password">Bekræft adgangskode:</label>
+      <input type="password" id="confirm_password" name="confirm_password" required>
+      <button type="submit">Opret bruger</button>
     </form>
+    <p>Har allerede en bruger? <a href="../public/login.html">Log ind her.</a></p>
+
+<script src="../js/getlayout2.js"></script>
+<script src="../js/register.js"></script>
 
 </main>
 
     <div id="footer"></div>
-
-<script src="../js/getlayout2.js"></script>
 
   </body>
 </html>
