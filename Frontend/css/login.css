@@ -1,0 +1,66 @@
+.container {
+  display: flex;
+  height: 55vh;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+}
+
+.left {
+  flex: 1;
+  margin-right: 20px;
+  background-color: var(--background-color);
+  margin-top: 3%;
+  padding: 40px;
+  text-align: center;
+}
+
+.right {
+  flex: 1;
+  margin-left: 20px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  text-align: center;
+  padding: 40px;
+}
+
+.list {
+    list-style: disc;
+    margin-top: 10px;
+    margin-left: 20px;
+    text-align: left;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-benefits {
+  margin-top: 20px;
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+#username, #password {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 3px solid var(--primary-color);
+  border-radius: 8px;
+}
+
+#login-button {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 30%;
+}
+
+#register-ref {
+  margin-top: 30px;
+}

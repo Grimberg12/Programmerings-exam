@@ -4,24 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
+  <link rel="stylesheet" href="../css/login.css">
+  <link rel="stylesheet" href="../css/color.css">
+  <link rel="stylesheet" href="../css/footer-header2.css">
 </head>
 <body>
 
   <div id="header"></div>
 
     <main>
+      <div class="container">
+
+        <div class="left">
       <h1>Login på din konto</h1>
-    <form action="/login" method="POST">
+    <form class="login-form" action="/login" method="POST">
       <label for="username">Username:</label>
-      <input type="email" id="username" name="username" required>
+      <input type="text" id="username" name="username" required>
       <br>
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required>
       <br>
-      <button type="submit">Login</button>
-      <p>Har du ikke en bruger? <a href="../public/register.html">Opret en gratis bruger her.</a></p>
+      <button type="submit" id="login-button">Login</button>
+      <p id="register-ref">Har du ikke en bruger? <a href="../public/register.html">Opret en gratis bruger her.</a></p>
     </form>
-
+    </div>
+    <div class="right">
+      <h1>Velkommen tilbage!</h1>
+      <p>Få overblik over dine ejendomsinvesteringer og træf bedre beslutninger.</p>
+      <ul class="login-benefits">
+        <li class="list">Opret og administrer dine investeringscases</li>
+        <li class="list">Sammenlign forskellige ejendomme</li>
+        <li class="list">Beregn cashflow og udvikling over tid</li>
+        <li class="list">Få indsigt i potentielle lejeindtægter</li>
+        <li class="list">Få indsigt i potentielle lån</li>
+        <li class="list">Få indsigt i potentielle afkast</li>
+      </ul>
+      <h2>Log ind og kom i gang med at analysere dine ejendomsinvesteringer i dag!</h2>
+      <h3>Vi glæder os til at se dig på platformen!</h3>
+    </div>
+      </div>
     </main>
 
     <div id="footer"></div>
