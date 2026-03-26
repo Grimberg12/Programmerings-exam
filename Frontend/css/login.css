@@ -4,6 +4,7 @@
   color: var(--text-color);
   font-family: var(--font-family);
   background-color: var(--background-color);
+  margin-top: 40px;
 }
 
 .left {
@@ -22,6 +23,37 @@
   border-radius: 8px;
   text-align: center;
   padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.right h1 {
+  margin-bottom: 15px;
+  color: var(--text-color);
+  font-size: 28px;
+}
+
+.right > p {
+  margin-bottom: 25px;
+  color: var(--text-color);
+  font-size: 16px;
+}
+
+.right h2 {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  color: var(--text-color);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.right h3 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: normal;
 }
 
 .list {
@@ -69,4 +101,9 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--font-family);
+}
+
+h1 {
+  text-align: center;
+  margin: 0;
 }
