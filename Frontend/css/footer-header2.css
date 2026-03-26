@@ -1,4 +1,4 @@
-#footer2 {
+footer {
   background-color: var(--background-color);
   color: var(--text-color);
   text-align: center;
@@ -11,9 +11,11 @@
   height: auto;
 }
 
-.header-nav1 {
+.header-nav {
   display: flex;
   align-items: center;
   background-color: var(--background-color);
   padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-family: var(--font-family);
 }

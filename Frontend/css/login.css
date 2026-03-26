@@ -18,7 +18,7 @@
 .right {
   flex: 1;
   margin-left: 20px;
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   border-radius: 8px;
   text-align: center;
   padding: 40px;
@@ -63,4 +63,10 @@
 
 #register-ref {
   margin-top: 30px;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
 }
