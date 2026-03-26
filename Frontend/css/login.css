@@ -1,6 +1,6 @@
 .container {
   display: flex;
-  height: 55vh;
+  height: 60vh;
   color: var(--text-color);
   font-family: var(--font-family);
   background-color: var(--background-color);
