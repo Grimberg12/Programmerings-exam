@@ -1,0 +1,35 @@
+/* Container */
+#propertyDetails {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 24px;
+  background-color: var(--background-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Titel */
+#propertyDetails h2 {
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+/* Tekst */
+#propertyDetails p {
+  margin: 6px 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* Info sektioner */
+.property-info {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+/* Label + value styling */
+.property-label {
+  font-weight: bold;
+  color: #222;
+}
