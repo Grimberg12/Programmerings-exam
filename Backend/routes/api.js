@@ -1,20 +1,15 @@
-/**
- * API route definitions.
- *
- * These routes are mounted at /api/v1.
- * Add business logic and additional endpoints here.
- */
+/*
+  * API routes for the application.
+  * ændres senere, når vi har konkrete endpoints at implementere.
+*/
+const express = require("express");
+const router = express.Router();
 
-import { Router } from "express";
-const router = Router();
-
-// Example API endpoints. Add more as your application grows.
-router.get("/ping", (req, res) => {
-  res.json({ ok: true, message: "pong" });
+router.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "API virker",
+  });
 });
 
-router.get("/status", (req, res) => {
-  res.json({ ok: true, uptime: process.uptime() });
-});
-
-export default router;
+module.exports = router;
