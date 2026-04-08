@@ -17,7 +17,31 @@ document.addEventListener("DOMContentLoaded", () => {
       by: "København Ø",
       antalCases: 0,
       datoOprettet: "15.3.2026"
-    }
+    },
+  {
+    id: 3,
+    adresse: "Rosenvængets Allé 2",
+    postnummer: "2100",
+    by: "København Ø",
+    antalCases: 0,
+    datoOprettet: "15.3.2026"
+  },
+  {
+    id: 4,
+    adresse: "Rosenvængets Allé 2",
+    postnummer: "2100",
+    by: "København Ø",
+    antalCases: 0,
+    datoOprettet: "15.3.2026"
+  },
+  {
+    id: 5,
+    adresse: "Rosenvængets Allé 2",
+    postnummer: "2100",
+    by: "København Ø",
+    antalCases: 0,
+    datoOprettet: "15.3.2026"
+  }
   ];
 
   // Hent ID fra URL
