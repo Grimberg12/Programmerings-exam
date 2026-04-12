@@ -7,44 +7,30 @@
  * Steps to connect:
  *   1) Install a driver, example:
  *        npm install mssql
- *   2) Set an environment variable:
- *        AZURE_SQL_CONNECTION_STRING="<your-connection-string>"
  *   3) Implement the `connect()` logic below and call it from your app.
  */
 
+require('dotenv').config();
+const sql = require('mssql');
+
 const config = {
-  connectionString: process.env.AZURE_SQL_CONNECTION_STRING || "",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
+  options: {
+    encrypt: true,
+    trustServerCertificate: false
+  }
 };
+const pool = new sql.ConnectionPool(config);
+const poolConnect = pool.connect();
+pool.on('error', err => {
+  console.error('SQL pool error:', err);
+});
 
-let pool = null;
-
-async function connect() {
-  if (!config.connectionString) {
-    throw new Error(
-      "Azure DB connection string not set. Set AZURE_SQL_CONNECTION_STRING in your environment."
-    );
-  }
-
-  // TODO: Implement the actual driver connection.
-  // Example (after installing 'mssql'):
-  // const sql = require("mssql");
-  // pool = await sql.connect(config.connectionString);
-  // return pool;
-
-  throw new Error(
-    "Database connection not implemented. Install 'mssql' and implement connect() in services/db.js."
-  );
-}
-
-function getPool() {
-  if (!pool) {
-    throw new Error("Database is not connected. Call connect() first.");
-  }
-
-  return pool;
-}
-
-export default {
-  connect,
-  getPool,
+module.exports = {
+  sql,
+  pool,
+  poolConnect
 };

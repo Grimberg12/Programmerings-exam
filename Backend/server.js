@@ -13,6 +13,8 @@ const { PORT, NODE_ENV } = require("./config/env");
 
 const app = express();
 
+const path =require("path");
+
 // Middleware til at læse JSON body
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -37,8 +39,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Statiske filer fra Frontend
-app.use(express.static("../Frontend/public"));
+// Serverer statiske filer fra frontend
+app.use(express.static(path.join(__dirname, "../Frontend/public")));
+app.use("/css", express.static(path.join(__dirname, "../Frontend/css")));
+app.use("/js", express.static(path.join(__dirname, "../Frontend/js")));
+app.use("/layout", express.static(path.join(__dirname, "../Frontend/layout")));
 
 // API routes
 app.use("/api/v1", apiRouter);

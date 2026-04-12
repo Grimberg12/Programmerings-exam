@@ -25,15 +25,16 @@
       </p>
 
       <div class="search-block">
-        <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" class="search-input" placeholder="Søg efter en adresse..."/>
-          <button class="search-button">Søg</button>
-        </div>
-        
-      <div class="search-state">
-        
-    </div>
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" placeholder="Søg efter en adresse..." />
+    <button class="search-button">Søg</button>
+  </div>
+
+  <!-- dropdown -->
+  <select id="suggestionsList" class="suggestions-list hidden" size="6"></select>
+</div>
+</div>
   </section>
 
 <section class="property-section">
@@ -53,6 +54,7 @@
 
 <script src="../js/getlayout.js"></script>
 <script src="../js/propertyGrid.js"></script>
+<script src="/backend/routes/bbrService.js"></script>
 
 </body>
 </html>
