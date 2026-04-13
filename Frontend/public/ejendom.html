@@ -16,6 +16,58 @@
   <h1>Ejendomsprofil</h1>
   <div id="propertyDetails"></div>
   
+  <!--Button for open input section-->  
+  <button id="openFormButton-investeringscase">Opret ny investeringscase</button>
+
+  <div class="input-section-investeringscase" id="inputSectionInvesteringscase" style="display: none;">
+    <h2>Opret ny investeringscase</h2>
+    <form id="investmentForm">
+      <div class="form-group-investeringscase">
+        <label for="investmentName">Navn på investeringscase:</label>
+        <input type="text" id="investmentName" name="investmentName" required>
+      </div>
+      <div class="form-group-investeringscase">
+        <label for="description">Beskrivelse:</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+      </div>
+      <div class="form-group-købsdata">
+        <label for="purchasePrice">Købspris (DKK):</label>
+        <input type="number" id="purchasePrice" name="purchasePrice" required>
+      </div>
+      <div class="form-group-købsdata">
+        <label for="equity">Egenkapital (DKK):</label>
+        <input type="number" id="equity" name="equity" required>
+      </div>
+      <div class="form-group-lånedata">
+        <label for="mortgage" placeholder="Realkreditlån (DKK)">Realkreditlån (DKK):</label>
+        <input type="number" id="mortgage" name="mortgage" required>
+      </div>
+      <div class="form-group-renoveringsdata">
+        <label for="renovationCosts">Renoveringsomkostninger (DKK):</label>
+        <input type="number" id="renovationCosts" name="renovationCosts" required>
+      </div>
+      <div class="form-group-renoveringsdata">
+        <label for="otherCosts">Andre omkostninger (DKK):</label>
+        <input type="number" id="otherCosts" name="otherCosts" required>
+      </div>
+      <div class="form-group-udlejningsdata">
+        <label for="rental">Udlejer du ejendommen?</label>
+        <select id="rental" name="rental" required>
+          <option value=true>Ja</option>
+          <option value=false>Nej</option>
+        </select>
+      </div>
+      <div class="form-group-udlejningsdata" id="rentalInfo" style="display: none;">
+        <label for="rentalIncome">Månedlig lejeindtægt (DKK):</label>
+        <input type="number" id="rentalIncome" name="rentalIncome" required>
+
+        <label for="rentalExpenses">Månedlige lejeudgifter (DKK):</label>
+        <input type="number" id="rentalExpenses" name="rentalExpenses" required>
+      </div>
+      <button type="submit">Opret investeringscase</button>
+    </form>
+  </div>
+
 
 </main>
 
