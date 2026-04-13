@@ -17,13 +17,14 @@
 
         <div class="left">
       <h1>Login på din konto</h1>
-    <form class="login-form" action="/login" method="POST">
+    <form class="login-form" id="loginForm">
       <label for="email">email:</label>
-      <input type="text" id="email" name="email" required>
+      <input type="email" id="email" name="email" required>
       <br>
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required>
       <br>
+      <p id="loginMessage"></p>
       <button type="submit" id="login-button">Login</button>
       <p id="register-ref">Har du ikke en bruger? <a href="register.html">Opret en gratis bruger her.</a></p>
     </form>
@@ -48,6 +49,7 @@
     <div id="footer"></div>
 
     <script src="../js/getlayout2.js"></script>
+    <script src="../js/login.js"></script>
 
 
   </body>

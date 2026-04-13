@@ -4,6 +4,7 @@ const router = express.Router();
 // Importerer route til test af databaseforbindelse
 const testDbRouter = require("./testRouteDB");
 const userRoutes = require("./userRoutes");
+const loginRoutes = require("./loginRoutes");
 
 // Health-check endpoint
 router.get("/health", (req, res) => {
@@ -16,5 +17,6 @@ router.get("/health", (req, res) => {
 // Tilføjer route til test af database
 router.use("/", testDbRouter);
 router.use("/", userRoutes);
+router.use("/", loginRoutes);
 
 module.exports = router;
