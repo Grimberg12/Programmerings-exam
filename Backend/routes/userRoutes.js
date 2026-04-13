@@ -31,7 +31,7 @@ router.post("/users/register", async (req, res) => {
       });
     }
 
-    // Samler fuldt navn, fordi jeres database har kolonnen 'navn'
+    // Samler fuldt navn, fordi databasen har kolonnen 'navn'
     const navn = `${fornavn} ${efternavn}`;
 
     // Venter på at connection pool er klar
