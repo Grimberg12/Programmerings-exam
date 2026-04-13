@@ -59,7 +59,7 @@ router.post("/users/register", async (req, res) => {
       .input("email", sql.VarChar, email)
       .input("telefonnummer", sql.VarChar, telefonnummer)
       .input("adgangskode", sql.VarChar, adgangskode)
-      .input("brugerStatus", sql.VarChar, "aktiv")
+      .input("brugerStatus", sql.VarChar, "Freemium")
       .input("erAktiv", sql.Bit, true)
       .input("accepteretVilkaar", sql.Bit, true)
       .query(`

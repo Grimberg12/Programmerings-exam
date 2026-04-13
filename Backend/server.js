@@ -44,6 +44,7 @@ app.use(express.static(path.join(__dirname, "../Frontend/public")));
 app.use("/css", express.static(path.join(__dirname, "../Frontend/css")));
 app.use("/js", express.static(path.join(__dirname, "../Frontend/js")));
 app.use("/layout", express.static(path.join(__dirname, "../Frontend/layout")));
+app.use("/pictures", express.static(path.join(__dirname, "../Frontend/pictures")));
 
 // API routes
 app.use("/api/v1", apiRouter);
