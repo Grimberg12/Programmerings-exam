@@ -97,14 +97,18 @@ toggleRentalInfo();
 const purchasePriceInput = document.getElementById("purchasePrice");
 const equityInput = document.getElementById("equity");
 const mortgageInput = document.getElementById("mortgage");
+const otherCostsInput = document.getElementById("otherCosts")
+const renovationCostsInput = document.getElementById("renovationCosts");
 
 function updateMortgagePlaceholder() {
     const purchasePrice = parseFloat(purchasePriceInput.value);
     const equity = parseFloat(equityInput.value);
+    const otherExpenses = parseFloat(otherCostsInput.value) || 0; // Hvis tom, så 0
+    const renovationCosts = parseFloat(renovationCostsInput.value) || 0; // Hvis tom, så 0
 
     // Valider input
     if (!isNaN(purchasePrice) && !isNaN(equity)) {
-        const result = purchasePrice - equity;
+        const result = purchasePrice - equity + otherExpenses + renovationCosts;
 
         if (result >= 0) {
             mortgageInput.placeholder = result.toLocaleString("da-DK") + " kr. (foreslået lån)";
@@ -119,6 +123,8 @@ function updateMortgagePlaceholder() {
 // Lyt på begge inputs
 purchasePriceInput.addEventListener("input", updateMortgagePlaceholder);
 equityInput.addEventListener("input", updateMortgagePlaceholder);
+otherCostsInput.addEventListener("input", updateMortgagePlaceholder);
+renovationCostsInput.addEventListener("input", updateMortgagePlaceholder);
 
 //when opret investeringscase is clicked open form (defeault is hidden)
 const createCaseBtn = document.getElementById("openFormButton-investeringscase");
@@ -133,3 +139,67 @@ createCaseBtn.addEventListener("click", () => {
         createCaseBtn.textContent = "Opret ny investeringscase";
     }
 });
+
+//dropdown conditional section for diffrent types of rent. Find ID for the specific. Then add event listener for change. If value is "true" show the section, else hide it.
+const realKreditInput = document.getElementById("mortgage");
+const bankLoanInput = document.getElementById("bankLoan");
+const otherLoansInput = document.getElementById("otherLoans");
+
+const mortgageDetails = document.getElementById("mortgageDetails-realkredit");
+const bankLoanDetails = document.getElementById("mortgageDetails-bankLoan");
+const otherLoansDetails = document.getElementById("mortgageDetails-otherLoans");
+
+const mortgageType = document.getElementById("mortgageType");
+const mortgageInterest = document.getElementById("mortgageInterest");
+const mortgageTerm = document.getElementById("mortgageTerm");
+
+const bankLoanType = document.getElementById("bankLoanType");
+const bankLoanInterest = document.getElementById("bankLoanInterest");
+const bankLoanTerm = document.getElementById("bankLoanTerm");
+
+const otherLoansType = document.getElementById("otherLoansType");
+const otherLoansInterest = document.getElementById("otherLoansInterest");
+const otherLoansTerm = document.getElementById("otherLoansTerm");
+
+function toggleLoanSection(inputField, detailSection, fields) {
+  const value = parseFloat(inputField.value);
+
+  if (!isNaN(value) && value > 0) {
+    detailSection.style.display = "block";
+
+    fields.forEach((field) => {
+      field.required = true;
+    });
+  } else {
+    detailSection.style.display = "none";
+
+    fields.forEach((field) => {
+      field.required = false;
+      field.value = "";
+    });
+  }
+}
+
+function updateLoanSections() {
+  toggleLoanSection(realKreditInput, mortgageDetails, [
+    mortgageType,
+    mortgageInterest,
+    mortgageTerm
+  ]);
+
+  toggleLoanSection(bankLoanInput, bankLoanDetails, [
+    bankLoanType,
+    bankLoanInterest,
+    bankLoanTerm
+  ]);
+
+  toggleLoanSection(otherLoansInput, otherLoansDetails, [
+    otherLoansType,
+    otherLoansInterest,
+    otherLoansTerm
+  ]);
+}
+
+mortgageInput.addEventListener("input", updateLoanSections);
+bankLoanInput.addEventListener("input", updateLoanSections);
+otherLoansInput.addEventListener("input", updateLoanSections);

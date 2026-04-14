@@ -16,57 +16,213 @@
   <h1>Ejendomsprofil</h1>
   <div id="propertyDetails"></div>
   
+  <div class="center-container">
   <!--Button for open input section-->  
   <button id="openFormButton-investeringscase">Opret ny investeringscase</button>
+</div>
 
   <div class="input-section-investeringscase" id="inputSectionInvesteringscase" style="display: none;">
-    <h2>Opret ny investeringscase</h2>
-    <form id="investmentForm">
-      <div class="form-group-investeringscase">
+  <h2>Opret ny investeringscase</h2>
+
+  <form id="investmentForm">
+
+    <!-- Sektion 1: Basisoplysninger -->
+    <section class="form-section">
+      <h3>1. Basisoplysninger</h3>
+
+      <div class="form-group">
         <label for="investmentName">Navn på investeringscase:</label>
         <input type="text" id="investmentName" name="investmentName" required>
       </div>
-      <div class="form-group-investeringscase">
+
+      <div class="form-group">
         <label for="description">Beskrivelse:</label>
         <textarea id="description" name="description" rows="4" required></textarea>
       </div>
-      <div class="form-group-købsdata">
+    </section>
+
+    <!-- Sektion 2: Købsdata -->
+    <section class="form-section">
+      <h3>2. Købsdata</h3>
+
+      <div class="form-group">
         <label for="purchasePrice">Købspris (DKK):</label>
         <input type="number" id="purchasePrice" name="purchasePrice" required>
       </div>
-      <div class="form-group-købsdata">
+
+      <div class="form-group">
         <label for="equity">Egenkapital (DKK):</label>
         <input type="number" id="equity" name="equity" required>
       </div>
-      <div class="form-group-lånedata">
-        <label for="mortgage" placeholder="Realkreditlån (DKK)">Realkreditlån (DKK):</label>
-        <input type="number" id="mortgage" name="mortgage" required>
+
+      <div class="form-group">
+        <label for="otherCosts" class="label-with-tooltip">Andre omkostninger (DKK):
+           <span class="tooltip">?
+      <span class="tooltip-text">
+        Omfatter omkostninger som tinglysningsafgift, advokatsalær, ejendomsmæglergebyr, og andre gebyrer forbundet med købet.
+      </span>
+    </span>
+        </label>
+        <input type="number" id="otherCosts" name="otherCosts" required>
       </div>
-      <div class="form-group-renoveringsdata">
+    </section>
+
+    <!-- Sektion 3: Renovering -->
+    <section class="form-section">
+      <h3>3. Renovering</h3>
+
+      <div class="form-group">
         <label for="renovationCosts">Renoveringsomkostninger (DKK):</label>
         <input type="number" id="renovationCosts" name="renovationCosts" required>
       </div>
-      <div class="form-group-renoveringsdata">
-        <label for="otherCosts">Andre omkostninger (DKK):</label>
-        <input type="number" id="otherCosts" name="otherCosts" required>
-      </div>
-      <div class="form-group-udlejningsdata">
+    </section>
+
+        <!-- Sektion 4: Finansiering -->
+    <section class="form-section">
+  <h3>4. Finansiering</h3>
+
+  <div class="form-group">
+    <label for="mortgage">Realkreditlån (DKK):</label>
+    <input type="number" id="mortgage" name="mortgage">
+  </div>
+
+  <div id="mortgageDetails-realkredit" class="conditional-section" style="display: none;">
+    <div class="form-group">
+      <label for="mortgageType">Type af realkreditlån:</label>
+      <select id="mortgageType" name="mortgageType">
+        <option value="" disabled selected hidden>Vælg en mulighed</option>
+        <option value="fast">Fast rente</option>
+        <option value="variabel">Variabel rente</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="mortgageInterest" class="label-with-tooltip">Rente på realkreditlån (%):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret årlige rente for realkreditlånet. For eksempel, hvis renten er 3%, indtast 3.
+        </span>
+      </span>
+      <input type="number" step="0.01" id="mortgageInterest" name="mortgageInterest">
+    </div>
+
+    <div class="form-group">
+      <label for="mortgageTerm" class="label-with-tooltip">Løbetid på realkreditlån (Måneder):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret løbetid for realkreditlånet i måneder. For eksempel, hvis løbetiden er 20 år, indtast 240.
+        </span>
+      </span>
+      </span>
+      <input type="number" id="mortgageTerm" name="mortgageTerm">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="bankLoan">Banklån (DKK):</label>
+    <input type="number" id="bankLoan" name="bankLoan">
+  </div>
+
+  <div id="mortgageDetails-bankLoan" class="conditional-section" style="display: none;">
+    <div class="form-group">
+      <label for="bankLoanType">Type af banklån:</label>
+      <select id="bankLoanType" name="bankLoanType">
+        <option value="" disabled selected hidden>Vælg en mulighed</option>
+        <option value="fast">Fast rente</option>
+        <option value="variabel">Variabel rente</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="bankLoanInterest" class="label-with-tooltip">Rente på banklån (%):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret årlige rente for banklånet. For eksempel, hvis renten er 5%, indtast 5.
+        </span>
+      </span>
+      <input type="number" step="0.01" id="bankLoanInterest" name="bankLoanInterest">
+    </div>
+
+    <div class="form-group">
+      <label for="bankLoanTerm" class="label-with-tooltip">Løbetid på banklån (Måneder):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret løbetid for banklånet i måneder. For eksempel, hvis løbetiden er 10 år, indtast 120.
+        </span>
+      </span>
+      </span>
+      <input type="number" id="bankLoanTerm" name="bankLoanTerm">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="otherLoans">Andre lån (DKK):</label>
+    <input type="number" id="otherLoans" name="otherLoans">
+  </div>
+
+  <div id="mortgageDetails-otherLoans" class="conditional-section" style="display: none;">
+    <div class="form-group">
+      <label for="otherLoansType">Type af andre lån:</label>
+      <select id="otherLoansType" name="otherLoansType">
+        <option value="" disabled selected hidden>Vælg en mulighed</option>
+        <option value="fast">Fast rente</option>
+        <option value="variabel">Variabel rente</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="otherLoansInterest" class="label-with-tooltip">Rente på andre lån (%):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret årlige rente for andre lån. For eksempel, hvis renten er 7%, indtast 7.
+        </span>
+      </span>
+      <input type="number" step="0.01" id="otherLoansInterest" name="otherLoansInterest">
+    </div>
+
+    <div class="form-group">
+      <label for="otherLoansTerm" class="label-with-tooltip">Løbetid på andre lån (Måneder):
+        <span class="tooltip">?
+        <span class="tooltip-text">
+          Angiv den estimeret løbetid for andre lån i måneder. For eksempel, hvis løbetiden er 5 år, indtast 60.
+        </span>
+      </span>
+      <input type="number" id="otherLoansTerm" name="otherLoansTerm">
+    </div>
+  </div>
+</section>
+
+    <!-- Sektion 5: Udlejning -->
+    <section class="form-section">
+      <h3>5. Udlejning</h3>
+
+      <div class="form-group">
         <label for="rental">Udlejer du ejendommen?</label>
         <select id="rental" name="rental" required>
-          <option value=true>Ja</option>
-          <option value=false>Nej</option>
+          <option value="" disabled selected hidden>Vælg en mulighed</option>
+          <option value="true">Ja</option>
+          <option value="false">Nej</option>
         </select>
       </div>
-      <div class="form-group-udlejningsdata" id="rentalInfo" style="display: none;">
-        <label for="rentalIncome">Månedlig lejeindtægt (DKK):</label>
-        <input type="number" id="rentalIncome" name="rentalIncome" required>
 
-        <label for="rentalExpenses">Månedlige lejeudgifter (DKK):</label>
-        <input type="number" id="rentalExpenses" name="rentalExpenses" required>
+      <div id="rentalInfo" class="conditional-section" style="display: none;">
+        <div class="form-group">
+          <label for="rentalIncome">Månedlig lejeindtægt (DKK):</label>
+          <input type="number" id="rentalIncome" name="rentalIncome">
+        </div>
+
+        <div class="form-group">
+          <label for="rentalExpenses">Månedlige lejeudgifter (DKK):</label>
+          <input type="number" id="rentalExpenses" name="rentalExpenses">
+        </div>
       </div>
-      <button type="submit">Opret investeringscase</button>
-    </form>
+    </section>
+     <div class="center-container">
+  <!--Button for submit form-->  
+      <button type="submit" id="submitFormButton-investeringscase">Opret investeringscase</button>
   </div>
+  </form>
+</div>
 
 
 </main>
@@ -75,6 +231,7 @@
 
 <script src="../js/getlayout.js"></script>
 <script src="../js/ejendom.js"></script>
+
 
 </body>
 </html>

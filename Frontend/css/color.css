@@ -6,3 +6,32 @@
   --font-family: 'Arial', sans-serif;
   --buttons-color: #1c60c7;
 }
+
+
+/* Global Styles */
+.tooltip-text {
+  visibility: hidden;
+  width: 220px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  text-align: left;
+  padding: 8px;
+  border-radius: 6px;
+  border: black 1px solid;
+
+  position: absolute;
+  z-index: 1;
+  top: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+}
+
+.label-with-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
