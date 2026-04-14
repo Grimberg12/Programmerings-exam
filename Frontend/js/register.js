@@ -30,6 +30,9 @@ function validatePasswordMatch() {
     return true;
   }
 }
+//Tilføjet for at forsøge at fixe, "password er ikke ens bug" Fjern evt. hvis fortsætter
+passwordInput.addEventListener("input", validatePasswordMatch);
+confirmPasswordInput.addEventListener("input", validatePasswordMatch);
 
 // 🔴 MAIN SUBMIT CONTROL (det vigtigste)
 form.addEventListener("submit", async function (e) {
