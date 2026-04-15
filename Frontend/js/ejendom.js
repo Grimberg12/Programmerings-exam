@@ -310,3 +310,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+
+// tidligere oprettet cases - placeholder
+const relatedCasesContainer = document.getElementById("relatedCases");
+const mockCases = [
+  { id: 1, name: "Case 1", description: "Beskrivelse af case 1", purchasePrice: 2000000, equity: 500000, otherCosts: 100000, renovationCosts: 150000, mortgage: 1350000, mortgageType: "fast", mortgageInterest: 3.5, mortgageTerm: 30, bankLoan: 0, bankLoanType: "fast", bankLoanInterest: 0, bankLoanTerm: 0, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "true", rentalIncome: 15000, rentalExpenses: 5000 },
+  { id: 2, name: "Case 2", description: "Beskrivelse af case 2", purchasePrice: 3000000, equity: 1000000, otherCosts: 200000, renovationCosts: 250000, mortgage: 1750000, mortgageType: "variabel", mortgageInterest: 2.8, mortgageTerm: 30, bankLoan: 500000, bankLoanType: "fast", bankLoanInterest: 4.5, bankLoanTerm: 15, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "false", rentalIncome: 0, rentalExpenses: 0 },
+  { id: 3, name: "Case 3", description: "Beskrivelse af case 3", purchasePrice: 4000000, equity: 1500000, otherCosts: 300000, renovationCosts: 350000, mortgage: 2250000, mortgageType: "fast", mortgageInterest: 3.8, mortgageTerm: 30, bankLoan: 500000, bankLoanType: "fast", bankLoanInterest: 4.8, bankLoanTerm: 15, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "true", rentalIncome: 25000, rentalExpenses: 15000 }
+];
+
+// Render cases i relatedCasesContainer - link to site for case details (investeringscase.html?id=CASE_ID)
+mockCases.forEach(c => {
+  const caseElement = document.createElement("div");
+  caseElement.innerHTML = `
+  <div class="related-case-card">
+    <div class="case-header">
+      <h3>${c.name}</h3>
+      <button class="case-delete-button" title="Slet case" data-case-id="${c.id}">×</button>
+    </div>
+    <p>${c.description}</p>
+    <a href="/investeringscase.html?id=${c.id}">Se detaljer</a>
+  </div>
+  `;
+  relatedCasesContainer.appendChild(caseElement);
+});
+
