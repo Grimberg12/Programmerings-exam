@@ -1,4 +1,5 @@
 ﻿const express = require("express");
+const path = require("path");
 
 // Routere
 const apiRouter = require("./routes/api");
@@ -13,20 +14,20 @@ const { PORT, NODE_ENV } = require("./config/env");
 
 const app = express();
 
-const path =require("path");
-
 // Middleware til at læse JSON body
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // CORS headers for alle requests
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
+
   next();
 });
 
@@ -34,17 +35,19 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   if (req.body && Object.keys(req.body).length > 0) {
-    console.log('Body:', req.body);
+    console.log("Body:", req.body);
   }
   next();
 });
 
-// Serverer statiske filer fra frontend
-app.use(express.static(path.join(__dirname, "../Frontend/public")));
+// Statiske mapper
 app.use("/css", express.static(path.join(__dirname, "../Frontend/css")));
 app.use("/js", express.static(path.join(__dirname, "../Frontend/js")));
 app.use("/layout", express.static(path.join(__dirname, "../Frontend/layout")));
 app.use("/pictures", express.static(path.join(__dirname, "../Frontend/pictures")));
+
+// Public HTML-filer
+app.use(express.static(path.join(__dirname, "../Frontend/public")));
 
 // API routes
 app.use("/api/v1", apiRouter);

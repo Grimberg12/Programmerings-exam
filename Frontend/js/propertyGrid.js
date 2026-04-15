@@ -61,7 +61,7 @@ function renderPropertyGrid() {
         gridContainer.appendChild(propertyCard);
 
         propertyCard.addEventListener("click", () => {
-            window.location.href = `ejendom.html?id=${property.id}`;
+            window.location.href = `/ejendom.html?id=${property.id}`;
         });
 
     });

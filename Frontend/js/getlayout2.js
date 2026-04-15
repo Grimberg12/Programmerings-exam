@@ -6,12 +6,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const footerTarget = document.getElementById("footer");
 
   if (headerTarget) {
-    const headerResponse = await fetch("../layout/header2.html");
+    const headerResponse = await fetch("/layout/header2.html");
     headerTarget.innerHTML = await headerResponse.text();
   }
 
   if (footerTarget) {
-    const footerResponse = await fetch("../layout/footer2.html");
+    const footerResponse = await fetch("/layout/footer2.html");
     footerTarget.innerHTML = await footerResponse.text();
   }
 });
