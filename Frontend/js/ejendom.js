@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   // Mock data (midlertidig – senere API)
   const mockProperties = [
     {
@@ -18,30 +17,30 @@ document.addEventListener("DOMContentLoaded", () => {
       antalCases: 0,
       datoOprettet: "15.3.2026"
     },
-  {
-    id: 3,
-    adresse: "Rosenvængets Allé 2",
-    postnummer: "2100",
-    by: "København Ø",
-    antalCases: 0,
-    datoOprettet: "15.3.2026"
-  },
-  {
-    id: 4,
-    adresse: "Rosenvængets Allé 2",
-    postnummer: "2100",
-    by: "København Ø",
-    antalCases: 0,
-    datoOprettet: "15.3.2026"
-  },
-  {
-    id: 5,
-    adresse: "Rosenvængets Allé 2",
-    postnummer: "2100",
-    by: "København Ø",
-    antalCases: 0,
-    datoOprettet: "15.3.2026"
-  }
+    {
+      id: 3,
+      adresse: "Rosenvængets Allé 2",
+      postnummer: "2100",
+      by: "København Ø",
+      antalCases: 0,
+      datoOprettet: "15.3.2026"
+    },
+    {
+      id: 4,
+      adresse: "Rosenvængets Allé 2",
+      postnummer: "2100",
+      by: "København Ø",
+      antalCases: 0,
+      datoOprettet: "15.3.2026"
+    },
+    {
+      id: 5,
+      adresse: "Rosenvængets Allé 2",
+      postnummer: "2100",
+      by: "København Ø",
+      antalCases: 0,
+      datoOprettet: "15.3.2026"
+    }
   ];
 
   // Hent ID fra URL
@@ -50,156 +49,264 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("ID fra URL:", id);
 
-  // Find ejendom
-  const property = mockProperties.find(p => p.id == id);
-
   const container = document.getElementById("propertyDetails");
 
-  // Fejlhåndtering
-  if (!property) {
-    container.innerHTML = "<p>Ejendom ikke fundet</p>";
-    console.error("Ingen ejendom fundet med id:", id);
-    return;
+  if (container) {
+    // Find ejendom
+    const property = mockProperties.find((p) => p.id == id);
+
+    // Fejlhåndtering
+    if (!property) {
+      container.innerHTML = "<p>Ejendom ikke fundet</p>";
+      console.error("Ingen ejendom fundet med id:", id);
+    } else {
+      // Render ejendom
+      container.innerHTML = `
+        <h2>${property.adresse}</h2>
+        <p>${property.postnummer} ${property.by}</p>
+        <p>Antal cases: ${property.antalCases}</p>
+        <p>Dato oprettet: ${property.datoOprettet}</p>
+      `;
+
+      console.log("Fundet ejendom:", property);
+    }
   }
 
-  // Render ejendom
-  container.innerHTML = `
-    <h2>${property.adresse}</h2>
-    <p>${property.postnummer} ${property.by}</p>
-    <p>Antal cases: ${property.antalCases}</p>
-    <p>Dato oprettet: ${property.datoOprettet}</p>
-  `;
+  // Udlejning vis/skjul
+  const rentalSelect = document.getElementById("rental");
+  const rentalInfo = document.getElementById("rentalInfo");
 
-  console.log("Fundet ejendom:", property);
+  function toggleRentalInfo() {
+    if (!rentalSelect || !rentalInfo) return;
 
-});
-
-const rentalSelect = document.getElementById("rental");
-const rentalInfo = document.getElementById("rentalInfo");
-
-function toggleRentalInfo() {
-    const value = rentalSelect.value; // altid string fra <select>
+    const value = rentalSelect.value;
 
     if (value === "true") {
-        rentalInfo.style.display = "block";
+      rentalInfo.style.display = "block";
     } else {
-        rentalInfo.style.display = "none";
+      rentalInfo.style.display = "none";
     }
-}
+  }
 
-// Kør ved ændring
-rentalSelect.addEventListener("change", toggleRentalInfo);
+  if (rentalSelect) {
+    rentalSelect.addEventListener("change", toggleRentalInfo);
+    toggleRentalInfo();
+  }
 
-// Kør ved load (så den er korrekt fra start)
-toggleRentalInfo();
+  // Foreslå mortgage ud fra equity og purchase price
+  const purchasePriceInput = document.getElementById("purchasePrice");
+  const equityInput = document.getElementById("equity");
+  const mortgageInput = document.getElementById("mortgage");
+  const otherCostsInput = document.getElementById("otherCosts");
+  const renovationCostsInput = document.getElementById("renovationCosts");
 
-//Forslå mortgage ud fra equity og purchase price.
-const purchasePriceInput = document.getElementById("purchasePrice");
-const equityInput = document.getElementById("equity");
-const mortgageInput = document.getElementById("mortgage");
-const otherCostsInput = document.getElementById("otherCosts")
-const renovationCostsInput = document.getElementById("renovationCosts");
+  function updateMortgagePlaceholder() {
+    if (
+      !purchasePriceInput ||
+      !equityInput ||
+      !mortgageInput ||
+      !otherCostsInput ||
+      !renovationCostsInput
+    ) {
+      return;
+    }
 
-function updateMortgagePlaceholder() {
     const purchasePrice = parseFloat(purchasePriceInput.value);
     const equity = parseFloat(equityInput.value);
-    const otherExpenses = parseFloat(otherCostsInput.value) || 0; // Hvis tom, så 0
-    const renovationCosts = parseFloat(renovationCostsInput.value) || 0; // Hvis tom, så 0
+    const otherExpenses = parseFloat(otherCostsInput.value) || 0;
+    const renovationCosts = parseFloat(renovationCostsInput.value) || 0;
 
-    // Valider input
     if (!isNaN(purchasePrice) && !isNaN(equity)) {
-        const result = purchasePrice - equity + otherExpenses + renovationCosts;
+      const result = purchasePrice - equity + otherExpenses + renovationCosts;
 
-        if (result >= 0) {
-            mortgageInput.placeholder = result.toLocaleString("da-DK") + " kr. (foreslået lån)";
-        } else {
-            mortgageInput.placeholder = "Realkredit lån";
-        }
-    } else {
+      if (result >= 0) {
+        mortgageInput.placeholder =
+          result.toLocaleString("da-DK") + " kr. (foreslået lån)";
+      } else {
         mortgageInput.placeholder = "Realkredit lån";
+      }
+    } else {
+      mortgageInput.placeholder = "Realkredit lån";
     }
-}
+  }
 
-// Lyt på begge inputs
-purchasePriceInput.addEventListener("input", updateMortgagePlaceholder);
-equityInput.addEventListener("input", updateMortgagePlaceholder);
-otherCostsInput.addEventListener("input", updateMortgagePlaceholder);
-renovationCostsInput.addEventListener("input", updateMortgagePlaceholder);
+  if (purchasePriceInput) {
+    purchasePriceInput.addEventListener("input", updateMortgagePlaceholder);
+  }
+  if (equityInput) {
+    equityInput.addEventListener("input", updateMortgagePlaceholder);
+  }
+  if (otherCostsInput) {
+    otherCostsInput.addEventListener("input", updateMortgagePlaceholder);
+  }
+  if (renovationCostsInput) {
+    renovationCostsInput.addEventListener("input", updateMortgagePlaceholder);
+  }
 
-//when opret investeringscase is clicked open form (defeault is hidden)
-const createCaseBtn = document.getElementById("openFormButton-investeringscase");
-const inputSection = document.querySelector(".input-section-investeringscase");
+  // Åbn/luk formular
+  const createCaseBtn = document.getElementById("openFormButton-investeringscase");
+  const inputSection = document.querySelector(".input-section-investeringscase");
 
-createCaseBtn.addEventListener("click", () => {
-    if (inputSection.style.display === "none" || inputSection.style.display === "") {
+  if (createCaseBtn && inputSection) {
+    createCaseBtn.addEventListener("click", () => {
+      if (inputSection.style.display === "none" || inputSection.style.display === "") {
         inputSection.style.display = "block";
         createCaseBtn.textContent = "Luk form";
-    } else {
+      } else {
         inputSection.style.display = "none";
         createCaseBtn.textContent = "Opret ny investeringscase";
-    }
-});
-
-//dropdown conditional section for diffrent types of rent. Find ID for the specific. Then add event listener for change. If value is "true" show the section, else hide it.
-const realKreditInput = document.getElementById("mortgage");
-const bankLoanInput = document.getElementById("bankLoan");
-const otherLoansInput = document.getElementById("otherLoans");
-
-const mortgageDetails = document.getElementById("mortgageDetails-realkredit");
-const bankLoanDetails = document.getElementById("mortgageDetails-bankLoan");
-const otherLoansDetails = document.getElementById("mortgageDetails-otherLoans");
-
-const mortgageType = document.getElementById("mortgageType");
-const mortgageInterest = document.getElementById("mortgageInterest");
-const mortgageTerm = document.getElementById("mortgageTerm");
-
-const bankLoanType = document.getElementById("bankLoanType");
-const bankLoanInterest = document.getElementById("bankLoanInterest");
-const bankLoanTerm = document.getElementById("bankLoanTerm");
-
-const otherLoansType = document.getElementById("otherLoansType");
-const otherLoansInterest = document.getElementById("otherLoansInterest");
-const otherLoansTerm = document.getElementById("otherLoansTerm");
-
-function toggleLoanSection(inputField, detailSection, fields) {
-  const value = parseFloat(inputField.value);
-
-  if (!isNaN(value) && value > 0) {
-    detailSection.style.display = "block";
-
-    fields.forEach((field) => {
-      field.required = true;
-    });
-  } else {
-    detailSection.style.display = "none";
-
-    fields.forEach((field) => {
-      field.required = false;
-      field.value = "";
+      }
     });
   }
-}
 
-function updateLoanSections() {
-  toggleLoanSection(realKreditInput, mortgageDetails, [
-    mortgageType,
-    mortgageInterest,
-    mortgageTerm
-  ]);
+  // Lånefelter
+  const realKreditInput = document.getElementById("mortgage");
+  const bankLoanInput = document.getElementById("bankLoan");
+  const otherLoansInput = document.getElementById("otherLoans");
 
-  toggleLoanSection(bankLoanInput, bankLoanDetails, [
-    bankLoanType,
-    bankLoanInterest,
-    bankLoanTerm
-  ]);
+  const mortgageDetails = document.getElementById("mortgageDetails-realkredit");
+  const bankLoanDetails = document.getElementById("mortgageDetails-bankLoan");
+  const otherLoansDetails = document.getElementById("mortgageDetails-otherLoans");
 
-  toggleLoanSection(otherLoansInput, otherLoansDetails, [
-    otherLoansType,
-    otherLoansInterest,
-    otherLoansTerm
-  ]);
-}
+  const mortgageType = document.getElementById("mortgageType");
+  const mortgageInterest = document.getElementById("mortgageInterest");
+  const mortgageTerm = document.getElementById("mortgageTerm");
 
-mortgageInput.addEventListener("input", updateLoanSections);
-bankLoanInput.addEventListener("input", updateLoanSections);
-otherLoansInput.addEventListener("input", updateLoanSections);
+  const bankLoanType = document.getElementById("bankLoanType");
+  const bankLoanInterest = document.getElementById("bankLoanInterest");
+  const bankLoanTerm = document.getElementById("bankLoanTerm");
+
+  const otherLoansType = document.getElementById("otherLoansType");
+  const otherLoansInterest = document.getElementById("otherLoansInterest");
+  const otherLoansTerm = document.getElementById("otherLoansTerm");
+
+  function toggleLoanSection(inputField, detailSection, fields) {
+    if (!inputField || !detailSection || !fields) return;
+
+    const value = parseFloat(inputField.value);
+
+    if (!isNaN(value) && value > 0) {
+      detailSection.style.display = "block";
+
+      fields.forEach((field) => {
+        if (field) field.required = true;
+      });
+    } else {
+      detailSection.style.display = "none";
+
+      fields.forEach((field) => {
+        if (field) {
+          field.required = false;
+          field.value = "";
+        }
+      });
+    }
+  }
+
+  function updateLoanSections() {
+    toggleLoanSection(realKreditInput, mortgageDetails, [
+      mortgageType,
+      mortgageInterest,
+      mortgageTerm
+    ]);
+
+    toggleLoanSection(bankLoanInput, bankLoanDetails, [
+      bankLoanType,
+      bankLoanInterest,
+      bankLoanTerm
+    ]);
+
+    toggleLoanSection(otherLoansInput, otherLoansDetails, [
+      otherLoansType,
+      otherLoansInterest,
+      otherLoansTerm
+    ]);
+  }
+
+  if (realKreditInput) {
+    realKreditInput.addEventListener("input", updateLoanSections);
+  }
+  if (bankLoanInput) {
+    bankLoanInput.addEventListener("input", updateLoanSections);
+  }
+  if (otherLoansInput) {
+    otherLoansInput.addEventListener("input", updateLoanSections);
+  }
+
+  updateLoanSections();
+
+  // Submit formular
+  const investmentForm = document.getElementById("investmentForm");
+
+  if (investmentForm) {
+    investmentForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const params = new URLSearchParams(window.location.search);
+      const ejendomsProfilID = params.get("id");
+
+      const formData = {
+        ejendomsProfilID: Number(ejendomsProfilID),
+        caseNavn: document.getElementById("investmentName")?.value.trim(),
+        beskrivelse: document.getElementById("description")?.value.trim() || "",
+        simuleringsAar: 30,
+
+        koebsPris: document.getElementById("purchasePrice")?.value || 0,
+        egenKapital: document.getElementById("equity")?.value || 0,
+        otherCosts: document.getElementById("otherCosts")?.value || 0,
+        renovationOmkostninger: document.getElementById("renovationCosts")?.value || 0,
+
+        laaneBeloeb: document.getElementById("mortgage")?.value || 0,
+        laaneType: document.getElementById("mortgageType")?.value || "",
+        rente: document.getElementById("mortgageInterest")?.value || 0,
+        loebetid: document.getElementById("mortgageTerm")?.value || 0,
+
+        bankLaan: document.getElementById("bankLoan")?.value || 0,
+        bankLaanType: document.getElementById("bankLoanType")?.value || "",
+        bankLaanRente: document.getElementById("bankLoanInterest")?.value || 0,
+        bankLaanLoebetid: document.getElementById("bankLoanTerm")?.value || 0,
+
+        andreLaan: document.getElementById("otherLoans")?.value || 0,
+        andreLaanType: document.getElementById("otherLoansType")?.value || "",
+        andreLaanRente: document.getElementById("otherLoansInterest")?.value || 0,
+        andreLaanLoebetid: document.getElementById("otherLoansTerm")?.value || 0,
+
+        udlejning: document.getElementById("rental")?.value || "false",
+        udlejningIndkomst: document.getElementById("rentalIncome")?.value || 0,
+        udlejningUdgifter: document.getElementById("rentalExpenses")?.value || 0
+      };
+
+      console.log("Sender data til backend:", formData);
+
+      try {
+        const response = await fetch("/api/v1/investment-cases", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(result.message || "Noget gik galt.");
+          console.error("Backend-fejl:", result);
+          return;
+        }
+
+        alert("Investeringscase oprettet!");
+        console.log("Case oprettet:", result);
+
+        investmentForm.reset();
+        toggleRentalInfo();
+        updateLoanSections();
+        updateMortgagePlaceholder();
+
+      } catch (error) {
+        console.error("Fejl ved oprettelse af case:", error);
+        alert("Kunne ikke forbinde til serveren.");
+      }
+    });
+  }
+});
