@@ -336,3 +336,14 @@ mockCases.forEach(c => {
   relatedCasesContainer.appendChild(caseElement);
 });
 
+
+// delete case when pressed button - remove from DOM and log id (later API call)
+relatedCasesContainer.addEventListener("click", (event) => {
+  if (event.target.classList.contains("case-delete-button")) {
+    const caseId = event.target.getAttribute("data-case-id");
+    console.log("Sletter case med ID:", caseId);
+    alert("Case slettet (placeholder) - ID: " + caseId);
+    event.target.closest(".related-case-card").remove();
+    // Implement API call to delete case here
+  }
+});

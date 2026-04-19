@@ -45,14 +45,6 @@ h1 {
 
 #register-button {
   width: 70%;
-  padding: 12px;
-  font-size: 16px;
-  margin-top: 10px;
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  border: none;
-  border-radius: 8px;
-  display: block;
   margin: 20px auto 0;
 }
 

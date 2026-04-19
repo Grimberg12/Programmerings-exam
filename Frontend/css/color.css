@@ -9,6 +9,12 @@
 
 
 /* Global Styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .tooltip-text {
   visibility: hidden;
   width: 220px;
@@ -34,4 +40,92 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.divider {
+  margin: 40px auto;
+  border: none;
+  border-top: 2px solid #f0f0f0;
+  max-width: 800px;
+}
+
+.center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+/* Button Styles - Global */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: var(--font-family);
+  transition: all 0.2s ease;
+}
+
+/* Primary button (default style) */
+.btn,
+#openFormButton-investeringscase,
+#submitFormButton-investeringscase,
+#calculateBtn,
+#login-button,
+#register-button {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: var(--background-color);
+}
+
+.btn:hover,
+#openFormButton-investeringscase:hover,
+#submitFormButton-investeringscase:hover,
+#calculateBtn:hover,
+#login-button:hover,
+#register-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Search button variant */
+.search-button {
+  background: #2f80ed;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 50px;
+}
+
+.search-button:hover {
+  background: var(--buttons-color);
+  transform: translateY(-2px);
+}
+
+/* Delete button variant - neutral design */
+.case-delete-button {
+  background-color: transparent;
+  border: 1px solid #ccc !important;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #999;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.case-delete-button:hover {
+  background-color: #cecece;
+  border-color: #ddd;
+  color: #666;
+  transform: none;
+  box-shadow: none;
+}
+
+.case-delete-button:active {
+  transform: scale(0.95);
 }

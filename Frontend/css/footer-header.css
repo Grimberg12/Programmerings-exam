@@ -9,6 +9,8 @@ footer {
 .logo {
   width: 80px;
   height: auto;
+  display: flex;
+  align-items: center;
 }
 
 .header-nav {
@@ -23,10 +25,11 @@ footer {
 .header-left {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .header-left h1 {
-  margin-left: 10px;
+  margin: 0;
   font-size: 24px;
 }
 

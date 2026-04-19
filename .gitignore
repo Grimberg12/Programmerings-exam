@@ -42,3 +42,13 @@ build/
 .DS_Store
 Thumbs.db
 
+# Claude Code (lokal kontekst, ikke til repo)
+CLAUDE.md
+.claude/
+
+# Lokale dokumentationsfiler (ikke til repo)
+BBR-readme.md
+Json-examples.md
+opgavebeskrivelse.md
+project-readme.md
+

@@ -6,6 +6,7 @@
     <title>compare</title>
      <link rel="stylesheet" href="/css/color.css">
     <link rel="stylesheet" href="/css/footer-header.css">
+    <link rel="stylesheet" href="/css/investeringscase.css">
     <link rel="stylesheet" href="/css/compare.css">
 </head>
 <body>
@@ -15,12 +16,31 @@
 <main>
     <h1>Få et overblik over din investeringscase og udregn cashflow
     </h1>
-  </div>
+
+    <hr class="divider">
+
+    <div id="investmentCaseDetails"></div>
+
+    <hr class="divider">
+
+    <div class="center-container">
+      <button id="calculateBtn">Beregn cashflow</button>
+
+      <div id="cashflowResult"></div>
+      <div id="egenkapitalforrentningResult"></div>
+      <div id="gældsgradResult"></div>
+      <div id="egenkapitalResult"></div>
+      <div id="udlejningsindtægterResult"></div>
+      <div id="udlejningsudgifterResult"></div>
+      <div id="samletVurderingResult"></div>
+
+    </div>
 </main>
 
 <div id="footer"></div>
 
 <script src="../js/getlayout.js"></script>
+<script src="../js/investeringscase.js"></script>
 
 </body>
 </html>

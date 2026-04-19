@@ -35,23 +35,9 @@
 }
 
 
-/*button for open form*/
+/* Button styling moved to color.css */
 #openFormButton-investeringscase {
   margin-top: 20px;
-  padding: 10px 20px;
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  text-align: center;
-}
-
-/* Centering the button */
-.center-container {
-  display: flex;
-  justify-content: center;
 }
 
 .input-section-investeringscase {
@@ -117,28 +103,7 @@
   border-radius: 6px;
 }
 
-.submit-button {
-  align-self: flex-start;
-  padding: 12px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#submitFormButton-investeringscase {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  text-align: center;
-}
-
-
+/* Button styling moved to color.css */
 
 /* Tooltip styling til info */
 .tooltip {
@@ -232,33 +197,7 @@ main > h1 {
   position: relative;
 }
 
-/* Delete button for cases - neutral design */
-.case-delete-button {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #999;
-  transition: all 0.2s ease;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.case-delete-button:hover {
-  background-color: #f5f5f5;
-  border-color: #ddd;
-  color: #666;
-}
-
-.case-delete-button:active {
-  transform: scale(0.95);
-}
+/* Delete button styling moved to color.css */
 
 /* Case header with title and delete button */
 .case-header {
@@ -274,9 +213,3 @@ main > h1 {
   flex: 1;
 }
 
-.divider {
-  margin: 40px auto;
-  border: none;
-  border-top: 2px solid #f0f0f0;
-  max-width: 800px;
-}
