@@ -1,40 +1,78 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Mock data (midlertidig – senere API)
-  // --- Placeholder BBR-data (byttes ud med API-kald når backend er klar) ---
-// TODO: erstat med fetch(`/api/v1/property-profiles/${id}`)
-const placeholderProperty = {
-  adresse: "Ringstedgade 4",
-  postnummer: "4100",
-  by: "Ringsted",
-  ejendomstype: "Enfamiliehus",
-  byggeaar: 1987,
-  boligareal: 142,
-  vaerelser: 5,
-  grundareal: 623
+const BYGNINGSANVENDELSE = {
+  110: "Stuehus til landbrugsejendom",
+  120: "Fritliggende enfamiliehus",
+  121: "Sammenbygget enfamiliehus",
+  130: "Fritliggende enfamiliehus (dobbelthus)",
+  140: "Etageboligbebyggelse, flerfamiliehus",
+  150: "Kollegium",
+  160: "Fritidshus",
+  185: "Anneks",
+  190: "Anden helårsbeboelse",
+  210: "Erhvervsmæssig produktion",
+  220: "Landbrug, skovbrug, gartneri",
+  230: "Industri, produktion",
+  290: "Anden erhvervsanvendelse",
 };
 
-  // Hent ID fra URL
+document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-
-  console.log("ID fra URL:", id);
+  const adresseid = params.get("adresseid");
+  const vejnavn = params.get("vejnavn");
+  const vejnummer = params.get("vejnummer");
+  const postnummer = params.get("postnummer");
+  const bynavn = params.get("bynavn");
 
   const container = document.getElementById("propertyDetails");
 
-  if (container) {
-    container.innerHTML = `
-    <h2>${placeholderProperty.adresse}</h2>
-    <p>${placeholderProperty.postnummer} ${placeholderProperty.by}</p>
+  if (!container) return;
 
-    <div class="property-info">
-      <p><span class="property-label">Ejendomstype:</span> ${placeholderProperty.ejendomstype}</p>
-      <p><span class="property-label">Byggeår:</span> ${placeholderProperty.byggeaar}</p>
-      <p><span class="property-label">Boligareal:</span> ${placeholderProperty.boligareal} m²</p>
-      <p><span class="property-label">Antal værelser:</span> ${placeholderProperty.vaerelser}</p>
-      <p><span class="property-label">Grundareal:</span> ${placeholderProperty.grundareal} m²</p>
-    </div>
-  `;
-}
+  if (!adresseid) {
+    container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
+    return;
+  }
+
+  container.innerHTML = `<p>Henter ejendomsdata fra BBR...</p>`;
+
+  try {
+    // Henter enhed og bygning parallelt fra BBR via backend
+    const [enhedRes, bygningRes] = await Promise.all([
+      fetch(`/api/v1/properties/enheder?adresseid=${encodeURIComponent(adresseid)}`),
+      fetch(`/api/v1/properties/bygning?adresseid=${encodeURIComponent(adresseid)}`),
+    ]);
+
+    const enhedJson = await enhedRes.json();
+    const bygningJson = await bygningRes.json();
+
+    const enhed = enhedJson.data?.[0] ?? {};
+    const bygning = bygningJson.data?.[0] ?? {};
+
+    const adresse = `${vejnavn || ""} ${vejnummer || ""}`.trim();
+    const by = `${postnummer || ""} ${bynavn || ""}`.trim();
+    const ejendomstype = BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
+    const byggeaarKey = Object.keys(bygning).find(k => k.startsWith("byg026"));
+    const byggeaar = byggeaarKey ? bygning[byggeaarKey] : "–";
+    const boligareal = enhed.enh026EnhedensSamledeAreal ?? "–";
+    const vaerelser = enhed.enh031AntalVærelser ?? "–";
+    // Grundareal: bruger byg041BebyggetAreal (bebygget areal) fra BBR bygning
+    // Det præcise matrikelareal ligger i Matriklen-API (separat Datafordeler-service)
+    // og kræver opslag via jordstykkeList fra grund-entiteten
+    const grundareal = bygning.byg041BebyggetAreal ?? "–";
+
+    container.innerHTML = `
+      <h2>${adresse}</h2>
+      <p>${by}</p>
+      <div class="property-info">
+        <p><span class="property-label">Ejendomstype:</span> ${ejendomstype}</p>
+        <p><span class="property-label">Byggeår:</span> ${byggeaar}</p>
+        <p><span class="property-label">Boligareal:</span> ${boligareal !== "–" ? boligareal + " m²" : "–"}</p>
+        <p><span class="property-label">Antal værelser:</span> ${vaerelser}</p>
+        <p><span class="property-label">Grundareal:</span> ${grundareal !== "–" ? grundareal + " m²" : "–"}</p>
+      </div>
+    `;
+  } catch (error) {
+    console.error("Fejl ved hentning af BBR-data:", error);
+    container.innerHTML = `<p>Kunne ikke hente ejendomsdata. Prøv igen.</p>`;
+  }
 
   // Udlejning vis/skjul
   const rentalSelect = document.getElementById("rental");
