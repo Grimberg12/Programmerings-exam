@@ -5,7 +5,7 @@
   padding: 24px;
   background-color: var(--background-color);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-card);
 }
 
 /* Titel */
@@ -25,7 +25,7 @@
 .property-info {
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 }
 
 /* Label + value styling */
@@ -45,7 +45,7 @@
   padding: 24px;
   background-color: var(--background-color);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
   max-width: 800px;
 }
 
@@ -89,7 +89,7 @@
 .form-group select {
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   box-sizing: border-box;
   width: 100%;
@@ -151,11 +151,11 @@
 .related-case-card {
   background-color: var(--background-color);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
   padding: 20px;
   cursor: pointer;
   transition: box-shadow 0.3s ease, transform 0.2s ease;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border-color);
 }
 
 .related-case-card:hover {
@@ -193,7 +193,7 @@ main > h1 {
   padding: 24px;
   background-color: var(--background-color);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-card);
   position: relative;
 }
 

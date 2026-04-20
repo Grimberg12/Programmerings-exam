@@ -10,7 +10,7 @@ h1 {
 }
 
 .error-text {
-  color: red;
+  color: var(--error-color);
   font-size: 12px;
   margin-top: 5px;
 }

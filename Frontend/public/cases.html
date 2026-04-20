@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine investeringscases</title>
+    <link rel="stylesheet" href="/css/color.css">
+    <link rel="stylesheet" href="/css/footer-header.css">
+    <link rel="stylesheet" href="/css/cases.css">
+</head>
+<body>
+
+<div id="header"></div>
+
+<main>
+    <h1>Mine investeringscases</h1>
+
+    <hr class="divider">
+
+    <div class="cases-toolbar">
+        <p class="cases-antal" id="casesAntal"></p>
+        <div class="cases-sort">
+            <label for="sortSelect">Sorter efter:</label>
+            <select id="sortSelect">
+                <option value="dato">Dato oprettet (nyeste)</option>
+                <option value="adresse">Adresse (A–Z)</option>
+                <option value="pris-desc">Købspris (høj → lav)</option>
+                <option value="pris-asc">Købspris (lav → høj)</option>
+                <option value="egenkapital">Egenkapital (høj → lav)</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="casesList"></div>
+
+</main>
+
+<div id="footer"></div>
+
+<script src="../js/getlayout.js"></script>
+<script src="../js/cases.js"></script>
+
+</body>
+</html>

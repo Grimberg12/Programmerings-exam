@@ -1,10 +1,9 @@
-//Denne fil skal kunne hente data fra backend og vise det i investeringscase.html, samt kunne udregne cashflow baseret på de indtastede data i investeringscase.html
-
-//udfyld investmentcasedetails med data fra backend'
 const mockCases = [
   {
     id: 1,
-    navn: "Ejendom 1",
+    ejendomsProfilID: 1,
+    oprettetDato: "2026-01-10",
+    navn: "Lejlighed i København",
     beskrivelse: "En flot ejendom i København",
     adresse: "Rosenvængets Allé 2",
     areal: 120,
@@ -13,253 +12,271 @@ const mockCases = [
     egenkapital: 1000000,
     andre_omkostninger: 50000,
     renoveringsomkostninger: 200000,
-    realkreditlån: {
-        beløb: 4000000,
-        type: "fast",
-        rente: 0.02,
-        løbetid: 30
-    },
-    banklån: {
-        beløb: 500000,
-        type: "variabel",
-        rente: 0.05,
-        løbetid: 10
-    },
-    andrelån: {
-        beløb: 500000,
-        type: "variabel",
-        rente: 0.05,
-        løbetid: 10
-    },
-    udlejning: {
-        udlejes: true,
-        månedligLeje: 20000,
-        månedligUdgifter: 5000
-    }
+    realkreditlån: { beløb: 4000000, type: "fast",     rente: 0.02,  løbetid: 30 },
+    banklån:       { beløb: 500000,  type: "variabel", rente: 0.05,  løbetid: 10 },
+    andrelån:      { beløb: 500000,  type: "variabel", rente: 0.05,  løbetid: 10 },
+    udlejning: { udlejes: true, månedligLeje: 20000, månedligUdgifter: 5000 }
+  },
+  {
+    id: 2,
+    ejendomsProfilID: 2,
+    oprettetDato: "2026-02-20",
+    navn: "Rækkehus i Aarhus",
+    beskrivelse: "Rækkehus tæt på centrum",
+    adresse: "Åboulevarden 45",
+    areal: 145,
+    antalVærelser: 4,
+    købspris: 3200000,
+    egenkapital: 640000,
+    andre_omkostninger: 30000,
+    renoveringsomkostninger: 80000,
+    realkreditlån: { beløb: 2560000, type: "fast", rente: 0.03, løbetid: 30 },
+    banklån: null,
+    andrelån: null,
+    udlejning: { udlejes: true, månedligLeje: 14000, månedligUdgifter: 4000 }
+  },
+  {
+    id: 3,
+    ejendomsProfilID: 3,
+    oprettetDato: "2026-03-05",
+    navn: "Villa i Odense",
+    beskrivelse: "Stor villa med have",
+    adresse: "Frederiksgade 8",
+    areal: 210,
+    antalVærelser: 6,
+    købspris: 7500000,
+    egenkapital: 1875000,
+    andre_omkostninger: 75000,
+    renoveringsomkostninger: 350000,
+    realkreditlån: { beløb: 5625000, type: "variabel", rente: 0.025, løbetid: 30 },
+    banklån:       { beløb: 500000,  type: "fast",     rente: 0.045, løbetid: 15 },
+    andrelån: null,
+    udlejning: { udlejes: false, månedligLeje: 0, månedligUdgifter: 0 }
   }
 ];
 
-//Udfyld investmentcasedetails med data fra mockCases (senere hentes fra API database)
-function renderInvestmentCaseDetails() {
-    const detailsContainer = document.getElementById("investmentCaseDetails");  
-    detailsContainer.innerHTML = ""; // Ryd eksisterende indhold
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
+// Opdater mock-data hvis bruger kommer fra redigering
+const updatedCaseRaw = localStorage.getItem("updatedCase");
+if (updatedCaseRaw) {
+  const updated = JSON.parse(updatedCaseRaw);
+  localStorage.removeItem("updatedCase");
+  const idx = mockCases.findIndex(c => c.id === updated.id);
+  if (idx !== -1) mockCases[idx] = updated;
+}
 
-    const hasFinancing = caseData.realkreditlån || caseData.banklån || caseData.andrelån;
-    
-    const caseDetailsHTML = `<h2>${caseData.navn}</h2>
+// Vælg case ud fra URL-parameter, fallback til første
+const urlId = Number(new URLSearchParams(window.location.search).get("id"));
+const caseData = mockCases.find(c => c.id === urlId) || mockCases[0];
+
+// ── Detaljer ────────────────────────────────────────────────
+
+function renderInvestmentCaseDetails() {
+  const container = document.getElementById("investmentCaseDetails");
+  const hasFinancing = caseData.realkreditlån || caseData.banklån || caseData.andrelån;
+
+  container.innerHTML = `
+    <button class="edit-case-btn" id="editCaseBtn" title="Rediger case">✏️</button>
+    <h2>${caseData.navn}</h2>
     <p>${caseData.beskrivelse}</p>
     <p>Adresse: ${caseData.adresse}</p>
     <p>Areal: ${caseData.areal} m²</p>
     <p>Antal værelser: ${caseData.antalVærelser}</p>
-    <p>Købspris: ${caseData.købspris.toLocaleString()} DKK</p>
-    <p>Egenkapital: ${caseData.egenkapital.toLocaleString()} DKK</p>
-    <p>Anden omkostninger: ${caseData.andre_omkostninger.toLocaleString()} DKK</p>
-    <p>Renoveringsomkostninger: ${caseData.renoveringsomkostninger.toLocaleString()} DKK</p>
+    <p>Købspris: ${caseData.købspris.toLocaleString("da-DK")} kr.</p>
+    <p>Egenkapital: ${caseData.egenkapital.toLocaleString("da-DK")} kr.</p>
+    <p>Andre omkostninger: ${caseData.andre_omkostninger.toLocaleString("da-DK")} kr.</p>
+    <p>Renoveringsomkostninger: ${caseData.renoveringsomkostninger.toLocaleString("da-DK")} kr.</p>
 
     ${hasFinancing ? `
     <h3>Finansiering</h3>
-    ${caseData.realkreditlån ? `<p>Realkreditlån: ${caseData.realkreditlån.beløb.toLocaleString()} DKK (type: ${caseData.realkreditlån.type}, rente: ${caseData.realkreditlån.rente * 100}%, løbetid: ${caseData.realkreditlån.løbetid} år)</p>` : ''}
-    ${caseData.banklån ? `<p>Banklån: ${caseData.banklån.beløb.toLocaleString()} DKK (type: ${caseData.banklån.type}, rente: ${caseData.banklån.rente * 100}%, løbetid: ${caseData.banklån.løbetid} år)</p>` : ''}
-    ${caseData.andrelån ? `<p>Andrelån: ${caseData.andrelån.beløb.toLocaleString()} DKK (type: ${caseData.andrelån.type}, rente: ${caseData.andrelån.rente * 100}%, løbetid: ${caseData.andrelån.løbetid} år)</p>` : ''}
-    ` : ''}
+    ${caseData.realkreditlån ? `<p>Realkreditlån: ${caseData.realkreditlån.beløb.toLocaleString("da-DK")} kr. (${caseData.realkreditlån.type}, ${caseData.realkreditlån.rente * 100}%, ${caseData.realkreditlån.løbetid} år)</p>` : ""}
+    ${caseData.banklån      ? `<p>Banklån: ${caseData.banklån.beløb.toLocaleString("da-DK")} kr. (${caseData.banklån.type}, ${caseData.banklån.rente * 100}%, ${caseData.banklån.løbetid} år)</p>` : ""}
+    ${caseData.andrelån     ? `<p>Andre lån: ${caseData.andrelån.beløb.toLocaleString("da-DK")} kr. (${caseData.andrelån.type}, ${caseData.andrelån.rente * 100}%, ${caseData.andrelån.løbetid} år)</p>` : ""}
+    ` : ""}
 
-    <!-- Udlejning sektion vises kun hvis ejendommen udlejes -->
-     ${caseData.udlejning.udlejes ? `
+    ${caseData.udlejning.udlejes ? `
     <h3>Udlejning</h3>
-    <p>Udlejes: ${caseData.udlejning.udlejes ? "Ja" : "Nej"}</p>
-    <p>Månedlig leje: ${caseData.udlejning.månedligLeje.toLocaleString()} DKK</p>
-    <p>Månedlige udgifter: ${caseData.udlejning.månedligUdgifter.toLocaleString()} DKK</p>
-  ` : ''}`;
+    <p>Udlejes: Ja</p>
+    <p>Månedlig leje: ${caseData.udlejning.månedligLeje.toLocaleString("da-DK")} kr.</p>
+    <p>Månedlige udgifter: ${caseData.udlejning.månedligUdgifter.toLocaleString("da-DK")} kr.</p>
+    ` : "<h3>Udlejning</h3><p>Ejendommen udlejes ikke.</p>"}`;
 
-    detailsContainer.innerHTML = caseDetailsHTML;
+  document.getElementById("editCaseBtn").addEventListener("click", () => {
+    localStorage.setItem("editCase", JSON.stringify(caseData));
+    window.location.href = `/ejendom.html?id=${caseData.ejendomsProfilID}`;
+  });
 }
 
 renderInvestmentCaseDetails();
 
-//udregn sektion/simulation skal indeholde udregninger for cashflow, egenkapitalforrentning, gæld, egenkapital, udlejningsindtægter, udlejningsudgifter, samt en samlet vurdering af investeringscasen baseret på disse udregninger. Alle udregninger skal have tooltips der forklarer hvordan de er udregnet, og hvilke data der er brugt i udregningen.
+// ── Simulering ──────────────────────────────────────────────
 
 function calculateCashflow() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const månedligLeje = caseData.udlejning.månedligLeje;
-    const månedligeUdgifter = caseData.udlejning.månedligUdgifter;
-    const månedligtCashflow = månedligLeje - månedligeUdgifter;
-    const årligtCashflow = månedligtCashflow * 12;
+  const månedligLeje = caseData.udlejning.månedligLeje;
+  const månedligeUdgifter = caseData.udlejning.månedligUdgifter;
+  const månedligtCashflow = månedligLeje - månedligeUdgifter;
+  const årligtCashflow = månedligtCashflow * 12;
 
-    const cashflowResultContainer = document.getElementById("cashflowResult");
-    cashflowResultContainer.innerHTML = `<div><h3>Cashflow</h3>
-    <!-- Vis både månedligt og årligt cashflow + tooltip med udregninger -->
+  const el = document.getElementById("cashflowResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Cashflow</h3>
     <div class="cashflow-item">
-        <p>Månedligt cashflow: ${månedligtCashflow.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlig leje (${månedligLeje.toLocaleString()} DKK) - Månedlige udgifter (${månedligeUdgifter.toLocaleString()} DKK) = Månedligt cashflow (${månedligtCashflow.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Månedligt cashflow: ${månedligtCashflow.toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig leje (${månedligLeje.toLocaleString("da-DK")}) − udgifter (${månedligeUdgifter.toLocaleString("da-DK")}) = ${månedligtCashflow.toLocaleString("da-DK")} kr.</span></span>
     </div>
     <div class="cashflow-item">
-        <p>Årligt cashflow: ${årligtCashflow.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedligt cashflow (${månedligtCashflow.toLocaleString()} DKK) * 12 = Årligt cashflow (${årligtCashflow.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Årligt cashflow: ${årligtCashflow.toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedligt cashflow × 12 = ${årligtCashflow.toLocaleString("da-DK")} kr.</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//egenkapitalforrentning udregning skal indeholde udregning for både månedlig og årlig egenkapitalforrentning, samt tooltip med udregninger
 
 function calculateEgenkapitalforrentning() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const månedligEgenkapitalforrentning = (caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter) / caseData.egenkapital;
-    const årligEgenkapitalforrentning = månedligEgenkapitalforrentning * 12;
-    const egenkapitalforrentningResultContainer = document.getElementById("egenkapitalforrentningResult");
-    egenkapitalforrentningResultContainer.innerHTML = `<div><h3>Egenkapitalforrentning</h3>
-    <!-- Vis både månedlig og årlig egenkapitalforrentning + tooltip med udregninger -->
+  const månedlig = (caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter) / caseData.egenkapital;
+  const årlig = månedlig * 12;
+  const el = document.getElementById("egenkapitalforrentningResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Egenkapitalforrentning</h3>
     <div class="egenkapitalforrentning-item">
-        <p>Månedlig egenkapitalforrentning: ${(månedligEgenkapitalforrentning * 100).toFixed(2)}%</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: (Månedlig leje (${caseData.udlejning.månedligLeje.toLocaleString()} DKK) - Månedlige udgifter (${caseData.udlejning.månedligUdgifter.toLocaleString()} DKK)) / Egenkapital (${caseData.egenkapital.toLocaleString()} DKK) = Månedlig egenkapitalforrentning (${(månedligEgenkapitalforrentning * 100).toFixed(2)}%)
-            </span>
-        </span>
+      <p>Månedlig: ${(månedlig * 100).toFixed(2)}%</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Cashflow / egenkapital (${caseData.egenkapital.toLocaleString("da-DK")} kr.)</span></span>
     </div>
     <div class="egenkapitalforrentning-item">
-        <p>Årlig egenkapitalforrentning: ${(årligEgenkapitalforrentning * 100).toFixed(2)}%</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlig egenkapitalforrentning (${(månedligEgenkapitalforrentning * 100).toFixed(2)}%) * 12 = Årlig egenkapitalforrentning (${(årligEgenkapitalforrentning * 100).toFixed(2)}%)
-            </span>
-        </span>
+      <p>Årlig: ${(årlig * 100).toFixed(2)}%</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig forrentning × 12</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//gældsgrad udregning skal indeholde udregning for både månedlig og årlig gældsgrad, samt tooltip med udregninger
 
 function calculateGældsgrad() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const totalGæld = (caseData.realkreditlån ? caseData.realkreditlån.beløb : 0) + (caseData.banklån ? caseData.banklån.beløb : 0) + (caseData.andrelån ? caseData.andrelån.beløb : 0);
-    const gældsgrad = totalGæld / caseData.købspris;
-    const gældsgradResultContainer = document.getElementById("gældsgradResult");
-    gældsgradResultContainer.innerHTML = `<div><h3>Gældsgrad</h3>
-    <!-- Vis gældsgrad + tooltip med udregninger -->
+  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
+  const gældsgrad = totalGæld / caseData.købspris;
+  const el = document.getElementById("gældsgradResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Gældsgrad</h3>
     <div class="gældsgrad-item">
-        <p>Gældsgrad: ${(gældsgrad * 100).toFixed(2)}%</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Total gæld (${totalGæld.toLocaleString()} DKK) / Købspris (${caseData.købspris.toLocaleString()} DKK) = Gældsgrad (${(gældsgrad * 100).toFixed(2)}%)
-            </span>
-        </span>
+      <p>Gældsgrad: ${(gældsgrad * 100).toFixed(2)}%</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Total gæld (${totalGæld.toLocaleString("da-DK")} kr.) / købspris (${caseData.købspris.toLocaleString("da-DK")} kr.)</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//egenkapital udregning skal indeholde udregning for både månedlig og årlig egenkapital, samt tooltip med udregninger
 
 function calculateEgenkapital() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const totalGæld = (caseData.realkreditlån ? caseData.realkreditlån.beløb : 0) + (caseData.banklån ? caseData.banklån.beløb : 0) + (caseData.andrelån ? caseData.andrelån.beløb : 0);
-    const egenkapital = caseData.købspris - totalGæld;
-    const egenkapitalResultContainer = document.getElementById("egenkapitalResult");
-    egenkapitalResultContainer.innerHTML = `<div><h3>Egenkapital</h3>
-    <!-- Vis egenkapital + tooltip med udregninger -->
+  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
+  const egenkapital = caseData.købspris - totalGæld;
+  const el = document.getElementById("egenkapitalResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Egenkapital</h3>
     <div class="egenkapital-item">
-        <p>Egenkapital: ${egenkapital.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Købspris (${caseData.købspris.toLocaleString()} DKK) - Total gæld (${totalGæld.toLocaleString()} DKK) = Egenkapital (${egenkapital.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Egenkapital: ${egenkapital.toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Købspris − total gæld = ${egenkapital.toLocaleString("da-DK")} kr.</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//udlejningsindtægter udregning skal indeholde udregning for både månedlig og årlig udlejningsindtægter, samt tooltip med udregninger
 
 function calculateUdlejningsindtægter() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const månedligLeje = caseData.udlejning.månedligLeje;
-    const årligLeje = månedligLeje * 12;
-    const udlejningsindtægterResultContainer = document.getElementById("udlejningsindtægterResult");
-    udlejningsindtægterResultContainer.innerHTML = `<div><h3>Udlejningsindtægter</h3>
-    <!-- Vis både månedlig og årlig udlejningsindtægter + tooltip med udregninger -->
+  const månedlig = caseData.udlejning.månedligLeje;
+  const el = document.getElementById("udlejningsindtægterResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Udlejningsindtægter</h3>
     <div class="udlejningsindtægter-item">
-        <p>Månedlige udlejningsindtægter: ${månedligLeje.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlig leje (${månedligLeje.toLocaleString()} DKK) = Månedlige udlejningsindtægter (${månedligLeje.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Månedligt: ${månedlig.toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig lejeindtægt fra udlejning</span></span>
     </div>
     <div class="udlejningsindtægter-item">
-        <p>Årlige udlejningsindtægter: ${årligLeje.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlig leje (${månedligLeje.toLocaleString()} DKK) * 12 = Årlige udlejningsindtægter (${årligLeje.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Årligt: ${(månedlig * 12).toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig leje × 12</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//udlejningsudgifter udregning skal indeholde udregning for både månedlig og årlig udlejningsudgifter, samt tooltip med udregninger
 
 function calculateUdlejningsudgifter() {
-    const caseData = mockCases[0]; // For nu, brug den første case i mock data
-    const månedligeUdgifter = caseData.udlejning.månedligUdgifter;
-    const årligeUdgifter = månedligeUdgifter * 12; 
-    const udlejningsudgifterResultContainer = document.getElementById("udlejningsudgifterResult");
-    udlejningsudgifterResultContainer.innerHTML = `<div><h3>Udlejningsudgifter</h3>
-    <!-- Vis både månedlig og årlig udlejningsudgifter + tooltip med udregninger -->
+  const månedlig = caseData.udlejning.månedligUdgifter;
+  const el = document.getElementById("udlejningsudgifterResult");
+  el.style.display = "block";
+  el.innerHTML = `<div><h3>Udlejningsudgifter</h3>
     <div class="udlejningsudgifter-item">
-        <p>Månedlige udlejningsudgifter: ${månedligeUdgifter.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlige udgifter (${månedligeUdgifter.toLocaleString()} DKK) = Månedlige udlejningsudgifter (${månedligeUdgifter.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Månedligt: ${månedlig.toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlige driftsudgifter</span></span>
     </div>
     <div class="udlejningsudgifter-item">
-        <p>Årlige udlejningsudgifter: ${årligeUdgifter.toLocaleString()} DKK</p>
-        <span class="tooltip">ℹ️
-            <span class="tooltip-text">
-                Udregning: Månedlige udgifter (${månedligeUdgifter.toLocaleString()} DKK) * 12 = Årlige udlejningsudgifter (${årligeUdgifter.toLocaleString()} DKK)
-            </span>
-        </span>
+      <p>Årligt: ${(månedlig * 12).toLocaleString("da-DK")} kr.</p>
+      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlige udgifter × 12</span></span>
     </div>
-    </div>`;
+  </div>`;
 }
-
-//samlet vurdering af investeringscasen skal indeholde en vurdering baseret på de udregnede værdier for cashflow, egenkapitalforrentning, gældsgrad, egenkapital, udlejningsindtægter og udlejningsudgifter. Vurderingen skal være i form af en tekstbeskrivelse (f.eks. "God investering", "Neutral investering", "Dårlig investering") og skal have en tooltip der forklarer hvordan vurderingen er lavet, og hvilke data der er brugt i vurderingen
 
 function calculateSamletVurdering() {
-    const caseData = mockCases[0];
-    // Her skal du implementere logikken for at vurdere investeringscasen baseret på de udregnede værdier
-    const samletVurderingResultContainer = document.getElementById("samletVurderingResult");
-    samletVurderingResultContainer.innerHTML = `<div><h3>Samlet vurdering</h3>
-    <p>Vurdering: Neutral investering</p>
-    <span class="tooltip">ℹ️
-        <span class="tooltip-text">
-            Vurderingen er baseret på følgende data:
-            - Cashflow: ${caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter} DKK pr. måned
-            - Egenkapitalforrentning: ${(calculateEgenkapitalforrentning() * 100).toFixed(2)}% pr. år
-            - Gældsgrad: ${(calculateGældsgrad() * 100).toFixed(2)}%
-            - Egenkapital: ${calculateEgenkapital().toLocaleString()} DKK
-            - Udlejningsindtægter: ${caseData.udlejning.månedligLeje.toLocaleString()} DKK pr. måned
-            - Udlejningsudgifter: ${caseData.udlejning.månedligUdgifter.toLocaleString()} DKK pr. måned
-            Baseret på disse data vurderes investeringscasen som en neutral investering, da cashflow er positivt, egenkapitalforrentning er moderat, gældsgrad er acceptabel, og udlejningsindtægter dækker udlejningsudgifter.
-        </span>
-    </span>
+  const månedligtCashflow = caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter;
+  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
+  const årligEKF = (månedligtCashflow / caseData.egenkapital) * 12 * 100;
+  const gældsgrad = (totalGæld / caseData.købspris) * 100;
+
+  const vurdering = månedligtCashflow > 0 && årligEKF > 5 ? "God investering"
+    : månedligtCashflow > 0 ? "Neutral investering" : "Dårlig investering";
+
+  const cfStatus  = månedligtCashflow > 0 ? "god" : "dårlig";
+  const ekfStatus = årligEKF > 8 ? "god" : årligEKF > 3 ? "neutral" : "dårlig";
+  const gdStatus  = gældsgrad < 60 ? "god" : gældsgrad < 80 ? "neutral" : "dårlig";
+
+  const badge = s => `<span class="status-badge status-${s}">${{god:"God",neutral:"Neutral",dårlig:"Dårlig"}[s]}</span>`;
+
+  const el = document.getElementById("samletVurderingResult");
+  el.style.display = "block";
+  el.innerHTML = `
+    <h3>Samlet vurdering</h3>
+    <p>Vurdering: <strong>${vurdering}</strong></p>
+    <button class="btn se-mere-btn" id="seMereBtn">Se mere om vurderingen</button>
+    <div id="vurderingDetaljer" class="vurdering-detaljer" style="display:none;">
+      <div class="parameter-række">
+        <div class="parameter-navn">Cashflow</div>
+        <div class="parameter-status">${badge(cfStatus)}</div>
+        <div class="parameter-tekst">${månedligtCashflow > 0 ? `Positivt cashflow på ${månedligtCashflow.toLocaleString("da-DK")} kr/md.` : `Negativt cashflow på ${månedligtCashflow.toLocaleString("da-DK")} kr/md.`}</div>
+      </div>
+      <div class="parameter-række">
+        <div class="parameter-navn">Egenkapitalforrentning</div>
+        <div class="parameter-status">${badge(ekfStatus)}</div>
+        <div class="parameter-tekst">Årlig forrentning: ${årligEKF.toFixed(2)}% — ${ekfStatus === "god" ? "over 8%, stærkt afkast." : ekfStatus === "neutral" ? "3–8%, moderat afkast." : "under 3%, lavt afkast."}</div>
+      </div>
+      <div class="parameter-række">
+        <div class="parameter-navn">Gældsgrad</div>
+        <div class="parameter-status">${badge(gdStatus)}</div>
+        <div class="parameter-tekst">Gældsgrad: ${gældsgrad.toFixed(2)}% — ${gdStatus === "god" ? "under 60%, solid egenfinansiering." : gdStatus === "neutral" ? "60–80%, acceptabelt niveau." : "over 80%, høj belåning."}</div>
+      </div>
     </div>`;
+
+  document.getElementById("seMereBtn").addEventListener("click", () => {
+    const d = document.getElementById("vurderingDetaljer");
+    const b = document.getElementById("seMereBtn");
+    const open = d.style.display === "block";
+    d.style.display = open ? "none" : "block";
+    b.textContent = open ? "Se mere om vurderingen" : "Skjul detaljer";
+  });
 }
 
-//Aktiver når knappen trykkes på "Beregn cashflow" knappen i investeringscase.html
-document.getElementById("calculateBtn").addEventListener("click", calculateCashflow);
-document.getElementById("calculateBtn").addEventListener("click", calculateEgenkapitalforrentning);
-document.getElementById("calculateBtn").addEventListener("click", calculateGældsgrad);
-document.getElementById("calculateBtn").addEventListener("click", calculateEgenkapital);
-document.getElementById("calculateBtn").addEventListener("click", calculateUdlejningsindtægter);
-document.getElementById("calculateBtn").addEventListener("click", calculateUdlejningsudgifter);
-document.getElementById("calculateBtn").addEventListener("click", calculateSamletVurdering);
+// ── Knapper ─────────────────────────────────────────────────
+
+const resultIds = [
+  "cashflowResult", "egenkapitalforrentningResult", "gældsgradResult",
+  "egenkapitalResult", "udlejningsindtægterResult", "udlejningsudgifterResult",
+  "samletVurderingResult"
+];
+
+document.getElementById("calculateBtn").addEventListener("click", () => {
+  calculateCashflow();
+  calculateEgenkapitalforrentning();
+  calculateGældsgrad();
+  calculateEgenkapital();
+  calculateUdlejningsindtægter();
+  calculateUdlejningsudgifter();
+  calculateSamletVurdering();
+  document.getElementById("hideBtn").style.display = "block";
+});
+
+document.getElementById("hideBtn").addEventListener("click", () => {
+  resultIds.forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = "none";
+    el.innerHTML = "";
+  });
+  document.getElementById("hideBtn").style.display = "none";
+});

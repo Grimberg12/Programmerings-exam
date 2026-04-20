@@ -1,6 +1,6 @@
 .search-hero {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
+    color: var(--white);
     padding: 50px 20px;
     border-radius: 16px;
     width: 75%;
@@ -55,7 +55,7 @@
     background: var(--background-color);
     border-radius: 50px;
     padding: 5px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
 }
 
 .search-button {
@@ -73,17 +73,17 @@ body {
 }
 
 .property-card {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  background-color: --var(--background-color);
+  background-color: var(--background-color);
   cursor: pointer;
   transition: 0.2s;
 }
 
 .property-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-card);
 }
 
 .property-section__header {
@@ -99,15 +99,9 @@ body {
 .property-section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0  16px;
+    padding: 0 16px;
     width: 100%;
     margin-top: 40px;
-}
-
-.search-block {
-  position: relative;
-  width: 100%;
-  max-width: 540px;
 }
 
 .search-block {
@@ -123,11 +117,11 @@ body {
   left: 0;
   width: 100%;
 
-  background: white; 
-  color: #222;
+  background: var(--white);
+  color: var(--text-color);
 
   border-radius: 14px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color);
 
   padding: 6px;
 
@@ -135,7 +129,7 @@ body {
   max-height: 220px;
   overflow-y: auto;
 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 /* SKJUL */
@@ -143,7 +137,7 @@ body {
   display: none;
 }
 
-/* OPTIONS (meget vigtig styling) */
+/* OPTIONS */
 .suggestions-list option {
   padding: 12px;
   border-radius: 10px;
@@ -151,13 +145,11 @@ body {
   font-size: 14px;
 }
 
-/* HOVER (begrænset på select, men virker nogenlunde) */
 .suggestions-list option:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg);
   cursor: pointer;
 }
 
-/* REMOVE UGLY DEFAULT STYLE */
 .suggestions-list:focus {
   outline: none;
 }
@@ -173,12 +165,12 @@ body {
   width: 100%;
   max-width: 600px;
   margin-top: 16px;
-  background: white;
-  color: #222;
+  background: var(--white);
+  color: var(--text-color);
   border-radius: 14px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color);
   padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .address-display h3 {
@@ -190,11 +182,11 @@ body {
 .address-display p {
   margin: 0 0 16px 0;
   font-size: 0.95em;
-  color: #555;
+  color: var(--muted-text);
 }
 
 .address-display .property-info {
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--border-color);
   padding-top: 12px;
   margin-bottom: 16px;
 }
@@ -202,12 +194,12 @@ body {
 .address-display .property-info p {
   margin: 6px 0;
   font-size: 0.9em;
-  color: #444;
+  color: var(--muted-text);
 }
 
 .address-display .property-label {
   font-weight: 600;
-  color: #222;
+  color: var(--text-color);
 }
 
 #opretEjendomBtn {
@@ -222,5 +214,5 @@ body {
 #opretEjendomBtn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }

@@ -1,10 +1,37 @@
 :root {
+  /* Hovedfarver */
   --primary-color: #8d92c0;
   --secondary-color: #7272d6;
   --text-color: #000000;
   --background-color: #f9f9f9;
+  --white: #ffffff;
   --font-family: 'Arial', sans-serif;
   --buttons-color: #1c60c7;
+
+  /* Tekst */
+  --muted-text: #555;
+
+  /* Kanter */
+  --border-color: #e0e0e0;
+
+  /* Hover */
+  --hover-bg: #f0f0f0;
+
+  /* Skygger */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+
+  /* Fejlfarve */
+  --error-color: #dc3545;
+
+  /* Status-farver */
+  --status-good-bg: #d4edda;
+  --status-good-text: #1e6b35;
+  --status-neutral-bg: #fff3cd;
+  --status-neutral-text: #856404;
+  --status-bad-bg: #f8d7da;
+  --status-bad-text: #842029;
 }
 
 
