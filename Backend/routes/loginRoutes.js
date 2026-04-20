@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../services/db");
-const sql = db.sql;
+const { db, sql } = require("../services/db");
 
 // POST /api/v1/users/login
 router.post("/users/login", async (req, res) => {
@@ -15,17 +14,16 @@ router.post("/users/login", async (req, res) => {
       });
     }
 
-    await db.poolConnect;
+    const request = await db.request();
 
-// Henter brugerdata ned ud fra indtastet email
-    const result = await db.pool.request()
+    const result = await request
       .input("email", sql.VarChar, email)
       .query(`
         SELECT brugerID, navn, email, adgangskode, brugerStatus, erAktiv
         FROM Bruger
         WHERE email = @email
       `);
-// Hvis email ikke matcher, send fejlkode
+
     if (result.recordset.length === 0) {
       return res.status(401).json({
         success: false,
@@ -34,14 +32,14 @@ router.post("/users/login", async (req, res) => {
     }
 
     const bruger = result.recordset[0];
-// Send fejl, hvis bruger ikke er aktiv
+
     if (!bruger.erAktiv) {
       return res.status(403).json({
         success: false,
         message: "Brugeren er ikke aktiv."
       });
     }
-// Send fejl hvis indtastet adgangskode ikke matcher
+
     if (bruger.adgangskode !== adgangskode) {
       return res.status(401).json({
         success: false,

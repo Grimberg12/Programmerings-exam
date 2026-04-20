@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../services/db");
-const sql = db.sql;
+const { db, sql } = require("../services/db");
 
 // POST /api/v1/users/register
 router.post("/users/register", async (req, res) => {
   try {
-    // Henter data fra request body
     const {
       fornavn,
       efternavn,
@@ -16,7 +14,6 @@ router.post("/users/register", async (req, res) => {
       accepteretVilkaar
     } = req.body;
 
-    // Simpel server-side validering
     if (!fornavn || !efternavn || !telefonnummer || !email || !adgangskode) {
       return res.status(400).json({
         success: false,
@@ -31,14 +28,10 @@ router.post("/users/register", async (req, res) => {
       });
     }
 
-    // Samler fuldt navn, fordi databasen har kolonnen 'navn'
     const navn = `${fornavn} ${efternavn}`;
 
-    // Venter på at connection pool er klar
-    await db.poolConnect;
-
-    // Tjekker om email allerede findes
-    const existingUser = await db.pool.request()
+    const existingUserRequest = await db.request();
+    const existingUser = await existingUserRequest
       .input("email", sql.VarChar, email)
       .query(`
         SELECT brugerID
@@ -53,8 +46,8 @@ router.post("/users/register", async (req, res) => {
       });
     }
 
-    // Indsætter brugeren i databasen
-    const result = await db.pool.request()
+    const insertRequest = await db.request();
+    const result = await insertRequest
       .input("navn", sql.VarChar, navn)
       .input("email", sql.VarChar, email)
       .input("telefonnummer", sql.VarChar, telefonnummer)

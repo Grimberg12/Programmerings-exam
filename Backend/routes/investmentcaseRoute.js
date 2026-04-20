@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../services/db");
-const sql = db.sql;
+const { db, sql } = require("../services/db");
 
 router.post("/investment-cases", async (req, res) => {
-  const transaction = new sql.Transaction(db.pool);
+  let transaction;
 
   try {
+    const pool = await db.connect();
+    transaction = new sql.Transaction(pool);
+
     const {
       ejendomsProfilID,
       caseNavn,
@@ -45,7 +47,6 @@ router.post("/investment-cases", async (req, res) => {
       });
     }
 
-    await db.poolConnect;
     await transaction.begin();
 
     const caseRequest = new sql.Request(transaction);
@@ -260,7 +261,9 @@ router.post("/investment-cases", async (req, res) => {
     console.error("Fejl ved oprettelse af investeringscase:", error);
 
     try {
-      await transaction.rollback();
+      if (transaction) {
+        await transaction.rollback();
+      }
     } catch (rollbackError) {
       console.error("Rollback fejl:", rollbackError);
     }

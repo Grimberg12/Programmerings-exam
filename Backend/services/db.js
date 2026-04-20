@@ -1,63 +1,68 @@
-/**
- * Database connection placeholder.
- *
- * This file is intended to provide a single place to wire up an Azure database
- * connection (e.g. Azure SQL / SQL Server) when you're ready.
- *
- * Steps to connect:
- *   1) Install a driver, example:
- *        npm install mssql
- *   3) Implement the `connect()` logic below and call it from your app.
- */
+require("dotenv").config();
+const sql = require("mssql");
+//Opretter en datbase klasse
+class Database {
+  constructor() {
+    this.config = {
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      server: process.env.DB_SERVER,
+      database: process.env.DB_NAME,
+      options: {
+        encrypt: true,
+        trustServerCertificate: false
+      }
+    };
 
-require('dotenv').config();
-const sql = require('mssql');
-
-const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_NAME,
-  options: {
-    encrypt: true,
-    trustServerCertificate: false
+    this.pool = null;
+    this.connected = false;
   }
-};
-// Lazy connection - gjøres kun når eksplicit anmodet
-let pool = null;
-let poolConnect = null;
-
-const getPool = async () => {
-  if (!pool) {
-    pool = new sql.ConnectionPool(config);
-    pool.on('error', err => {
-      console.error('SQL pool error:', err);
-    });
-  }
-  
-  if (!poolConnect) {
+// connect function
+  async connect() {
     try {
-      poolConnect = await pool.connect();
-      console.log('✓ Forbundet til databasen');
-    } catch (err) {
-      console.error('✗ Kunne ikke forbinde til database:', err.message);
-      throw err;
+      if (this.pool && this.connected) {
+        return this.pool;
+      }
+
+      this.pool = await sql.connect(this.config);
+      this.connected = true;
+      console.log("Forbundet til databasen");
+      return this.pool;
+    } catch (error) {
+      this.connected = false;
+      console.error("Kunne ikke forbinde til database:", error.message);
+      throw error;
     }
   }
-  
-  return pool;
-};
+// disconnect funktion
+  async disconnect() {
+    try {
+      if (this.pool && this.connected) {
+        await this.pool.close();
+        this.connected = false;
+        this.pool = null;
+        console.log("Database forbindelse lukket.");
+      }
+    } catch (error) {
+      console.error("Fejl ved lukning af database:", error.message);
+      throw error;
+    }
+  }
+// SQL - request
+  async request() {
+    const pool = await this.connect();
+    return pool.request();
+  }
+// SQL - Query
+  async query(queryString) {
+    const request = await this.request();
+    return request.query(queryString);
+  }
+}
+
+const database = new Database();
 
 module.exports = {
-  sql,
-  getPool,
-  async connect() {
-    return getPool();
-  }
+  db: database,
+  sql
 };
-
-console.log("DB CONFIG TEST:");
-console.log("DB_USER:", process.env.DB_USER);
-console.log("DB_SERVER:", process.env.DB_SERVER);
-console.log("DB_NAME:", process.env.DB_NAME);
-console.log("DB_PASSWORD EXISTS:", !!process.env.DB_PASSWORD);
