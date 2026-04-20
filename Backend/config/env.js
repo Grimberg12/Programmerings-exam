@@ -1,10 +1,22 @@
-require("dotenv").config(); //indlæser miljøvariabler fra en .env-fil i roden af projektet og gør dem tilgængelige via process.env
+// Indlæser miljøvariabler fra .env-filen
+require("dotenv").config();
 
-const PORT = process.env.PORT || 3000; //hvis der findes en miljøport så brug den, ellers brug 3000. 
-const NODE_ENV = process.env.NODE_ENV || 'development'; //hvis der findes en miljøvariabel for NODE_ENV så brug den, ellers sæt den til 'development'.
+// Standard app-indstillinger
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 
-module.exports = { //eksporterer PORT og NODE_ENV så de kan bruges i andre filer, f.eks. server.js
+// Datafordeler-indstillinger
+const DATAFORDELER_USERNAME = process.env.DATAFORDELER_USERNAME || "";
+const DATAFORDELER_PASSWORD = process.env.DATAFORDELER_PASSWORD || "";
+const DATAFORDELER_BASE_URL =
+  process.env.DATAFORDELER_BASE_URL || "https://services.datafordeler.dk";
+
+// Eksporterer alle værdier samlet,
+// så andre backend-filer kan importere dem herfra
+module.exports = {
   PORT,
   NODE_ENV,
+  DATAFORDELER_USERNAME,
+  DATAFORDELER_PASSWORD,
+  DATAFORDELER_BASE_URL,
 };
-
