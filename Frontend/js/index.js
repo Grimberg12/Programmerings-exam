@@ -14,4 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (user.navn) {
     welcomeMessage.textContent = `Velkommen ${user.navn}`;
   }
+
+  // Scroll langsomt ned til ejendomsgrid hvis man kommer fra case.html uden cases
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("scroll") === "properties") {
+    setTimeout(() => {
+      document.querySelector(".property-section")?.scrollIntoView({ behavior: "smooth" });
+    }, 500);
+  }
 });

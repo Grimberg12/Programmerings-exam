@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sammenligning af investeringscases</title>
+    <link rel="stylesheet" href="../css/color.css">
+    <link rel="stylesheet" href="../css/footer-header.css">
+    <link rel="stylesheet" href="../css/sammenlign.css">
+</head>
+<body>
+
+<div id="header"></div>
+
+<main>
+  <section class="sammenlign-section">
+    <div class="sammenlign-top">
+      <a href="/compare.html" class="tilbage-link">← Tilbage til valg</a>
+      <h1 class="sammenlign-title">Sammenligning</h1>
+      <p class="sammenlign-sub">Grønne værdier markerer den bedste case i hver kategori.</p>
+    </div>
+
+    <div id="sammenlignIndhold"></div>
+
+    <div id="sim30Sektion" class="sim30-sektion" style="display:none;">
+      <h2 class="sim30-titel">Cashflow-simulering over 30 år</h2>
+      <p class="sim30-sub">Viser cashflow, akkumuleret afkast og restgæld år for år. Fede rækker markerer hvert 5. år.</p>
+      <button id="sim30Btn" class="btn">Simuler cashflow over 30 år</button>
+      <div id="sim30Result" style="display:none; margin-top:24px;"></div>
+    </div>
+  </section>
+</main>
+
+<div id="footer"></div>
+
+<script src="../js/getlayout.js"></script>
+<script src="../js/sammenlign.js"></script>
+
+</body>
+</html>

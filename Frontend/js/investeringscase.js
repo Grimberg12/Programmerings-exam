@@ -68,7 +68,7 @@ if (updatedCaseRaw) {
 const urlId = Number(new URLSearchParams(window.location.search).get("id"));
 const caseData = mockCases.find(c => c.id === urlId) || mockCases[0];
 
-// ── Detaljer ────────────────────────────────────────────────
+// ── Detaljer ─────────────────────────────────────────────────
 
 function renderInvestmentCaseDetails() {
   const container = document.getElementById("investmentCaseDetails");
@@ -108,175 +108,210 @@ function renderInvestmentCaseDetails() {
 
 renderInvestmentCaseDetails();
 
-// ── Simulering ──────────────────────────────────────────────
+// ── Simulering (samlet skema) ─────────────────────────────────
 
-function calculateCashflow() {
-  const månedligLeje = caseData.udlejning.månedligLeje;
+function renderSimulationTabel() {
+  const månedligLeje      = caseData.udlejning.månedligLeje;
   const månedligeUdgifter = caseData.udlejning.månedligUdgifter;
   const månedligtCashflow = månedligLeje - månedligeUdgifter;
-  const årligtCashflow = månedligtCashflow * 12;
+  const årligtCashflow    = månedligtCashflow * 12;
 
-  const el = document.getElementById("cashflowResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Cashflow</h3>
-    <div class="cashflow-item">
-      <p>Månedligt cashflow: ${månedligtCashflow.toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig leje (${månedligLeje.toLocaleString("da-DK")}) − udgifter (${månedligeUdgifter.toLocaleString("da-DK")}) = ${månedligtCashflow.toLocaleString("da-DK")} kr.</span></span>
-    </div>
-    <div class="cashflow-item">
-      <p>Årligt cashflow: ${årligtCashflow.toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedligt cashflow × 12 = ${årligtCashflow.toLocaleString("da-DK")} kr.</span></span>
-    </div>
-  </div>`;
-}
+  const totalGæld          = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
+  const gældsgrad          = totalGæld / caseData.købspris;
+  const gældsgradPct       = gældsgrad * 100;
+  const egenkapitalBeregnet = caseData.købspris - totalGæld;
 
-function calculateEgenkapitalforrentning() {
-  const månedlig = (caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter) / caseData.egenkapital;
-  const årlig = månedlig * 12;
-  const el = document.getElementById("egenkapitalforrentningResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Egenkapitalforrentning</h3>
-    <div class="egenkapitalforrentning-item">
-      <p>Månedlig: ${(månedlig * 100).toFixed(2)}%</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Cashflow / egenkapital (${caseData.egenkapital.toLocaleString("da-DK")} kr.)</span></span>
-    </div>
-    <div class="egenkapitalforrentning-item">
-      <p>Årlig: ${(årlig * 100).toFixed(2)}%</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig forrentning × 12</span></span>
-    </div>
-  </div>`;
-}
-
-function calculateGældsgrad() {
-  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
-  const gældsgrad = totalGæld / caseData.købspris;
-  const el = document.getElementById("gældsgradResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Gældsgrad</h3>
-    <div class="gældsgrad-item">
-      <p>Gældsgrad: ${(gældsgrad * 100).toFixed(2)}%</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Total gæld (${totalGæld.toLocaleString("da-DK")} kr.) / købspris (${caseData.købspris.toLocaleString("da-DK")} kr.)</span></span>
-    </div>
-  </div>`;
-}
-
-function calculateEgenkapital() {
-  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
-  const egenkapital = caseData.købspris - totalGæld;
-  const el = document.getElementById("egenkapitalResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Egenkapital</h3>
-    <div class="egenkapital-item">
-      <p>Egenkapital: ${egenkapital.toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Købspris − total gæld = ${egenkapital.toLocaleString("da-DK")} kr.</span></span>
-    </div>
-  </div>`;
-}
-
-function calculateUdlejningsindtægter() {
-  const månedlig = caseData.udlejning.månedligLeje;
-  const el = document.getElementById("udlejningsindtægterResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Udlejningsindtægter</h3>
-    <div class="udlejningsindtægter-item">
-      <p>Månedligt: ${månedlig.toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig lejeindtægt fra udlejning</span></span>
-    </div>
-    <div class="udlejningsindtægter-item">
-      <p>Årligt: ${(månedlig * 12).toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlig leje × 12</span></span>
-    </div>
-  </div>`;
-}
-
-function calculateUdlejningsudgifter() {
-  const månedlig = caseData.udlejning.månedligUdgifter;
-  const el = document.getElementById("udlejningsudgifterResult");
-  el.style.display = "block";
-  el.innerHTML = `<div><h3>Udlejningsudgifter</h3>
-    <div class="udlejningsudgifter-item">
-      <p>Månedligt: ${månedlig.toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlige driftsudgifter</span></span>
-    </div>
-    <div class="udlejningsudgifter-item">
-      <p>Årligt: ${(månedlig * 12).toLocaleString("da-DK")} kr.</p>
-      <span class="tooltip">ℹ️<span class="tooltip-text">Månedlige udgifter × 12</span></span>
-    </div>
-  </div>`;
-}
-
-function calculateSamletVurdering() {
-  const månedligtCashflow = caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter;
-  const totalGæld = (caseData.realkreditlån?.beløb || 0) + (caseData.banklån?.beløb || 0) + (caseData.andrelån?.beløb || 0);
-  const årligEKF = (månedligtCashflow / caseData.egenkapital) * 12 * 100;
-  const gældsgrad = (totalGæld / caseData.købspris) * 100;
-
-  const vurdering = månedligtCashflow > 0 && årligEKF > 5 ? "God investering"
-    : månedligtCashflow > 0 ? "Neutral investering" : "Dårlig investering";
+  const ekfMånedlig  = månedligtCashflow / caseData.egenkapital;
+  const ekfÅrlig     = ekfMånedlig * 12;
+  const ekfÅrligPct  = ekfÅrlig * 100;
 
   const cfStatus  = månedligtCashflow > 0 ? "god" : "dårlig";
-  const ekfStatus = årligEKF > 8 ? "god" : årligEKF > 3 ? "neutral" : "dårlig";
-  const gdStatus  = gældsgrad < 60 ? "god" : gældsgrad < 80 ? "neutral" : "dårlig";
+  const ekfStatus = ekfÅrligPct > 8 ? "god" : ekfÅrligPct > 3 ? "neutral" : "dårlig";
+  const gdStatus  = gældsgradPct < 60 ? "god" : gældsgradPct < 80 ? "neutral" : "dårlig";
+  const vurderingStatus = månedligtCashflow > 0 && ekfÅrligPct > 5 ? "god"
+    : månedligtCashflow > 0 ? "neutral" : "dårlig";
+  const vurdering = { god: "God investering", neutral: "Neutral investering", dårlig: "Dårlig investering" }[vurderingStatus];
 
-  const badge = s => `<span class="status-badge status-${s}">${{god:"God",neutral:"Neutral",dårlig:"Dårlig"}[s]}</span>`;
+  const kr    = v => v.toLocaleString("da-DK") + " kr.";
+  const pct   = v => (v * 100).toFixed(2) + "%";
+  const badge = s => `<span class="status-badge status-${s}">${{ god: "God", neutral: "Neutral", dårlig: "Dårlig" }[s]}</span>`;
+  const tt    = text => `<span class="tooltip">ℹ️<span class="tooltip-text">${text}</span></span>`;
 
-  const el = document.getElementById("samletVurderingResult");
-  el.style.display = "block";
-  el.innerHTML = `
-    <h3>Samlet vurdering</h3>
-    <p>Vurdering: <strong>${vurdering}</strong></p>
-    <button class="btn se-mere-btn" id="seMereBtn">Se mere om vurderingen</button>
-    <div id="vurderingDetaljer" class="vurdering-detaljer" style="display:none;">
-      <div class="parameter-række">
-        <div class="parameter-navn">Cashflow</div>
-        <div class="parameter-status">${badge(cfStatus)}</div>
-        <div class="parameter-tekst">${månedligtCashflow > 0 ? `Positivt cashflow på ${månedligtCashflow.toLocaleString("da-DK")} kr/md.` : `Negativt cashflow på ${månedligtCashflow.toLocaleString("da-DK")} kr/md.`}</div>
-      </div>
-      <div class="parameter-række">
-        <div class="parameter-navn">Egenkapitalforrentning</div>
-        <div class="parameter-status">${badge(ekfStatus)}</div>
-        <div class="parameter-tekst">Årlig forrentning: ${årligEKF.toFixed(2)}% — ${ekfStatus === "god" ? "over 8%, stærkt afkast." : ekfStatus === "neutral" ? "3–8%, moderat afkast." : "under 3%, lavt afkast."}</div>
-      </div>
-      <div class="parameter-række">
-        <div class="parameter-navn">Gældsgrad</div>
-        <div class="parameter-status">${badge(gdStatus)}</div>
-        <div class="parameter-tekst">Gældsgrad: ${gældsgrad.toFixed(2)}% — ${gdStatus === "god" ? "under 60%, solid egenfinansiering." : gdStatus === "neutral" ? "60–80%, acceptabelt niveau." : "over 80%, høj belåning."}</div>
-      </div>
-    </div>`;
+  function sektionRow(titel) {
+    return `<tr class="section-row"><td colspan="2">${titel}</td></tr>`;
+  }
 
-  document.getElementById("seMereBtn").addEventListener("click", () => {
-    const d = document.getElementById("vurderingDetaljer");
-    const b = document.getElementById("seMereBtn");
-    const open = d.style.display === "block";
-    d.style.display = open ? "none" : "block";
-    b.textContent = open ? "Se mere om vurderingen" : "Skjul detaljer";
-  });
+  function row(label, value, tooltipText) {
+    return `<tr>
+      <td class="row-label">${label}</td>
+      <td class="sim-value-cell">${value}${tooltipText ? " " + tt(tooltipText) : ""}</td>
+    </tr>`;
+  }
+
+  return `
+    <div class="sim-wrapper">
+      <table class="sammenlign-tabel">
+        <thead>
+          <tr>
+            <th class="label-col">Beregning</th>
+            <th>Resultat</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sektionRow("Cashflow")}
+          ${row("Månedligt cashflow", kr(månedligtCashflow),
+            `Månedlig leje (${kr(månedligLeje)}) − udgifter (${kr(månedligeUdgifter)}) = ${kr(månedligtCashflow)}`)}
+          ${row("Årligt cashflow", kr(årligtCashflow),
+            `Månedligt cashflow × 12 = ${kr(årligtCashflow)}`)}
+
+          ${sektionRow("Egenkapital")}
+          ${row("Egenkapital (beregnet)", kr(egenkapitalBeregnet),
+            `Købspris − total gæld = ${kr(egenkapitalBeregnet)}`)}
+          ${row("Egenkapitalforrentning/md.", pct(ekfMånedlig),
+            `Cashflow / egenkapital (${kr(caseData.egenkapital)})`)}
+          ${row("Egenkapitalforrentning/år", pct(ekfÅrlig),
+            "Månedlig forrentning × 12")}
+
+          ${sektionRow("Gæld")}
+          ${row("Gældsgrad", pct(gældsgrad),
+            `Total gæld (${kr(totalGæld)}) / købspris (${kr(caseData.købspris)})`)}
+
+          ${caseData.udlejning.udlejes ? `
+          ${sektionRow("Udlejning")}
+          ${row("Udlejningsindtægt/md.", kr(månedligLeje), "Månedlig lejeindtægt fra udlejning")}
+          ${row("Udlejningsindtægt/år",  kr(månedligLeje * 12), "Månedlig leje × 12")}
+          ${row("Udlejningsudgift/md.",  kr(månedligeUdgifter), "Månedlige driftsudgifter")}
+          ${row("Udlejningsudgift/år",   kr(månedligeUdgifter * 12), "Månedlige udgifter × 12")}
+          ` : ""}
+
+          ${sektionRow("Samlet vurdering")}
+          <tr>
+            <td class="row-label">Overordnet vurdering</td>
+            <td class="sim-value-cell">
+              <span class="status-badge status-${vurderingStatus}">${vurdering}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="row-label">Cashflow</td>
+            <td class="sim-value-cell">
+              ${badge(cfStatus)}
+              <span class="vurdering-tekst">${månedligtCashflow > 0
+                ? `Positivt cashflow på ${kr(månedligtCashflow)}/md.`
+                : `Negativt cashflow på ${kr(månedligtCashflow)}/md.`}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="row-label">Egenkapitalforrentning</td>
+            <td class="sim-value-cell">
+              ${badge(ekfStatus)}
+              <span class="vurdering-tekst">Årlig: ${ekfÅrligPct.toFixed(2)}% — ${
+                ekfStatus === "god"     ? "over 8%, stærkt afkast."
+                : ekfStatus === "neutral" ? "3–8%, moderat afkast."
+                : "under 3%, lavt afkast."}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="row-label">Gældsgrad</td>
+            <td class="sim-value-cell">
+              ${badge(gdStatus)}
+              <span class="vurdering-tekst">${gældsgradPct.toFixed(2)}% — ${
+                gdStatus === "god"     ? "under 60%, solid egenfinansiering."
+                : gdStatus === "neutral" ? "60–80%, acceptabelt niveau."
+                : "over 80%, høj belåning."}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
-// ── Knapper ─────────────────────────────────────────────────
-
-const resultIds = [
-  "cashflowResult", "egenkapitalforrentningResult", "gældsgradResult",
-  "egenkapitalResult", "udlejningsindtægterResult", "udlejningsudgifterResult",
-  "samletVurderingResult"
-];
+// ── Knapper ──────────────────────────────────────────────────
 
 document.getElementById("calculateBtn").addEventListener("click", () => {
-  calculateCashflow();
-  calculateEgenkapitalforrentning();
-  calculateGældsgrad();
-  calculateEgenkapital();
-  calculateUdlejningsindtægter();
-  calculateUdlejningsudgifter();
-  calculateSamletVurdering();
+  const result = document.getElementById("simulationResult");
+  result.innerHTML = renderSimulationTabel();
+  result.style.display = "block";
   document.getElementById("hideBtn").style.display = "block";
 });
 
 document.getElementById("hideBtn").addEventListener("click", () => {
-  resultIds.forEach(id => {
-    const el = document.getElementById(id);
-    el.style.display = "none";
-    el.innerHTML = "";
-  });
+  const result = document.getElementById("simulationResult");
+  result.innerHTML = "";
+  result.style.display = "none";
   document.getElementById("hideBtn").style.display = "none";
+});
+
+// ── 30-årig simulering ───────────────────────────────────────
+
+// Annuitetslån: restgæld efter et givet antal år
+function restgældEfterÅr(P, rente, løbetidÅr, år) {
+  if (år >= løbetidÅr) return 0;
+  const i = rente / 12;
+  const N = løbetidÅr * 12;
+  const k = år * 12;
+  if (i === 0) return P * (1 - k / N);
+  const M = P * i / (1 - Math.pow(1 + i, -N));
+  return Math.max(0, P * Math.pow(1 + i, k) - M * (Math.pow(1 + i, k) - 1) / i);
+}
+
+function render30ÅrTabel() {
+  const månedligtCashflow = caseData.udlejning.udlejes
+    ? caseData.udlejning.månedligLeje - caseData.udlejning.månedligUdgifter
+    : 0;
+  const cashflowÅr = månedligtCashflow * 12;
+  const kr = v => Math.round(v).toLocaleString("da-DK") + " kr.";
+
+  let rækker = "";
+  let akkumuleret = 0;
+
+  for (let år = 1; år <= 30; år++) {
+    akkumuleret += cashflowÅr;
+
+    let restgæld = 0;
+    for (const lån of [caseData.realkreditlån, caseData.banklån, caseData.andrelån]) {
+      if (lån) restgæld += restgældEfterÅr(lån.beløb, lån.rente, lån.løbetid, år);
+    }
+
+    const egenkapital = caseData.købspris - restgæld;
+    const erMilepæl = år % 5 === 0;
+
+    rækker += `<tr class="${erMilepæl ? "sim30-milepæl" : ""}">
+      <td class="row-label">${år}</td>
+      <td>${kr(cashflowÅr)}</td>
+      <td>${kr(akkumuleret)}</td>
+      <td>${kr(restgæld)}</td>
+      <td>${kr(egenkapital)}</td>
+    </tr>`;
+  }
+
+  return `
+    <div class="sim-wrapper" style="margin-top:24px;">
+      <table class="sammenlign-tabel">
+        <thead>
+          <tr>
+            <th class="label-col">År</th>
+            <th>Cashflow / år</th>
+            <th>Akkumuleret cashflow</th>
+            <th>Restgæld</th>
+            <th>Egenkapital</th>
+          </tr>
+        </thead>
+        <tbody>${rækker}</tbody>
+      </table>
+    </div>`;
+}
+
+document.getElementById("sim30Btn").addEventListener("click", () => {
+  const result = document.getElementById("sim30Result");
+  const btn    = document.getElementById("sim30Btn");
+  if (result.innerHTML) {
+    result.innerHTML = "";
+    result.style.display = "none";
+    btn.textContent = "Simuler over 30 år";
+  } else {
+    result.innerHTML = render30ÅrTabel();
+    result.style.display = "block";
+    btn.textContent = "Skjul 30-årig simulering";
+  }
 });

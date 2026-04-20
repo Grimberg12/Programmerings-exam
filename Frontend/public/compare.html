@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>compare</title>
-     <link rel="stylesheet" href="../css/color.css">
+    <title>Sammenlign investeringscases</title>
+    <link rel="stylesheet" href="../css/color.css">
     <link rel="stylesheet" href="../css/footer-header.css">
     <link rel="stylesheet" href="../css/compare.css">
 </head>
@@ -13,18 +13,31 @@
 <div id="header"></div>
 
 <main>
-  <h1>Sammenlign dine investeringscases</h1>
-  <div class="compare-content">
-  <p>
-    Her kan du sammenligne dine investeringscases side om side for at se, hvilken der har det bedste potentiale.
-    Du kan analysere forskellige faktorer som beliggenhed, pris, lejeindtægter og potentielle afkast for at træffe informerede beslutninger.
-  </p>
-  </div>
+  <section class="compare-section">
+    <div class="compare-section__top">
+      <div>
+        <h1 class="compare-section__title">Sammenlign investeringscases</h1>
+        <p class="compare-section__sub">Vælg 2–3 cases for at sammenligne dem side om side.</p>
+      </div>
+      <div class="compare-toolbar">
+        <span id="valgAntal" class="valg-antal">0/3 valgt</span>
+        <button id="sammenlignBtn" class="sammenlign-btn" disabled>Sammenlign →</button>
+      </div>
+    </div>
+
+    <div id="compareGrid" class="compare-grid"></div>
+
+    <div class="cross-links">
+      <span class="cross-links__label">Se også:</span>
+      <a href="/case.html" class="cross-link">Få fuldt overblik over alle dine investeringscases →</a>
+    </div>
+  </section>
 </main>
 
 <div id="footer"></div>
 
 <script src="../js/getlayout.js"></script>
+<script src="../js/compare.js"></script>
 
 </body>
 </html>

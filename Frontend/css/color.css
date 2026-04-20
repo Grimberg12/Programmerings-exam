@@ -156,3 +156,32 @@ button {
 .case-delete-button:active {
   transform: scale(0.95);
 }
+
+/* ── Cross-page links ─────────────────────────────── */
+.cross-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 48px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.cross-links__label {
+  font-size: 13px;
+  color: var(--muted-text);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.cross-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.cross-link:hover {
+  text-decoration: underline;
+}

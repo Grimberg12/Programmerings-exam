@@ -1,12 +1,207 @@
-h1 {
-    color: var(--text-color);
-    font-size: 2.5em;
-    margin-bottom: 1rem;
-    text-align: center;
+body {
+  background-color: var(--background-color);
 }
 
-.case-content {
-  max-width: 800px;
-  margin: 0 auto;
+.case-section {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.case-section__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.case-section__title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+}
+
+.case-section__sub {
+  font-size: 14px;
+  color: var(--muted-text);
+  margin: 0;
+}
+
+.case-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.case-count {
+  font-size: 14px;
+  color: var(--muted-text);
+}
+
+.case-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted-text);
+}
+
+.case-sort select {
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: var(--font-family);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+/* ── Grid ─────────────────────────────────────────── */
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ── Kort ─────────────────────────────────────────── */
+.case-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background-color: var(--white);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.case-card__accent {
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  flex-shrink: 0;
+}
+
+.case-card__body {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.case-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+}
+
+.case-card__navn {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.case-card__adresse {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted-text);
+}
+
+/* ── Chips ────────────────────────────────────────── */
+.case-card__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(141, 146, 192, 0.15);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* ── Nøgletal ─────────────────────────────────────── */
+.case-card__tal {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tal-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.tal-label {
+  color: var(--muted-text);
+}
+
+.tal-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.tal-value.pos { color: var(--status-good-text); }
+.tal-value.neg { color: var(--status-bad-text); }
+
+/* ── Footer ───────────────────────────────────────── */
+.case-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.case-card__dato {
+  font-size: 12px;
+  color: var(--muted-text);
+}
+
+.case-card__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* ── Tom tilstand ─────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-state__text {
+  font-size: 16px;
+  color: var(--muted-text);
+  margin-bottom: 20px;
+}
+
+.empty-state__btn {
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: var(--font-family);
+}
+
+.empty-state__btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.hidden {
+  display: none;
 }

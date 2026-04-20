@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>case</title>
+    <title>Mine investeringscases</title>
     <link rel="stylesheet" href="../css/color.css">
     <link rel="stylesheet" href="../css/footer-header.css">
     <link rel="stylesheet" href="../css/case.css">
@@ -13,21 +13,47 @@
 <div id="header"></div>
 
 <main>
-    <h1>Investeringscase</h1>
-    <div class="case-content">
-    <p>
-        Investering i boliger kan være en god måde at opbygge formue på.
-        Det er vigtigt at undersøge markedet og finde de rigtige ejendomme at investere i.
-        Undersøgelse af beliggenhed, pris og potentielle lejeindtægter er afgørende for at træffe informerede beslutninger.
-
-        Find ud af alting her:
-    </p>
+  <section class="case-section">
+    <div class="case-section__top">
+      <div>
+        <h1 class="case-section__title">Mine investeringscases</h1>
+        <p class="case-section__sub">Overblik over alle dine cases. Klik på en for at se detaljer og beregninger.</p>
+      </div>
+      <div class="case-toolbar">
+        <span id="caseCount" class="case-count"></span>
+        <div class="case-sort">
+          <label for="sortSelect">Sorter efter:</label>
+          <select id="sortSelect">
+            <option value="dato-desc">Dato oprettet (nyeste)</option>
+            <option value="dato-asc">Dato oprettet (ældste)</option>
+            <option value="adresse">Adresse (A–Z)</option>
+            <option value="pris-desc">Købspris (høj → lav)</option>
+            <option value="pris-asc">Købspris (lav → høj)</option>
+            <option value="egenkapital">Egenkapital (høj → lav)</option>
+            <option value="areal-desc">Størrelse (størst først)</option>
+          </select>
+        </div>
+      </div>
     </div>
+
+    <div id="caseGrid" class="case-grid"></div>
+
+    <div id="emptyState" class="empty-state hidden">
+      <p class="empty-state__text">Der er endnu ikke nogen cases oprettet.</p>
+      <button id="opretAdresseBtn" class="empty-state__btn">Opret ny adresse</button>
+    </div>
+
+    <div class="cross-links">
+      <span class="cross-links__label">Se også:</span>
+      <a href="/compare.html" class="cross-link">Sammenlign dine investeringscases →</a>
+    </div>
+  </section>
 </main>
 
 <div id="footer"></div>
 
 <script src="../js/getlayout.js"></script>
+<script src="../js/case.js"></script>
 
 </body>
 </html>

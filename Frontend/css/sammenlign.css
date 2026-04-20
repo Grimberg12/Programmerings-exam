@@ -1,0 +1,202 @@
+body {
+  background-color: var(--background-color);
+}
+
+.sammenlign-section {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 24px 60px;
+}
+
+.sammenlign-top {
+  margin-bottom: 28px;
+}
+
+.tilbage-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.tilbage-link:hover {
+  text-decoration: underline;
+}
+
+.sammenlign-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 6px 0;
+}
+
+.sammenlign-sub {
+  font-size: 14px;
+  color: var(--muted-text);
+  margin: 0;
+}
+
+/* ── Tabel ────────────────────────────────────────── */
+.sammenlign-tabel {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  background: var(--white);
+}
+
+/* Header */
+.sammenlign-tabel thead tr {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.sammenlign-tabel thead th {
+  padding: 18px 20px;
+  text-align: left;
+  color: var(--white);
+  vertical-align: top;
+}
+
+.sammenlign-tabel thead th.label-col {
+  width: 220px;
+  min-width: 180px;
+}
+
+.col-navn {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.col-adresse {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* Body */
+.sammenlign-tabel tbody td {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.sammenlign-tabel tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sammenlign-tabel tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.row-label {
+  font-size: 13px !important;
+  color: var(--muted-text) !important;
+  font-weight: 500;
+}
+
+/* Sektionsrækker */
+.section-row td {
+  background: var(--background-color);
+  font-size: 11px !important;
+  font-weight: 700;
+  color: var(--primary-color) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 10px 20px !important;
+  border-top: 2px solid var(--border-color);
+}
+
+/* Bedste/dårlige værdier */
+.best-value {
+  color: var(--status-good-text) !important;
+  font-weight: 700;
+}
+
+/* Status-badges */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-god {
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
+}
+
+.status-neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+}
+
+.status-dårlig {
+  background: var(--status-bad-bg);
+  color: var(--status-bad-text);
+}
+
+/* Fejlbesked */
+.fejl-tekst {
+  font-size: 16px;
+  color: var(--muted-text);
+  padding: 60px 0;
+  text-align: center;
+}
+
+/* ── 30-årig simulering ───────────────────────────── */
+.sim30-sektion {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 2px solid var(--border-color);
+}
+
+.sim30-titel {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 6px 0;
+}
+
+.sim30-sub {
+  font-size: 13px;
+  color: var(--muted-text);
+  margin: 0 0 20px 0;
+}
+
+.sim30-milepæl {
+  background: rgba(141, 146, 192, 0.07);
+}
+
+.sim30-milepæl td {
+  font-weight: 600;
+}
+
+.sim30-milepæl td.row-label {
+  color: var(--primary-color);
+}
+
+.sim30-case-header {
+  text-align: center !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 14px !important;
+}
+
+.sim30-sub-header {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  opacity: 0.85;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.sammenlign-tabel thead th[rowspan] {
+  vertical-align: middle;
+}

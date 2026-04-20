@@ -196,6 +196,14 @@ main > h1 {
   color: var(--text-color);
 }
 
+/* ── Tilbage-link øverst ───────────────────────────────────── */
+.tilbage-link--page {
+  display: block;
+  max-width: 800px;
+  margin: 32px auto 0;
+  padding: 0 16px;
+}
+
 /* ── Button spacing ────────────────────────────────────────── */
 #calculateBtn {
   margin-bottom: 8px;
@@ -203,6 +211,29 @@ main > h1 {
 
 #hideBtn {
   margin-bottom: 32px;
+}
+
+/* ── Simulerings-tabel ─────────────────────────────────────── */
+.sim-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sim-wrapper .sammenlign-tabel {
+  overflow: visible;
+}
+
+.sim-value-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.vurdering-tekst {
+  font-size: 13px;
+  color: var(--muted-text);
 }
 
 /* ── Results grid ──────────────────────────────────────────── */

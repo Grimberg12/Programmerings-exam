@@ -7,12 +7,14 @@
     <link rel="stylesheet" href="/css/color.css">
     <link rel="stylesheet" href="/css/footer-header.css">
     <link rel="stylesheet" href="/css/investeringscase.css">
+    <link rel="stylesheet" href="/css/sammenlign.css">
 </head>
 <body>
 
 <div id="header"></div>
 
 <main>
+    <a href="/case.html" class="tilbage-link tilbage-link--page">← Tilbage til cases</a>
     <h1>Overblik og simulation</h1>
 
     <hr class="divider">
@@ -24,14 +26,15 @@
     <div class="center-container">
         <button id="calculateBtn">Start simulation</button>
         <button id="hideBtn" style="display:none;">Skjul resultater</button>
+        <div id="simulationResult" style="display:none;"></div>
+        <button id="sim30Btn" class="btn" style="margin-top:16px;">Simuler over 30 år</button>
+        <div id="sim30Result" style="display:none;"></div>
+    </div>
 
-        <div id="cashflowResult"></div>
-        <div id="egenkapitalforrentningResult"></div>
-        <div id="gældsgradResult"></div>
-        <div id="egenkapitalResult"></div>
-        <div id="udlejningsindtægterResult"></div>
-        <div id="udlejningsudgifterResult"></div>
-        <div id="samletVurderingResult"></div>
+    <div class="cross-links" style="max-width:800px; margin-left:auto; margin-right:auto; padding-left:16px; padding-right:16px;">
+      <span class="cross-links__label">Se også:</span>
+      <a href="/case.html" class="cross-link">Overblik over alle dine investeringscases →</a>
+      <a href="/compare.html" class="cross-link">Sammenlign denne case med andre →</a>
     </div>
 </main>
 
