@@ -1,47 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Mock data (midlertidig – senere API)
-  const mockProperties = [
-    {
-      id: 1,
-      adresse: "Ringstedgade 4",
-      postnummer: "2100",
-      by: "København Ø",
-      antalCases: 1,
-      datoOprettet: "16.3.2026"
-    },
-    {
-      id: 2,
-      adresse: "Rosenvængets Allé 2",
-      postnummer: "2100",
-      by: "København Ø",
-      antalCases: 0,
-      datoOprettet: "15.3.2026"
-    },
-    {
-      id: 3,
-      adresse: "Rosenvængets Allé 2",
-      postnummer: "2100",
-      by: "København Ø",
-      antalCases: 0,
-      datoOprettet: "15.3.2026"
-    },
-    {
-      id: 4,
-      adresse: "Rosenvængets Allé 2",
-      postnummer: "2100",
-      by: "København Ø",
-      antalCases: 0,
-      datoOprettet: "15.3.2026"
-    },
-    {
-      id: 5,
-      adresse: "Rosenvængets Allé 2",
-      postnummer: "2100",
-      by: "København Ø",
-      antalCases: 0,
-      datoOprettet: "15.3.2026"
-    }
-  ];
+  // --- Placeholder BBR-data (byttes ud med API-kald når backend er klar) ---
+// TODO: erstat med fetch(`/api/v1/property-profiles/${id}`)
+const placeholderProperty = {
+  adresse: "Ringstedgade 4",
+  postnummer: "4100",
+  by: "Ringsted",
+  ejendomstype: "Enfamiliehus",
+  byggeaar: 1987,
+  boligareal: 142,
+  vaerelser: 5,
+  grundareal: 623
+};
 
   // Hent ID fra URL
   const params = new URLSearchParams(window.location.search);
@@ -52,25 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("propertyDetails");
 
   if (container) {
-    // Find ejendom
-    const property = mockProperties.find((p) => p.id == id);
+    container.innerHTML = `
+    <h2>${placeholderProperty.adresse}</h2>
+    <p>${placeholderProperty.postnummer} ${placeholderProperty.by}</p>
 
-    // Fejlhåndtering
-    if (!property) {
-      container.innerHTML = "<p>Ejendom ikke fundet</p>";
-      console.error("Ingen ejendom fundet med id:", id);
-    } else {
-      // Render ejendom
-      container.innerHTML = `
-        <h2>${property.adresse}</h2>
-        <p>${property.postnummer} ${property.by}</p>
-        <p>Antal cases: ${property.antalCases}</p>
-        <p>Dato oprettet: ${property.datoOprettet}</p>
-      `;
-
-      console.log("Fundet ejendom:", property);
-    }
-  }
+    <div class="property-info">
+      <p><span class="property-label">Ejendomstype:</span> ${placeholderProperty.ejendomstype}</p>
+      <p><span class="property-label">Byggeår:</span> ${placeholderProperty.byggeaar}</p>
+      <p><span class="property-label">Boligareal:</span> ${placeholderProperty.boligareal} m²</p>
+      <p><span class="property-label">Antal værelser:</span> ${placeholderProperty.vaerelser}</p>
+      <p><span class="property-label">Grundareal:</span> ${placeholderProperty.grundareal} m²</p>
+    </div>
+  `;
+}
 
   // Udlejning vis/skjul
   const rentalSelect = document.getElementById("rental");

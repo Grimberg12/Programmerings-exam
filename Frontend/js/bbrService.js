@@ -77,37 +77,32 @@ suggestionsList.addEventListener("change", () => {
 
     const selectedOption = suggestionsList.options[suggestionsList.selectedIndex];
 
-    const selectedId = selectedOption.value;
-    const selectedText = selectedOption.text;
-
-    console.log("Valgt adresse ID:", selectedId);
-    console.log("Valgt adresse:", selectedText);
-    //logger hele json
-    console.log(option.dataset)
-
-    // Sæt valgt adresse i inputfelt
-    searchInput.value = selectedText;
-
-    // Skjul dropdown efter valg
+    // Sæt valgt adresse i inputfelt og skjul dropdown
+    searchInput.value = selectedOption.text;
     suggestionsList.classList.add("hidden");
 
-    // Hent adressefelter fra option.dataset
-    const adresseData = {
-        adresseID: parseInt(selectedOption.dataset.adresseid),
-        vejNavn: selectedOption.dataset.vejnavn,
-        vejNummer: parseInt(selectedOption.dataset.vejnummer, 10),
-        etage: selectedOption.dataset.etage ? parseInt(selectedOption.dataset.etage, 10) : null,
-        postnummer: parseInt(selectedOption.dataset.postnummer, 10),
-        bynavn: selectedOption.dataset.bynavn
+    // Vis address display
+    const adresse = selectedOption.dataset.vejnavn + " " + selectedOption.dataset.vejnummer;
+    const postnummer = selectedOption.dataset.postnummer;
+    const by = selectedOption.dataset.bynavn;
+
+    document.getElementById("displayAdresse").textContent = adresse;
+    document.getElementById("displayPostnummerBy").textContent = postnummer + " " + by;
+    document.getElementById("addressDisplay").classList.remove("hidden");
+
+    // Gem adressedata til brug når brugeren trykker "Opret ejendomsprofil"
+    const opretBtn = document.getElementById("opretEjendomBtn");
+    opretBtn.onclick = () => {
+        const params = new URLSearchParams({
+            adresseid: selectedOption.dataset.adresseid,
+            vejnavn: selectedOption.dataset.vejnavn,
+            vejnummer: selectedOption.dataset.vejnummer,
+            postnummer: selectedOption.dataset.postnummer,
+            bynavn: selectedOption.dataset.bynavn
+        });
+        window.location.href = "/ejendom.html?" + params.toString();
     };
-
-    console.log(adresseData)
-    console.log(selectedOption.dataset)
-
-    // Send til database
-    saveAddressToDatabase(adresseData);
 });
-
 
 // Funktion der sender adresse til backend
 function saveAddressToDatabase(adresseData) {

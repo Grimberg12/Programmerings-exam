@@ -24,7 +24,7 @@
         Søg efter en dansk adresse, opret en investeringscase og simulér afkast over tid.
       </p>
 
-      <div class="search-block">
+     <div class="search-block">
   <div class="search-input-wrapper">
     <span class="search-icon">🔍</span>
     <input type="text" class="search-input" placeholder="Søg efter en adresse..." />
@@ -33,6 +33,28 @@
 
   <!-- dropdown -->
   <select id="suggestionsList" class="suggestions-list hidden" size="6"></select>
+</div>
+
+<!-- Address display -->
+<div id="addressDisplay" class="address-display hidden">
+  <div class="address-display__left">
+    <!-- Luftfoto placeholder - hentes fra API senere -->
+    <div class="address-display__photo">
+      <span>Luftfoto hentes fra API...</span>
+    </div>
+    <h3 id="displayAdresse"></h3>
+    <p id="displayPostnummerBy"></p>
+  </div>
+  <div class="address-display__right">
+    <div class="property-info">
+      <p><span class="property-label">Ejendomstype:</span> Hentes fra BBR...</p>
+      <p><span class="property-label">Byggeår:</span> Hentes fra BBR...</p>
+      <p><span class="property-label">Boligareal:</span> Hentes fra BBR...</p>
+      <p><span class="property-label">Antal værelser:</span> Hentes fra BBR...</p>
+      <p><span class="property-label">Grundareal:</span> Hentes fra BBR...</p>
+    </div>
+    <button id="opretEjendomBtn">Opret ejendomsprofil</button>
+  </div>
 </div>
 </div>
   </section>

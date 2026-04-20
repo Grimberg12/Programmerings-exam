@@ -167,3 +167,60 @@ body {
   font-size: 1.2em;
   font-weight: 600;
 }
+
+/* Address display */
+.address-display {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 16px;
+  background: white;
+  color: #222;
+  border-radius: 14px;
+  border: 1px solid #e5e5e5;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.address-display h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.address-display p {
+  margin: 0 0 16px 0;
+  font-size: 0.95em;
+  color: #555;
+}
+
+.address-display .property-info {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+
+.address-display .property-info p {
+  margin: 6px 0;
+  font-size: 0.9em;
+  color: #444;
+}
+
+.address-display .property-label {
+  font-weight: 600;
+  color: #222;
+}
+
+#opretEjendomBtn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border-radius: 8px;
+  font-size: 1em;
+}
+
+#opretEjendomBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
