@@ -9,6 +9,9 @@ const webhookRouter = require("./routes/webhooks");
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 
+//Services
+const { db } = require("./services/db");
+
 // Konfiguration
 const { PORT, NODE_ENV } = require("./config/env");
 
@@ -62,6 +65,13 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server kører på http://localhost:${PORT} (${NODE_ENV})`);
-});
+db.connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server kører på port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Kunne ikke starte server pga. databasefejl:", error.message);
+    process.exit(1);
+  });
