@@ -79,13 +79,8 @@ async function hentGrundFraId(grundId) {
   return fetchJson(url);
 }
 
-// Henter jordstykkedata fra Matriklen API via jordstykke-ID
-// Jordstykke-ID'et kommer fra BBR grund's jordstykkeList
-// Matriklen-entiteten indeholder det faktiske grundareal (arealet af matrikelsparcellen)
-async function hentJordstykke(jordstykkeId) {
-  const url = buildUrl("/Matriklen/MatrikelPublic/1/rest/Jordstykke", {
-    Jordstykke: jordstykkeId,
-  });
+async function hentJordstykkeViaDawa(bfeNummer) {
+  const url = `https://api.dataforsyningen.dk/jordstykker?bfenummer=${bfeNummer}&format=json`;
   return fetchJson(url);
 }
 
@@ -94,5 +89,5 @@ module.exports = {
   hentEnhederFraAdresseId,
   hentBygningFraId,
   hentGrundFraId,
-  hentJordstykke,
+  hentJordstykkeViaDawa,
 };

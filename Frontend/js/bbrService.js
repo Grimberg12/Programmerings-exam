@@ -163,16 +163,18 @@ function saveAddressToDatabase(adresseData) {
 // adresseid er DAR-adressens UUID fra DAWA API
 async function hentOgVisBBRData(adresseid) {
     try {
-        // Kalder backend parallelt for enhed (boligdata) og bygning (bygningsdata)
+        // Kalder backend parallelt for enhed, bygning og jordstykke (grundareal)
         // Backend proxyer kaldet til Datafordeler med credentials fra .env
-        const [enhedRes, bygningRes] = await Promise.all([
+        const [enhedRes, bygningRes, grundRes] = await Promise.all([
             fetch(`/api/v1/properties/enheder?adresseid=${encodeURIComponent(adresseid)}`),
             fetch(`/api/v1/properties/bygning?adresseid=${encodeURIComponent(adresseid)}`),
+            fetch(`/api/v1/properties/grund?adresseid=${encodeURIComponent(adresseid)}`),
         ]);
 
         // Tager første element fra svaret - en adresse har typisk én enhed og én bygning
         const enhed = (await enhedRes.json()).data?.[0] ?? {};
         const bygning = (await bygningRes.json()).data?.[0] ?? {};
+        const jordstykke = (await grundRes.json()).data?.[0] ?? {};
 
         // Byggeår-feltet har et æ/Å-tegn i feltnavnet som kan variere i encoding,
         // så vi finder nøglen dynamisk fremfor at hardcode den
@@ -187,9 +189,8 @@ async function hentOgVisBBRData(adresseid) {
             enhed.enh026EnhedensSamledeAreal ? enhed.enh026EnhedensSamledeAreal + " m²" : "–";
         document.getElementById("bbrVaerelser").textContent =
             enhed.enh031AntalVærelser ?? "–";
-        // byg041BebyggetAreal = bygningens fodaftryk — matrikelareal kræver Matriklen-API
         document.getElementById("bbrGrundareal").textContent =
-            bygning.byg041BebyggetAreal ? bygning.byg041BebyggetAreal + " m²" : "–";
+            jordstykke.registreretareal ? jordstykke.registreretareal + " m²" : "–";
     } catch (error) {
         // Hvis BBR-kaldet fejler vises preview stadig, bare uden BBR-data
         console.error("Fejl ved hentning af BBR-data til preview:", error);

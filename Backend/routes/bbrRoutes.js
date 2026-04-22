@@ -1,7 +1,3 @@
-// Debug: viser at bbrRoutes-filen faktisk bliver indlæst
-console.log("LOADER: Backend/routes/bbrRoutes.js");
-
-// Importerer Express, så vi kan oprette en router
 const express = require("express");
 
 // Opretter en router-instans
@@ -10,11 +6,10 @@ const router = express.Router();
 // Importerer funktion fra service-laget,
 // som kalder Datafordeler REST API
 const {
-  hentEjendomsrelationFraAdresseId,
   hentEnhederFraAdresseId,
   hentBygningFraId,
   hentGrundFraId,
-  hentJordstykke,
+  hentJordstykkeViaDawa,
 } = require("../services/datafordelerService");
 
 // Endpoint som henter enheder ud fra et adresse-id
@@ -32,9 +27,6 @@ router.get("/properties/enheder", async (req, res) => {
         message: "Mangler query-parameteren adresseid",
       });
     }
-
-    // Debug: viser at route-handleren bliver ramt
-    console.log("RAMTE route: /properties/enheder");
 
     // Kalder service-laget, som henter enheder fra Datafordeler
     const data = await hentEnhederFraAdresseId(adresseid);
@@ -132,24 +124,22 @@ router.get("/properties/grund", async (req, res) => {
       });
     }
 
-    // Henter grunddata og udtrækker jordstykke-ID
+    // Henter grunddata og udtrækker BFE-nummer
     const grundData = await hentGrundFraId(grundId);
-    const jordstykkeId = grundData?.[0]?.jordstykkeList?.[0];
+    const bfeNummer = grundData?.[0]?.bestemtFastEjendom?.bfeNummer;
 
-    if (!jordstykkeId) {
+    if (!bfeNummer) {
       return res.status(404).json({
         success: false,
-        message: "Ingen jordstykke fundet for denne grund",
+        message: "Ingen BFE-nummer fundet for denne grund",
       });
     }
 
-    // Henter jordstykkedata fra Matriklen API — her ligger det faktiske grundareal
-    const data = await hentJordstykke(jordstykkeId);
-    console.log("Jordstykke rådata:", JSON.stringify(data?.[0]));
+    const data = await hentJordstykkeViaDawa(bfeNummer);
 
     return res.status(200).json({
       success: true,
-      message: "Grundareal hentet fra Matriklen",
+      message: "Grundareal hentet fra DAWA",
       data,
     });
   } catch (error) {
