@@ -10,6 +10,7 @@ const testDbRouter = require("./testRouteDB");
 const userRoutes = require("./userRoutes");
 const loginRoutes = require("./loginRoutes");
 const investmentcaseRoute = require("./investmentcaseRoute");
+const ejendomsprofilRoute = require("./ejendomsprofilRoute");
 
 // Importerer BBR-routes
 const bbrRoutes = require("./bbrRoutes");
@@ -27,6 +28,7 @@ router.use("/", testDbRouter);
 router.use("/", userRoutes);
 router.use("/", loginRoutes);
 router.use("/", investmentcaseRoute);
+router.use("/", ejendomsprofilRoute);
 
 // Kobler BBR-routes på API'et
 router.use("/", bbrRoutes);

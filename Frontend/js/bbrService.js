@@ -15,16 +15,17 @@ const BYGNINGSANVENDELSE = {
 // Gemmer den valgte adresse,
 // så vi kan bruge den senere når brugeren klikker på knappen
 let valgtAdresse = null;
+let valgtBBRData = null;
 
 // Når brugeren klikker på søg
-searchButton.addEventListener("click", () => {
+searchInput.addEventListener("input", () => {
     // Hent input fra bruger
     const query = searchInput.value.trim();
 
-    // Hvis input er tomt → skjul dropdown
-    if (!query) {
-        suggestionsList.classList.add("hidden");
-        return;
+    if (query.length < 3) {
+    suggestionsList.classList.add("hidden");
+    suggestionsList.innerHTML = "";
+    return;
     }
 
     // Kald DAWA API
@@ -55,12 +56,11 @@ searchButton.addEventListener("click", () => {
                 option.textContent = address.adressebetegnelse;
 
                 option.dataset.adresseid = address.id;
-                option.dataset.vejnavn = address.vejstykke?.navn || "";
-                option.dataset.vejnummer = address.husnr || "";
+                option.dataset.vejnavn = address.adgangsadresse?.vejstykke?.navn || "";
+                option.dataset.vejnummer = address.adgangsadresse?.husnr || "";
                 option.dataset.etage = address.etage || "";
-                option.dataset.postnummer = address.postnr || "";
-                option.dataset.bynavn = address.postnrnavn || "";
-
+                option.dataset.postnummer = address.adgangsadresse?.postnummer?.nr || "";
+                option.dataset.bynavn = address.adgangsadresse?.postnummer?.navn || "";
                 // Tilføj til dropdown
                 suggestionsList.appendChild(option);
             });
@@ -88,7 +88,7 @@ suggestionsList.addEventListener("change", () => {
         adresseid: selectedOption.dataset.adresseid,
         vejnavn: selectedOption.dataset.vejnavn,
         vejnummer: selectedOption.dataset.vejnummer,
-        etage: selectedOption.dataset.etage,
+        etage: selectedOption.dataset.etage || null,
         postnummer: selectedOption.dataset.postnummer,
         bynavn: selectedOption.dataset.bynavn
     };
@@ -110,24 +110,52 @@ suggestionsList.addEventListener("change", () => {
 });
 
 // Når brugeren klikker på "Opret ejendomsprofil"
-opretBtn.addEventListener("click", () => {
-    // Hvis brugeren ikke har valgt en adresse fra dropdownen endnu
-    if (!valgtAdresse) {
-        alert("Vælg en adresse fra listen, før du opretter ejendomsprofilen.");
-        return;
-    }
+opretBtn.addEventListener("click", async () => {
+  if (!valgtAdresse) {
+    alert("Vælg en adresse først.");
+    return;
+  }
+  console.log("valgtAdresse:", valgtAdresse);
+console.log("valgtBBRData:", valgtBBRData);
+const adresseData = valgtAdresse.data || valgtAdresse;
 
-    // Samler parametre til næste side
-    const params = new URLSearchParams({
-        adresseid: valgtAdresse.adresseid,
-        vejnavn: valgtAdresse.vejnavn,
-        vejnummer: valgtAdresse.vejnummer,
-        postnummer: valgtAdresse.postnummer,
-        bynavn: valgtAdresse.bynavn
+const payload = {
+  brugerID: 1,
+
+  vejNavn: valgtAdresse.vejnavn,
+  vejNummer: valgtAdresse.vejnummer,
+  etage: valgtAdresse.etage || null,
+  postnummer: Number(valgtAdresse.postnummer),
+  bynavn: valgtAdresse.bynavn,
+
+  ejendomstype: valgtBBRData?.ejendomstype || "Ukendt",
+  byggeAar: valgtBBRData?.byggeAar || null,
+  boligArealM2: valgtBBRData?.boligArealM2 || 0,
+  antalVaerelser: valgtBBRData?.antalVaerelser || null,
+  grundArealM2: valgtBBRData?.grundArealM2 || null
+};
+
+  try {
+    const response = await fetch("/api/v1/ejendomsProfil", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
     });
 
-    // Sender brugeren videre til ejendomssiden
-    window.location.href = "/ejendom.html?" + params.toString();
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message);
+    }
+
+    window.location.href = `/ejendom.html?id=${result.ejendomsProfilID}`;
+
+  } catch (error) {
+    console.error(error);
+    alert("Ejendomsprofilen kunne ikke oprettes.");
+  }
 });
 
 // Funktion der sender adresse til backend
@@ -163,36 +191,50 @@ function saveAddressToDatabase(adresseData) {
 // adresseid er DAR-adressens UUID fra DAWA API
 async function hentOgVisBBRData(adresseid) {
     try {
-        // Kalder backend parallelt for enhed, bygning og jordstykke (grundareal)
-        // Backend proxyer kaldet til Datafordeler med credentials fra .env
         const [enhedRes, bygningRes, grundRes] = await Promise.all([
             fetch(`/api/v1/properties/enheder?adresseid=${encodeURIComponent(adresseid)}`),
             fetch(`/api/v1/properties/bygning?adresseid=${encodeURIComponent(adresseid)}`),
             fetch(`/api/v1/properties/grund?adresseid=${encodeURIComponent(adresseid)}`),
         ]);
 
-        // Tager første element fra svaret - en adresse har typisk én enhed og én bygning
         const enhed = (await enhedRes.json()).data?.[0] ?? {};
         const bygning = (await bygningRes.json()).data?.[0] ?? {};
         const jordstykke = (await grundRes.json()).data?.[0] ?? {};
 
-        // Byggeår-feltet har et æ/Å-tegn i feltnavnet som kan variere i encoding,
-        // så vi finder nøglen dynamisk fremfor at hardcode den
         const byggeaarKey = Object.keys(bygning).find(k => k.startsWith("byg026"));
 
-        // Opdaterer de individuelle BBR-span-elementer i index.html
-        document.getElementById("bbrEjendomstype").textContent =
-            BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "–";
-        document.getElementById("bbrByggeaar").textContent =
-            byggeaarKey ? bygning[byggeaarKey] : "–";
+        const ejendomstype = BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
+        const byggeAar = byggeaarKey ? Number(bygning[byggeaarKey]) : null;
+        const boligArealM2 = enhed.enh026EnhedensSamledeAreal
+            ? Number(enhed.enh026EnhedensSamledeAreal)
+            : 0;
+        const antalVaerelser = enhed.enh031AntalVærelser
+            ? Number(enhed.enh031AntalVærelser)
+            : null;
+        const grundArealM2 = jordstykke.registreretareal
+            ? Number(jordstykke.registreretareal)
+            : null;
+
+        document.getElementById("bbrEjendomstype").textContent = ejendomstype;
+        document.getElementById("bbrByggeaar").textContent = byggeAar ?? "–";
         document.getElementById("bbrBoligareal").textContent =
-            enhed.enh026EnhedensSamledeAreal ? enhed.enh026EnhedensSamledeAreal + " m²" : "–";
+            boligArealM2 ? boligArealM2 + " m²" : "–";
         document.getElementById("bbrVaerelser").textContent =
-            enhed.enh031AntalVærelser ?? "–";
+            antalVaerelser ?? "–";
         document.getElementById("bbrGrundareal").textContent =
-            jordstykke.registreretareal ? jordstykke.registreretareal + " m²" : "–";
+            grundArealM2 ? grundArealM2 + " m²" : "–";
+
+        valgtBBRData = {
+            ejendomstype,
+            byggeAar,
+            boligArealM2,
+            antalVaerelser,
+            grundArealM2
+        };
+
+        console.log("valgtBBRData:", valgtBBRData);
+
     } catch (error) {
-        // Hvis BBR-kaldet fejler vises preview stadig, bare uden BBR-data
         console.error("Fejl ved hentning af BBR-data til preview:", error);
     }
 }
