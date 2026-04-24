@@ -17,7 +17,10 @@ router.post("/investment-cases", async (req, res) => {
 
       koebsPris,
       egenKapital,
-      otherCosts,
+      advokat,
+      tinglysning,
+      koeberRaadgivning,
+      andreOmkostninger,
       renovationOmkostninger,
 
       laaneBeloeb,
@@ -77,60 +80,32 @@ router.post("/investment-cases", async (req, res) => {
     // Gem købsomkostninger
     await new sql.Request(transaction)
       .input("investeringsCaseID", sql.Int, investeringsCaseID)
-      .input("omkostningsType", sql.VarChar(255), "koebsPris")
       .input("pris", sql.Decimal(10, 2), Number(koebsPris))
+      .input("egenKapital", sql.Decimal(10,2), Number(egenKapital))
+      .input("advokat", sql.Decimal(10,2), Number(advokat))
+      .input("tinglysning", sql.Decimal(10,2), Number(tinglysning))
+      .input("koeberRaadgivning", sql.Decimal(10,2), Number(koeberRaadgivning))
+      .input("andreOmkostninger", sql.Decimal(10,2), Number(andreOmkostninger))
       .input("noter", sql.VarChar(255), "Købspris")
       .query(`
         INSERT INTO KoebsOmkostninger (
           investeringsCaseID,
-          omkostningsType,
           pris,
+          egenKapital,
+          advokat,
+          tinglysning,
+          koeberRaadgivning,
+          andreOmkostninger,
           noter
         )
         VALUES (
           @investeringsCaseID,
-          @omkostningsType,
           @pris,
-          @noter
-        )
-      `);
-
-    await new sql.Request(transaction)
-      .input("investeringsCaseID", sql.Int, investeringsCaseID)
-      .input("omkostningsType", sql.VarChar(255), "egenKapital")
-      .input("pris", sql.Decimal(10, 2), Number(egenKapital))
-      .input("noter", sql.VarChar(255), "Egenkapital")
-      .query(`
-        INSERT INTO KoebsOmkostninger (
-          investeringsCaseID,
-          omkostningsType,
-          pris,
-          noter
-        )
-        VALUES (
-          @investeringsCaseID,
-          @omkostningsType,
-          @pris,
-          @noter
-        )
-      `);
-
-    await new sql.Request(transaction)
-      .input("investeringsCaseID", sql.Int, investeringsCaseID)
-      .input("omkostningsType", sql.VarChar(255), "otherCosts")
-      .input("pris", sql.Decimal(10, 2), Number(otherCosts))
-      .input("noter", sql.VarChar(255), "Andre omkostninger")
-      .query(`
-        INSERT INTO KoebsOmkostninger (
-          investeringsCaseID,
-          omkostningsType,
-          pris,
-          noter
-        )
-        VALUES (
-          @investeringsCaseID,
-          @omkostningsType,
-          @pris,
+          @egenKapital,
+          @advokat,
+          @tinglysning,
+          @koeberRaadgivning,
+          @andreOmkostninger,
           @noter
         )
       `);
