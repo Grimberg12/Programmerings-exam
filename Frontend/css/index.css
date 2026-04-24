@@ -260,6 +260,30 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+/* Luftfoto-container i preview-kortet */
+.address-display__photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 240px;
+  margin-bottom: 12px;
+  background: var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-text);
+  font-size: 0.9em;
+}
+
+/* Selve luftfoto-billedet – bruges både på forsiden og ejendomsprofilen */
+.property-aerial-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .address-display h3 {
   margin: 0 0 4px 0;
   font-size: 1.2em;

@@ -69,9 +69,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Grundareal: bruger byg041BebyggetAreal (bebygget areal) fra BBR bygning
     const grundareal = bygning.byg041BebyggetAreal ?? "–";
 
+    // Henter luftfoto-URL fra vores egen backend (mellemled mod Dataforsyningen).
+    // Backend slår koordinater op og bygger WMS-kaldet – vi får bare URL'en retur.
+    const luftfotoRes = await fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`);
+    const luftfotoJson = await luftfotoRes.json();
+    const luftfotoUrl = luftfotoJson.data?.url ?? "";
+
     container.innerHTML = `
       <h2>${adresse}</h2>
       <p>${by}</p>
+      ${luftfotoUrl ? `<img src="${luftfotoUrl}" alt="Luftfoto af ${adresse}" class="property-aerial-photo">` : ""}
       <div class="property-info">
         <p><span class="property-label">Ejendomstype:</span> ${ejendomstype}</p>
         <p><span class="property-label">Byggeår:</span> ${byggeaar}</p>

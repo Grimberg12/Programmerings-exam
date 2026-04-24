@@ -186,10 +186,34 @@ function saveAddressToDatabase(adresseData) {
         });
 }
 
+// Henter luftfoto-URL fra backend og viser billedet i preview-kortet.
+// Backend (mellemled) bygger selve WMS-kaldet mod Dataforsyningen.
+async function hentOgVisLuftfoto(adresseid) {
+    try {
+        const response = await fetch(
+            `/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`
+        );
+        const json = await response.json();
+        const url = json.data?.url;
+        if (!url) return;
+
+        // Erstatter placeholder-teksten med et <img> der peger på WMS-URL'en
+        const photoContainer = document.querySelector(".address-display__photo");
+        if (photoContainer) {
+            photoContainer.innerHTML = `<img src="${url}" alt="Luftfoto af ejendom" class="property-aerial-photo">`;
+        }
+    } catch (error) {
+        console.error("Fejl ved hentning af luftfoto:", error);
+    }
+}
+
 // Henter BBR-data fra vores backend og viser det i preview-boksen på forsiden
 // Kaldes automatisk når brugeren vælger en adresse fra dropdown
 // adresseid er DAR-adressens UUID fra DAWA API
 async function hentOgVisBBRData(adresseid) {
+    // Henter luftfoto parallelt med BBR-data (uafhængige kald)
+    hentOgVisLuftfoto(adresseid);
+
     try {
         const [enhedRes, bygningRes, grundRes] = await Promise.all([
             fetch(`/api/v1/properties/enheder?adresseid=${encodeURIComponent(adresseid)}`),

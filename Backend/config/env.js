@@ -11,6 +11,9 @@ const DATAFORDELER_PASSWORD = process.env.DATAFORDELER_PASSWORD || "";
 const DATAFORDELER_BASE_URL =
   process.env.DATAFORDELER_BASE_URL || "https://services.datafordeler.dk";
 
+// Token til Dataforsyningens WMS-luftfoto
+const DATAFORSYNING_TOKEN = process.env.DATAFORSYNING_TOKEN || "";
+
 // Eksporterer alle værdier samlet,
 // så andre backend-filer kan importere dem herfra
 module.exports = {
@@ -19,4 +22,5 @@ module.exports = {
   DATAFORDELER_USERNAME,
   DATAFORDELER_PASSWORD,
   DATAFORDELER_BASE_URL,
+  DATAFORSYNING_TOKEN,
 };

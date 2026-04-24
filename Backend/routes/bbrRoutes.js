@@ -12,6 +12,9 @@ const {
   hentJordstykkeViaDawa,
 } = require("../services/datafordelerService");
 
+// Service-lag der håndterer luftfoto-opslaget mod DAWA og Dataforsyningen
+const { hentLuftfotoUrl } = require("../services/luftfotoService");
+
 // Endpoint som henter enheder ud fra et adresse-id
 // Eksempel på request:
 // GET /api/v1/properties/enheder?adresseid=0a3f...
@@ -147,6 +150,45 @@ router.get("/properties/grund", async (req, res) => {
     return res.status(502).json({
       success: false,
       message: "Kunne ikke hente grund fra Datafordeler",
+    });
+  }
+});
+
+// Endpoint som returnerer en WMS-URL til et luftfoto af ejendommen.
+// Route-laget håndterer kun HTTP-delen: validerer input, kalder service
+// og pakker svaret som JSON. Selve opslaget mod DAWA og WMS-kaldet
+// ligger i luftfotoService.js.
+// Eksempel: GET /api/v1/properties/luftfoto?adresseid=0a3f...
+router.get("/properties/luftfoto", async (req, res) => {
+  try {
+    const { adresseid } = req.query;
+
+    if (!adresseid) {
+      return res.status(400).json({
+        success: false,
+        message: "Mangler query-parameteren adresseid",
+      });
+    }
+
+    const url = await hentLuftfotoUrl(adresseid);
+
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        message: "Adressen blev ikke fundet i DAWA",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Luftfoto-URL genereret",
+      data: { url },
+    });
+  } catch (error) {
+    console.error("Fejl i /properties/luftfoto:", error.message);
+    return res.status(502).json({
+      success: false,
+      message: "Kunne ikke hente luftfoto",
     });
   }
 });
