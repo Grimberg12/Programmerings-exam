@@ -24,6 +24,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+const BYGNINGSANVENDELSE = {
+  110: "Stuehus til landbrugsejendom",
+  120: "Fritliggende enfamiliehus",
+  121: "Sammenbygget enfamiliehus",
+  140: "Etageboligbebyggelse, flerfamiliehus",
+  150: "Kollegium",
+  160: "Fritidshus",
+  190: "Anden helårsbeboelse"
+};
+
 // Henter BBR-data fra backend og viser dem på ejendomssiden
 // Kører kun hvis siden har et #propertyDetails element (dvs. ejendom.html)
 document.addEventListener("DOMContentLoaded", async () => {

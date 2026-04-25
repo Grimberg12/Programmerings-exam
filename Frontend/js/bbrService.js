@@ -149,8 +149,17 @@ const payload = {
     if (!response.ok) {
       throw new Error(result.message);
     }
+    
+    const query = new URLSearchParams({
+        id: result.ejendomsProfilID,
+        adresseid: valgtAdresse.adresseid,
+        vejnavn: valgtAdresse.vejnavn,
+        vejnummer: valgtAdresse.vejnummer,
+        postnummer: valgtAdresse.postnummer,
+        bynavn: valgtAdresse.bynavn
+    });
 
-    window.location.href = `/ejendom.html?id=${result.ejendomsProfilID}`;
+    window.location.href = `/ejendom.html?${query.toString()}`;
 
   } catch (error) {
     console.error(error);

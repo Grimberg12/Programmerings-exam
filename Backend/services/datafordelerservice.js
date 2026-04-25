@@ -55,8 +55,8 @@ async function hentEnhederFraAdresseId(adresseId) {
     RegistreringTil: "2100-01-01",
   });
 
-  // Kalder endpointet og returnerer JSON-svaret
-  return fetchJson(url);
+  const data = await fetchJson(url);
+  return data;
 }
 
 async function hentBygningFraId(bygningId) {
@@ -65,6 +65,7 @@ async function hentBygningFraId(bygningId) {
     RegistreringFra: "1900-01-01",
     RegistreringTil: "2100-01-01",
   });
+
   return fetchJson(url);
 }
 

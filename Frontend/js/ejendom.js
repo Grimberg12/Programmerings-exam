@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const inputSection = document.querySelector(".input-section-investeringscase");
     const createCaseBtn = document.getElementById("openFormButton-investeringscase");
+    const investeringscaseMessage = document.getElementById("investeringscaseMessage");
     if (inputSection) inputSection.style.display = "block";
     if (createCaseBtn) createCaseBtn.style.display = "none";
 
@@ -362,6 +363,14 @@ console.log("Sender til backend:", {
         });
 
         const result = await response.json();
+        if (response.ok) {
+          investeringscaseMessage.textContent = "Case oprettet!";
+          investeringscaseMessage.style.color = "green";
+        
+        } else {
+      investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
+      investeringscaseMessage.style.color = "red";
+    }
 
         if (!response.ok) {
           alert(result.message || "Noget gik galt.");

@@ -213,3 +213,10 @@ main > h1 {
   flex: 1;
 }
 
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+}
