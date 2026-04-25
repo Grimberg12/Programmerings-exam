@@ -250,4 +250,50 @@ router.post("/investment-cases", async (req, res) => {
   }
 });
 
+router.get("/users/:brugerID/investment-cases", async (req, res) => {
+  try {
+    const { brugerID } = req.params;
+    const pool = await db.connect();
+
+    const result = await pool.request()
+      .input("brugerID", sql.Int, Number(brugerID))
+      .query(`
+        SELECT 
+          ic.investeringsCaseID AS id,
+          ic.caseNavn AS navn,
+          ic.beskrivelse,
+          ic.simuleringsAar,
+          ic.datoOprettet,
+
+          ep.ejendomsProfilID,
+          a.vejNavn,
+          a.vejNummer,
+          a.postnummer,
+          a.bynavn,
+
+          ep.boligArealM2 AS areal,
+          ep.antalVaerelser,
+
+          ko.pris AS koebsPris,
+          ko.egenKapital,
+
+          u.erLejeBolig,
+          u.lejeIndkomst,
+          u.lejeUdgifter
+        FROM InvesteringsCase ic
+        INNER JOIN EjendomsProfil ep ON ic.ejendomsProfilID = ep.ejendomsProfilID
+        INNER JOIN Adresse a ON ep.adresseID = a.adresseID
+        LEFT JOIN KoebsOmkostninger ko ON ic.investeringsCaseID = ko.investeringsCaseID
+        LEFT JOIN Udlejning u ON ic.investeringsCaseID = u.investeringsCaseID
+        WHERE ep.brugerID = @brugerID
+        ORDER BY ic.datoOprettet DESC
+      `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (error) {
+    console.error("Fejl ved hentning af investeringscases:", error);
+    res.status(500).json({ success: false, message: "Kunne ikke hente investeringscases." });
+  }
+});
+
 module.exports = router;

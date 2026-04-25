@@ -1,38 +1,36 @@
-const mockCases = [
-  {
-    id: 1,
-    oprettetDato: "2026-01-10",
-    navn: "Lejlighed i København",
-    adresse: "Rosenvængets Allé 2",
-    areal: 120,
-    antalVærelser: 3,
-    købspris: 5000000,
-    egenkapital: 1000000,
-    udlejning: { udlejes: true, månedligLeje: 20000, månedligUdgifter: 5000 }
-  },
-  {
-    id: 2,
-    oprettetDato: "2026-02-20",
-    navn: "Rækkehus i Aarhus",
-    adresse: "Åboulevarden 45",
-    areal: 145,
-    antalVærelser: 4,
-    købspris: 3200000,
-    egenkapital: 640000,
-    udlejning: { udlejes: true, månedligLeje: 14000, månedligUdgifter: 4000 }
-  },
-  {
-    id: 3,
-    oprettetDato: "2026-03-05",
-    navn: "Villa i Odense",
-    adresse: "Frederiksgade 8",
-    areal: 210,
-    antalVærelser: 6,
-    købspris: 7500000,
-    egenkapital: 1875000,
-    udlejning: { udlejes: false, månedligLeje: 0, månedligUdgifter: 0 }
+async function hentCases() {
+  const savedUser = localStorage.getItem("loggedInUser");
+
+  if (!savedUser) {
+    window.location.href = "/login.html";
+    return [];
   }
-];
+
+  const user = JSON.parse(savedUser);
+
+  const response = await fetch(`/api/v1/users/${user.brugerID}/investment-cases`);
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Kunne ikke hente cases");
+  }
+
+  return result.data.map(c => ({
+    id: c.id,
+    oprettetDato: c.oprettetDato,
+    navn: c.navn,
+    adresse: `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
+    areal: Number(c.areal || 0),
+    antalVærelser: c.antalVaerelser || 0,
+    købspris: Number(c.koebsPris || 0),
+    egenkapital: Number(c.egenKapital || 0),
+    udlejning: {
+      udlejes: Boolean(c.erLejeBolig),
+      månedligLeje: Number(c.lejeIndkomst || 0),
+      månedligUdgifter: Number(c.lejeUdgifter || 0)
+    }
+  }));
+}
 
 const valgte = new Set();
 
@@ -40,11 +38,12 @@ function formatKr(amount) {
   return amount.toLocaleString("da-DK") + " kr.";
 }
 
-function render() {
+async function render() {
   const grid = document.getElementById("compareGrid");
   const maxNået = valgte.size >= 3;
 
-  grid.innerHTML = mockCases.map(c => {
+  const cases = await hentCases();
+  grid.innerHTML = cases.map(c => {
     const erValgt = valgte.has(c.id);
     const erDisabled = maxNået && !erValgt;
     const cashflow = c.udlejning.udlejes

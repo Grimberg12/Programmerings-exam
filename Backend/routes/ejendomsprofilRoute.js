@@ -120,4 +120,41 @@ router.post("/ejendomsProfil", async (req, res) => {
   }
 });
 
+router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
+  try {
+    const { brugerID } = req.params;
+    const pool = await db.connect();
+
+    const result = await pool.request()
+      .input("brugerID", sql.Int, Number(brugerID))
+      .query(`
+        SELECT 
+          ep.ejendomsProfilID AS id,
+          a.vejNavn,
+          a.vejNummer,
+          a.postnummer,
+          a.bynavn,
+          ep.datoOprettet,
+          COUNT(ic.investeringsCaseID) AS antalCases
+        FROM EjendomsProfil ep
+        INNER JOIN Adresse a ON ep.adresseID = a.adresseID
+        LEFT JOIN InvesteringsCase ic ON ep.ejendomsProfilID = ic.ejendomsProfilID
+        WHERE ep.brugerID = @brugerID
+        GROUP BY 
+          ep.ejendomsProfilID,
+          a.vejNavn,
+          a.vejNummer,
+          a.postnummer,
+          a.bynavn,
+          ep.datoOprettet
+        ORDER BY ep.datoOprettet DESC
+      `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (error) {
+    console.error("Fejl ved hentning af ejendomsprofiler:", error);
+    res.status(500).json({ success: false, message: "Kunne ikke hente ejendomme." });
+  }
+});
+
 module.exports = router;
