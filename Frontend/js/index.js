@@ -1,30 +1,22 @@
-//Venter på at siden er loadet
+// Venter på at siden er loaded
 document.addEventListener("DOMContentLoaded", () => {
-    //Vi finder vores velcome message fra index.html
+  // Henter velkomstbesked-elementet og tjekker for gemt bruger i localStorage
   const welcomeMessage = document.getElementById("welcomeMessage");
-// Vi henter den bruger, vi gemte ved login
   const savedUser = localStorage.getItem("loggedInUser");
-//Hvis der ikke findes en bruger, stopper vi bare
+ // Hvis der ikke findes nogle af delene, gør vi ingenting
   if (!savedUser || !welcomeMessage) {
     return;
   }
-//Laver det om fra tekst til et objekt
+// Gemmer som objekt og viser velkomstbesked
   const user = JSON.parse(savedUser);
-//Hvis brugeren har et navn vises det
+
   if (user.navn) {
     welcomeMessage.textContent = `Velkommen ${user.navn}`;
   }
-
-  // Scroll langsomt ned til ejendomsgrid hvis man kommer fra case.html uden cases
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("scroll") === "properties") {
-    setTimeout(() => {
-      document.querySelector(".property-section")?.scrollIntoView({ behavior: "smooth" });
-    }, 500);
-  }
 });
 
-const BYGNINGSANVENDELSE = {
+// SKAL DET HER FJERNES HELT?????
+const INDEX_BYGNINGSANVENDELSE = {
   110: "Stuehus til landbrugsejendom",
   120: "Fritliggende enfamiliehus",
   121: "Sammenbygget enfamiliehus",
@@ -82,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const adresse = `${vejnavn || ""} ${vejnummer || ""}`.trim();
     const by = `${postnummer || ""} ${bynavn || ""}`.trim();
-    const ejendomstype = BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
+    const ejendomstype = INDEX_BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
     const byggeaarKey = Object.keys(bygning).find(k => k.startsWith("byg026"));
     const byggeaar = byggeaarKey ? bygning[byggeaarKey] : "–";
     const boligareal = enhed.enh026EnhedensSamledeAreal ?? "–";

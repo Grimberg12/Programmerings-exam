@@ -119,8 +119,25 @@ opretBtn.addEventListener("click", async () => {
 console.log("valgtBBRData:", valgtBBRData);
 const adresseData = valgtAdresse.data || valgtAdresse;
 
+const savedUser = localStorage.getItem("loggedInUser");
+
+if (!savedUser) {
+  alert("Du skal være logget ind for at oprette en ejendomsprofil.");
+  window.location.href = "/login.html";
+  return;
+}
+
+const user = JSON.parse(savedUser);
+const brugerID = Number(user.brugerID);
+
+if (!brugerID) {
+  console.error("loggedInUser mangler brugerID:", user);
+  alert("Kunne ikke finde brugerID for den loggede ind bruger.");
+  return;
+}
+
 const payload = {
-  brugerID: 1,
+  brugerID: brugerID,
 
   vejNavn: valgtAdresse.vejnavn,
   vejNummer: valgtAdresse.vejnummer,
@@ -134,7 +151,7 @@ const payload = {
   antalVaerelser: valgtBBRData?.antalVaerelser || null,
   grundArealM2: valgtBBRData?.grundArealM2 || null
 };
-
+console.log("payload sendt til backend:", payload);
   try {
     const response = await fetch("/api/v1/ejendomsProfil", {
       method: "POST",
