@@ -276,6 +276,11 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
 
           ko.pris AS koebsPris,
           ko.egenKapital,
+          ko.advokat,
+          ko.tinglysning,
+          ko.koeberRaadgivning,
+          ko.andreOmkostninger,
+          ISNULL(ren.renoveringsomkostninger, 0) AS renoveringsomkostninger,
 
           u.erLejeBolig,
           u.lejeIndkomst,
@@ -285,6 +290,13 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
         LEFT JOIN KoebsOmkostninger ko ON ic.investeringsCaseID = ko.investeringsCaseID
         LEFT JOIN Udlejning u ON ic.investeringsCaseID = u.investeringsCaseID
+        LEFT JOIN (
+        SELECT 
+        investeringsCaseID,
+        SUM(omkostninger) AS renoveringsomkostninger
+        FROM Renovation
+        GROUP BY investeringsCaseID
+        ) ren ON ic.investeringsCaseID = ren.investeringsCaseID
         WHERE ep.brugerID = @brugerID
         ORDER BY ic.datoOprettet DESC
       `);

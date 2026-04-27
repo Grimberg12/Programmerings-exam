@@ -116,13 +116,7 @@ async function render() {
 }
 
 function handleOpretAdresse() {
-  if (mockProperties.length === 0) {
-    window.location.href = "/index.html";
-  } else if (mockProperties.length === 1) {
-    window.location.href = `/ejendom.html?id=${mockProperties[0].id}`;
-  } else {
-    window.location.href = "/index.html?scroll=properties";
-  }
+  window.location.href = "/index.html?scroll=properties";
 }
 
 document.addEventListener("DOMContentLoaded", () => {

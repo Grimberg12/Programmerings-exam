@@ -53,32 +53,32 @@
 
       <div class="form-group">
         <label for="koebsPris">Købspris (DKK):</label>
-        <input type="number" id="koebsPris" name="koebsPris" required>
+        <input type="text" class="number-input" id="koebsPris" name="koebsPris" required>
       </div>
 
       <div class="form-group">
         <label for="egenkapital">Egenkapital (DKK):</label>
-        <input type="number" id="egenkapital" name="egenkapital" required>
+        <input type="text" class="number-input" id="egenkapital" name="egenkapital" required>
       </div>
 
       <div class="form-group">
         <label for="advokat">Advokatsalær (DKK):</label>
-        <input type="number" id="advokat" name="advokat" required>
+        <input type="text" class="number-input" id="advokat" name="advokat" required>
       </div>
 
       <div class="form-group">
         <label for="tinglysning">Tinglysningsafgift (DKK):</label>
-        <input type="number" id="tinglysning" name="tinglysning" required>
+        <input type="text" class="number-input" id="tinglysning" name="tinglysning" required>
       </div>
 
       <div class="form-group">
         <label for="koeberRaadgivning">Køberrådgivning (DKK):</label>
-        <input type="number" id="koeberRaadgivning" name="koeberRaadgivning" required>
+        <input type="text" class="number-input" id="koeberRaadgivning" name="koeberRaadgivning" required>
       </div>
 
       <div class="form-group">
         <label for="andreOmkostninger">Andre omkostninger (DKK):</label>
-        <input type="number" id="andreOmkostninger" name="andreOmkostninger" required>
+        <input type="text" class="number-input" id="andreOmkostninger" name="andreOmkostninger" required>
       </div>
     </section>
 
@@ -88,7 +88,7 @@
 
       <div class="form-group">
         <label for="renovationCosts">Renoveringsomkostninger (DKK):</label>
-        <input type="number" id="renovationCosts" name="renovationCosts" required>
+        <input type="text" class="number-input" id="renovationCosts" name="renovationCosts" required>
       </div>
     </section>
 
@@ -98,7 +98,7 @@
 
   <div class="form-group">
     <label for="mortgage">Realkreditlån (DKK):</label>
-    <input type="number" id="mortgage" name="mortgage">
+    <input type="text" class="number-input" id="mortgage" name="mortgage">
   </div>
 
   <div id="mortgageDetails-realkredit" class="conditional-section" style="display: none;">
@@ -118,7 +118,7 @@
           Angiv den estimeret årlige rente for realkreditlånet. For eksempel, hvis renten er 3%, indtast 3.
         </span>
       </span>
-      <input type="number" step="0.01" id="mortgageInterest" name="mortgageInterest">
+      <input type="text" class="number-input" id="mortgageInterest" name="mortgageInterest">
     </div>
 
     <div class="form-group">
@@ -135,7 +135,7 @@
 
   <div class="form-group">
     <label for="bankLoan">Banklån (DKK):</label>
-    <input type="number" id="bankLoan" name="bankLoan">
+    <input type="text" class="number-input" id="bankLoan" name="bankLoan">
   </div>
 
   <div id="mortgageDetails-bankLoan" class="conditional-section" style="display: none;">
@@ -172,7 +172,7 @@
 
   <div class="form-group">
     <label for="otherLoans">Andre lån (DKK):</label>
-    <input type="number" id="otherLoans" name="otherLoans">
+    <input type="text" class="number-input" id="otherLoans" name="otherLoans">
   </div>
 
   <div id="mortgageDetails-otherLoans" class="conditional-section" style="display: none;">
@@ -223,12 +223,12 @@
       <div id="rentalInfo" class="conditional-section" style="display: none;">
         <div class="form-group">
           <label for="rentalIncome">Månedlig lejeindtægt (DKK):</label>
-          <input type="number" id="rentalIncome" name="rentalIncome">
+          <input type="text" class="number-input" id="rentalIncome" name="rentalIncome">
         </div>
 
         <div class="form-group">
           <label for="rentalExpenses">Månedlige lejeudgifter (DKK):</label>
-          <input type="number" id="rentalExpenses" name="rentalExpenses">
+          <input type="text" class="number-input" id="rentalExpenses" name="rentalExpenses">
         </div>
       </div>
     </section>

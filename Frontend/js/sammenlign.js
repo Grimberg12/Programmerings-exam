@@ -1,51 +1,46 @@
-// Fuld mock-data med lånedetaljer til beregninger
-const mockCases = [
-  {
-    id: 1,
-    navn: "Lejlighed i København",
-    adresse: "Rosenvængets Allé 2",
-    areal: 120,
-    antalVærelser: 3,
-    købspris: 5000000,
-    egenkapital: 1000000,
-    andre_omkostninger: 50000,
-    renoveringsomkostninger: 200000,
-    realkreditlån: { beløb: 4000000, rente: 0.02,  løbetid: 30 },
-    banklån:       { beløb: 500000,  rente: 0.05,  løbetid: 10 },
-    andrelån:      { beløb: 500000,  rente: 0.05,  løbetid: 10 },
-    udlejning: { udlejes: true, månedligLeje: 20000, månedligUdgifter: 5000 }
-  },
-  {
-    id: 2,
-    navn: "Rækkehus i Aarhus",
-    adresse: "Åboulevarden 45",
-    areal: 145,
-    antalVærelser: 4,
-    købspris: 3200000,
-    egenkapital: 640000,
-    andre_omkostninger: 30000,
-    renoveringsomkostninger: 80000,
-    realkreditlån: { beløb: 2560000, rente: 0.03, løbetid: 30 },
+async function hentCases() {
+  const savedUser = localStorage.getItem("loggedInUser");
+
+  if (!savedUser) {
+    window.location.href = "/login.html";
+    return [];
+  }
+
+  const user = JSON.parse(savedUser);
+
+  const response = await fetch(`/api/v1/users/${user.brugerID}/investment-cases`);
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Kunne ikke hente cases");
+  }
+
+  return result.data.map(c => ({
+    id: Number(c.id),
+    ejendomsProfilID: Number(c.ejendomsProfilID),
+    oprettetDato: c.datoOprettet,
+    navn: c.navn,
+    beskrivelse: c.beskrivelse,
+    adresse: `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
+    areal: Number(c.areal || 0),
+    antalVærelser: Number(c.antalVaerelser || 0),
+    købspris: Number(c.koebsPris || 0),
+    egenkapital: Number(c.egenKapital || 0),
+    advokat: Number(c.advokat || 0),
+    tinglysning: Number(c.tinglysning || 0),
+    koeberRaadgivning: Number(c.koeberRaadgivning || 0),
+    andre_omkostninger: Number(c.andreOmkostninger || 0),
+    renoveringsomkostninger: Number(c.renoveringsomkostninger || 0),
+    realkreditlån: null,
     banklån: null,
     andrelån: null,
-    udlejning: { udlejes: true, månedligLeje: 14000, månedligUdgifter: 4000 }
-  },
-  {
-    id: 3,
-    navn: "Villa i Odense",
-    adresse: "Frederiksgade 8",
-    areal: 210,
-    antalVærelser: 6,
-    købspris: 7500000,
-    egenkapital: 1875000,
-    andre_omkostninger: 75000,
-    renoveringsomkostninger: 350000,
-    realkreditlån: { beløb: 5625000, rente: 0.025, løbetid: 30 },
-    banklån:       { beløb: 500000,  rente: 0.045, løbetid: 15 },
-    andrelån: null,
-    udlejning: { udlejes: false, månedligLeje: 0, månedligUdgifter: 0 }
-  }
-];
+    udlejning: {
+      udlejes: Boolean(c.erLejeBolig),
+      månedligLeje: Number(c.lejeIndkomst || 0),
+      månedligUdgifter: Number(c.lejeUdgifter || 0)
+    }
+  }));
+}
 
 function formatKr(v) {
   if (v === null || v === undefined) return "—";
@@ -134,6 +129,9 @@ function renderTabel(cases, metrikker) {
         ${row("Købspris",                (c) => formatKr(c.købspris),             new Set())}
         ${row("Egenkapital",             (c) => formatKr(c.egenkapital),          new Set())}
         ${row("Renoveringsomkostninger", (c) => formatKr(c.renoveringsomkostninger), new Set())}
+        ${row("Advokat",                 (c) => formatKr(c.advokat),               new Set())}
+        ${row("Tinglysning",             (c) => formatKr(c.tinglysning),           new Set())}
+        ${row("Køberrådgivning",         (c) => formatKr(c.koeberRaadgivning),     new Set())}
         ${row("Samlet investering",      (c, m) => formatKr(m.samletInv),         new Set())}
 
         ${sektionRow("Simulering")}
@@ -226,10 +224,11 @@ function render30ÅrSammenligning(cases) {
 
 // ── Init ─────────────────────────────────────────────────────
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const ids = (params.get("ids") || "").split(",").map(Number).filter(Boolean);
-  const cases = ids.map(id => mockCases.find(c => c.id === id)).filter(Boolean);
+  const alleCases = await hentCases();
+  const cases = ids.map(id => alleCases.find(c => Number(c.id) === id)).filter(Boolean);
   const indhold = document.getElementById("sammenlignIndhold");
 
   if (cases.length < 2) {

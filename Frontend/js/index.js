@@ -50,9 +50,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!container) return;
 
   if (!adresseid) {
-    container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
+  const id = params.get("id");
+
+  if (id) {
+    container.innerHTML = `
+      <h2>${vejnavn || ""} ${vejnummer || ""}</h2>
+      <p>${postnummer || ""} ${bynavn || ""}</p>
+      <p>Ejendommen er hentet fra databasen. BBR-data kan kun hentes direkte efter adressesøgning.</p>
+    `;
     return;
   }
+
+  container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
+  return;
+}
 
   container.innerHTML = `<p>Henter ejendomsdata fra BBR...</p>`;
 

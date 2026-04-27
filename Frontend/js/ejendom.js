@@ -88,6 +88,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function formatNumberDK(value) {
+    if (!value) return "";
+    const number = Number(value.toString().replace(/\D/g, ""));
+    return number.toLocaleString("da-DK");
+  }
+
+  function parseNumber(value) {
+    return Number(String(value || "").replace(/\D/g, ""));
+  }
+
+  function addKrSuffix(input) {
+  const raw = input.value.replace(/\D/g, "");
+  if (raw) {
+    input.value = formatNumberDK(raw) + " kr.";
+  }
+}
+
+function removeKrSuffix(input) {
+  const raw = input.value.replace(/\D/g, "");
+  input.value = raw ? formatNumberDK(raw) : "";
+}
+
+const numberInputs = document.querySelectorAll(".number-input");
+
+numberInputs.forEach((input) => {
+  input.addEventListener("focus", () => {
+    removeKrSuffix(input);
+  });
+
+  input.addEventListener("input", () => {
+    removeKrSuffix(input);
+  });
+
+  input.addEventListener("blur", () => {
+    addKrSuffix(input);
+  });
+});
+
   if (rentalSelect) {
     rentalSelect.addEventListener("change", toggleRentalInfo);
     toggleRentalInfo();
@@ -103,78 +141,78 @@ document.addEventListener("DOMContentLoaded", async () => {
   const mortgageInput = document.getElementById("mortgage");
   const renovationCostsInput = document.getElementById("renovationCosts");
 
-function getNumber(input) {
-  return parseFloat(input?.value) || 0;
-}
-
-function updateMortgagePlaceholder() {
-  if (
-    !koebsPrisInput ||
-    !egenkapitalInput ||
-    !advokatInput ||
-    !tinglysningInput ||
-    !koeberRaadgivningInput ||
-    !andreOmkostningerInput ||
-    !mortgageInput ||
-    !renovationCostsInput
-  ) {
-    return;
+  function getNumber(input) {
+    return parseNumber(input?.value);
   }
 
-  const koebsPris = getNumber(koebsPrisInput);
-  const egenkapital = getNumber(egenkapitalInput);
-  const advokat = getNumber(advokatInput);
-  const tinglysning = getNumber(tinglysningInput);
-  const koeberRaadgivning = getNumber(koeberRaadgivningInput);
-  const andreOmkostninger = getNumber(andreOmkostningerInput);
-  const renovationCosts = getNumber(renovationCostsInput);
+  function updateMortgagePlaceholder() {
+    if (
+      !koebsPrisInput ||
+      !egenkapitalInput ||
+      !advokatInput ||
+      !tinglysningInput ||
+      !koeberRaadgivningInput ||
+      !andreOmkostningerInput ||
+      !mortgageInput ||
+      !renovationCostsInput
+    ) {
+      return;
+    }
 
-  const suggestedLoan =
-    koebsPris -
-    egenkapital +
-    advokat +
-    tinglysning +
-    koeberRaadgivning +
-    andreOmkostninger +
-    renovationCosts;
+    const koebsPris = getNumber(koebsPrisInput);
+    const egenkapital = getNumber(egenkapitalInput);
+    const advokat = getNumber(advokatInput);
+    const tinglysning = getNumber(tinglysningInput);
+    const koeberRaadgivning = getNumber(koeberRaadgivningInput);
+    const andreOmkostninger = getNumber(andreOmkostningerInput);
+    const renovationCosts = getNumber(renovationCostsInput);
 
-  if (suggestedLoan > 0) {
-    mortgageInput.placeholder =
-      suggestedLoan.toLocaleString("da-DK") + " kr. (foreslået lån)";
-  } else {
-    mortgageInput.placeholder = "Realkredit lån";
-  }
-}
+    const suggestedLoan =
+      koebsPris -
+      egenkapital +
+      advokat +
+      tinglysning +
+      koeberRaadgivning +
+      andreOmkostninger +
+      renovationCosts;
 
-[
-  koebsPrisInput,
-  egenkapitalInput,
-  advokatInput,
-  tinglysningInput,
-  koeberRaadgivningInput,
-  andreOmkostningerInput,
-  renovationCostsInput
-].forEach((input) => {
-  if (input) {
-    input.addEventListener("input", updateMortgagePlaceholder);
-  }
-});
-
-// Åbn/luk formular
-const createCaseBtn = document.getElementById("openFormButton-investeringscase");
-const inputSection = document.querySelector(".input-section-investeringscase");
-
-if (createCaseBtn && inputSection) {
-  createCaseBtn.addEventListener("click", () => {
-    if (inputSection.style.display === "none" || inputSection.style.display === "") {
-      inputSection.style.display = "block";
-      createCaseBtn.textContent = "Luk form";
+    if (suggestedLoan > 0) {
+      mortgageInput.placeholder =
+        suggestedLoan.toLocaleString("da-DK") + " kr. (foreslået lån)";
     } else {
-      inputSection.style.display = "none";
-      createCaseBtn.textContent = "Opret ny investeringscase";
+      mortgageInput.placeholder = "Realkredit lån";
+    }
+  }
+
+  [
+    koebsPrisInput,
+    egenkapitalInput,
+    advokatInput,
+    tinglysningInput,
+    koeberRaadgivningInput,
+    andreOmkostningerInput,
+    renovationCostsInput
+  ].forEach((input) => {
+    if (input) {
+      input.addEventListener("input", updateMortgagePlaceholder);
     }
   });
-}
+
+  // Åbn/luk formular
+  const createCaseBtn = document.getElementById("openFormButton-investeringscase");
+  const inputSection = document.querySelector(".input-section-investeringscase");
+
+  if (createCaseBtn && inputSection) {
+    createCaseBtn.addEventListener("click", () => {
+      if (inputSection.style.display === "none" || inputSection.style.display === "") {
+        inputSection.style.display = "block";
+        createCaseBtn.textContent = "Luk form";
+      } else {
+        inputSection.style.display = "none";
+        createCaseBtn.textContent = "Opret ny investeringscase";
+      }
+    });
+  }
 
   // Lånefelter
   const realKreditInput = document.getElementById("mortgage");
@@ -200,7 +238,7 @@ if (createCaseBtn && inputSection) {
   function toggleLoanSection(inputField, detailSection, fields) {
     if (!inputField || !detailSection || !fields) return;
 
-    const value = parseFloat(inputField.value);
+    const value = parseNumber(inputField.value);
 
     if (!isNaN(value) && value > 0) {
       detailSection.style.display = "block";
@@ -269,41 +307,41 @@ if (createCaseBtn && inputSection) {
         ejendomsProfilID: Number(new URLSearchParams(window.location.search).get("id")),
         navn: document.getElementById("investmentName")?.value.trim(),
         beskrivelse: document.getElementById("description")?.value.trim() || "",
-        koebsPris: Number(document.getElementById("koebsPris")?.value || 0),
-        egenKapital: Number(document.getElementById("egenkapital")?.value || 0),
-        advokat: Number(document.getElementById("advokat")?.value || 0),
-        tinglysning: Number(document.getElementById("tinglysning")?.value || 0),
-        koeberRaadgivning: Number(document.getElementById("koeberRaadgivning")?.value || 0),
-        andreOmkostninger: Number(document.getElementById("andreOmkostninger")?.value || 0),
-        renovationOmkostninger: Number(document.getElementById("renovationCosts")?.value || 0),
+        koebsPris: parseNumber(document.getElementById("koebsPris")?.value),
+        egenKapital: parseNumber(document.getElementById("egenkapital")?.value),
+        advokat: parseNumber(document.getElementById("advokat")?.value),
+        tinglysning: parseNumber(document.getElementById("tinglysning")?.value),
+        koeberRaadgivning: parseNumber(document.getElementById("koeberRaadgivning")?.value),
+        andreOmkostninger: parseNumber(document.getElementById("andreOmkostninger")?.value),
+        renovationOmkostninger: parseNumber(document.getElementById("renovationCosts")?.value),
 
-      realkreditlån: Number(document.getElementById("mortgage")?.value) > 0 ? {
-        beløb: Number(document.getElementById("mortgage")?.value),
-        type: document.getElementById("mortgageType")?.value,
-        rente: Number(document.getElementById("mortgageInterest")?.value) / 100,
-        løbetid: Number(document.getElementById("mortgageTerm")?.value)
-      } : null,
+        realkreditlån: parseNumber(document.getElementById("mortgage")?.value) > 0 ? {
+          beløb: parseNumber(document.getElementById("mortgage")?.value),
+          type: document.getElementById("mortgageType")?.value,
+          rente: parseNumber(document.getElementById("mortgageInterest")?.value) / 100,
+          løbetid: Number(document.getElementById("mortgageTerm")?.value)
+        } : null,
 
-      banklån: Number(document.getElementById("bankLoan")?.value) > 0 ? {
-        beløb: Number(document.getElementById("bankLoan")?.value),
-        type: document.getElementById("bankLoanType")?.value,
-        rente: Number(document.getElementById("bankLoanInterest")?.value) / 100,
-        løbetid: Number(document.getElementById("bankLoanTerm")?.value)
-      } : null,
+        banklån: parseNumber(document.getElementById("bankLoan")?.value) > 0 ? {
+          beløb: parseNumber(document.getElementById("bankLoan")?.value),
+          type: document.getElementById("bankLoanType")?.value,
+          rente: parseNumber(document.getElementById("bankLoanInterest")?.value) / 100,
+          løbetid: Number(document.getElementById("bankLoanTerm")?.value)
+        } : null,
 
-      andrelån: Number(document.getElementById("otherLoans")?.value) > 0 ? {
-        beløb: Number(document.getElementById("otherLoans")?.value),
-        type: document.getElementById("otherLoansType")?.value,
-        rente: Number(document.getElementById("otherLoansInterest")?.value) / 100,
-        løbetid: Number(document.getElementById("otherLoansTerm")?.value)
-      } : null,
+        andrelån: parseNumber(document.getElementById("otherLoans")?.value) > 0 ? {
+          beløb: parseNumber(document.getElementById("otherLoans")?.value),
+          type: document.getElementById("otherLoansType")?.value,
+          rente: parseNumber(document.getElementById("otherLoansInterest")?.value) / 100,
+          løbetid: Number(document.getElementById("otherLoansTerm")?.value)
+        } : null,
 
-      udlejning: {
-        udlejes,
-        månedligLeje: udlejes ? Number(document.getElementById("rentalIncome")?.value || 0) : 0,
-        månedligUdgifter: udlejes ? Number(document.getElementById("rentalExpenses")?.value || 0) : 0
-  }
-};
+        udlejning: {
+          udlejes,
+          månedligLeje: udlejes ? parseNumber(document.getElementById("rentalIncome")?.value) : 0,
+          månedligUdgifter: udlejes ? parseNumber(document.getElementById("rentalExpenses")?.value) : 0
+        }
+      };
 
       if (isEditMode) {
         /* PUT til database her.
@@ -318,11 +356,11 @@ if (createCaseBtn && inputSection) {
         window.location.href = "/investeringscase.html";
         return;
       }
-console.log("Sender til backend:", {
-  ejendomsProfilID: opdateretCase.ejendomsProfilID,
-  caseNavn: opdateretCase.navn,
-  simuleringsAar: 30
-});
+      console.log("Sender til backend:", {
+        ejendomsProfilID: opdateretCase.ejendomsProfilID,
+        caseNavn: opdateretCase.navn,
+        simuleringsAar: 30
+      });
       try {
         const response = await fetch("/api/v1/investment-cases", {
           method: "POST",
@@ -366,11 +404,11 @@ console.log("Sender til backend:", {
         if (response.ok) {
           investeringscaseMessage.textContent = "Case oprettet!";
           investeringscaseMessage.style.color = "green";
-        
+
         } else {
-      investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
-      investeringscaseMessage.style.color = "red";
-    }
+          investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
+          investeringscaseMessage.style.color = "red";
+        }
 
         if (!response.ok) {
           alert(result.message || "Noget gik galt.");
@@ -389,42 +427,5 @@ console.log("Sender til backend:", {
         alert("Kunne ikke forbinde til serveren.");
       }
     });
-  }
-});
-
-
-// tidligere oprettet cases - placeholder
-const relatedCasesContainer = document.getElementById("relatedCases");
-const mockCases = [
-  { id: 1, name: "Case 1", description: "Beskrivelse af case 1", purchasePrice: 2000000, equity: 500000, otherCosts: 100000, renovationCosts: 150000, mortgage: 1350000, mortgageType: "fast", mortgageInterest: 3.5, mortgageTerm: 30, bankLoan: 0, bankLoanType: "fast", bankLoanInterest: 0, bankLoanTerm: 0, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "true", rentalIncome: 15000, rentalExpenses: 5000 },
-  { id: 2, name: "Case 2", description: "Beskrivelse af case 2", purchasePrice: 3000000, equity: 1000000, otherCosts: 200000, renovationCosts: 250000, mortgage: 1750000, mortgageType: "variabel", mortgageInterest: 2.8, mortgageTerm: 30, bankLoan: 500000, bankLoanType: "fast", bankLoanInterest: 4.5, bankLoanTerm: 15, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "false", rentalIncome: 0, rentalExpenses: 0 },
-  { id: 3, name: "Case 3", description: "Beskrivelse af case 3", purchasePrice: 4000000, equity: 1500000, otherCosts: 300000, renovationCosts: 350000, mortgage: 2250000, mortgageType: "fast", mortgageInterest: 3.8, mortgageTerm: 30, bankLoan: 500000, bankLoanType: "fast", bankLoanInterest: 4.8, bankLoanTerm: 15, otherLoans: 0, otherLoansType: "fast", otherLoansInterest: 0, otherLoansTerm: 0, rental: "true", rentalIncome: 25000, rentalExpenses: 15000 }
-];
-
-// Render cases i relatedCasesContainer - link to site for case details (investeringscase.html?id=CASE_ID)
-mockCases.forEach(c => {
-  const caseElement = document.createElement("div");
-  caseElement.innerHTML = `
-  <div class="related-case-card">
-    <div class="case-header">
-      <h3>${c.name}</h3>
-      <button class="case-delete-button" title="Slet case" data-case-id="${c.id}">×</button>
-    </div>
-    <p>${c.description}</p>
-    <a href="/investeringscase.html?id=${c.id}">Se detaljer</a>
-  </div>
-  `;
-  relatedCasesContainer.appendChild(caseElement);
-});
-
-
-// delete case when pressed button - remove from DOM and log id (later API call)
-relatedCasesContainer.addEventListener("click", (event) => {
-  if (event.target.classList.contains("case-delete-button")) {
-    const caseId = event.target.getAttribute("data-case-id");
-    console.log("Sletter case med ID:", caseId);
-    alert("Case slettet (placeholder) - ID: " + caseId);
-    event.target.closest(".related-case-card").remove();
-    // Implement API call to delete case here
   }
 });

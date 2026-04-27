@@ -55,15 +55,23 @@ async function renderPropertyGrid() {
             <span class="property-chip">${property.antalCases} case${property.antalCases !== 1 ? "s" : ""}</span>
           </div>
           <div class="property-card__footer">
-            <span class="property-card__dato">Oprettet ${formatDato(property.oprettetDato)}</span>
-            <span class="property-card__link">Se ejendom →</span>
+            <span class="property-card__dato">Oprettet ${formatDato(property.datoOprettet)}</span>
+            <span class="property-card__link">Se ejendom →</span>SS
           </div>
         </div>
       `;
 
       propertyCard.addEventListener("click", () => {
-        window.location.href = `/ejendom.html?id=${property.id}`;
-      });
+  const query = new URLSearchParams({
+    id: property.id,
+    vejnavn: property.vejNavn,
+    vejnummer: property.vejNummer,
+    postnummer: property.postnummer,
+    bynavn: property.bynavn
+  });
+
+  window.location.href = `/ejendom.html?${query.toString()}`;
+});
 
       gridContainer.appendChild(propertyCard);
     });

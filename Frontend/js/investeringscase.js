@@ -1,72 +1,81 @@
-const mockCases = [
-  {
-    id: 1,
-    ejendomsProfilID: 1,
-    oprettetDato: "2026-01-10",
-    navn: "Lejlighed i København",
-    beskrivelse: "En flot ejendom i København",
-    adresse: "Rosenvængets Allé 2",
-    areal: 120,
-    antalVærelser: 3,
-    købspris: 5000000,
-    egenkapital: 1000000,
-    andre_omkostninger: 50000,
-    renoveringsomkostninger: 200000,
-    realkreditlån: { beløb: 4000000, type: "fast",     rente: 0.02,  løbetid: 30 },
-    banklån:       { beløb: 500000,  type: "variabel", rente: 0.05,  løbetid: 10 },
-    andrelån:      { beløb: 500000,  type: "variabel", rente: 0.05,  løbetid: 10 },
-    udlejning: { udlejes: true, månedligLeje: 20000, månedligUdgifter: 5000 }
-  },
-  {
-    id: 2,
-    ejendomsProfilID: 2,
-    oprettetDato: "2026-02-20",
-    navn: "Rækkehus i Aarhus",
-    beskrivelse: "Rækkehus tæt på centrum",
-    adresse: "Åboulevarden 45",
-    areal: 145,
-    antalVærelser: 4,
-    købspris: 3200000,
-    egenkapital: 640000,
-    andre_omkostninger: 30000,
-    renoveringsomkostninger: 80000,
-    realkreditlån: { beløb: 2560000, type: "fast", rente: 0.03, løbetid: 30 },
+let caseData = null;
+
+async function hentCase() {
+  const savedUser = localStorage.getItem("loggedInUser");
+  const user = JSON.parse(savedUser);
+
+  const urlId = Number(new URLSearchParams(window.location.search).get("id"));
+
+  const response = await fetch(`/api/v1/users/${user.brugerID}/investment-cases`);
+  const result = await response.json();
+
+  const fundetCase = result.data.find(c => Number(c.id) === urlId);
+
+  return {
+    id: Number(fundetCase.id),
+    ejendomsProfilID: Number(fundetCase.ejendomsProfilID),
+    oprettetDato: fundetCase.datoOprettet,
+    navn: fundetCase.navn,
+    beskrivelse: fundetCase.beskrivelse,
+    adresse: `${fundetCase.vejNavn} ${fundetCase.vejNummer}, ${fundetCase.postnummer} ${fundetCase.bynavn}`,
+    areal: Number(fundetCase.areal || 0),
+    antalVærelser: Number(fundetCase.antalVaerelser || 0),
+    købspris: Number(fundetCase.koebsPris || 0),
+    egenkapital: Number(fundetCase.egenKapital || 0),
+    advokat: Number(fundetCase.advokat || 0),
+    tinglysning: Number(fundetCase.tinglysning || 0),
+    koeberRaadgivning: Number(fundetCase.koeberRaadgivning || 0),
+    andre_omkostninger: Number(fundetCase.andreOmkostninger || 0),
+    renoveringsomkostninger: Number(fundetCase.renoveringsomkostninger || 0),
+    realkreditlån: null,
     banklån: null,
     andrelån: null,
-    udlejning: { udlejes: true, månedligLeje: 14000, månedligUdgifter: 4000 }
-  },
-  {
-    id: 3,
-    ejendomsProfilID: 3,
-    oprettetDato: "2026-03-05",
-    navn: "Villa i Odense",
-    beskrivelse: "Stor villa med have",
-    adresse: "Frederiksgade 8",
-    areal: 210,
-    antalVærelser: 6,
-    købspris: 7500000,
-    egenkapital: 1875000,
-    andre_omkostninger: 75000,
-    renoveringsomkostninger: 350000,
-    realkreditlån: { beløb: 5625000, type: "variabel", rente: 0.025, løbetid: 30 },
-    banklån:       { beløb: 500000,  type: "fast",     rente: 0.045, løbetid: 15 },
-    andrelån: null,
-    udlejning: { udlejes: false, månedligLeje: 0, månedligUdgifter: 0 }
-  }
-];
-
-// Opdater mock-data hvis bruger kommer fra redigering
-const updatedCaseRaw = localStorage.getItem("updatedCase");
-if (updatedCaseRaw) {
-  const updated = JSON.parse(updatedCaseRaw);
-  localStorage.removeItem("updatedCase");
-  const idx = mockCases.findIndex(c => c.id === updated.id);
-  if (idx !== -1) mockCases[idx] = updated;
+    udlejning: {
+      udlejes: Boolean(fundetCase.erLejeBolig),
+      månedligLeje: Number(fundetCase.lejeIndkomst || 0),
+      månedligUdgifter: Number(fundetCase.lejeUdgifter || 0)
+    }
+  };
 }
 
-// Vælg case ud fra URL-parameter, fallback til første
-const urlId = Number(new URLSearchParams(window.location.search).get("id"));
-const caseData = mockCases.find(c => c.id === urlId) || mockCases[0];
+document.addEventListener("DOMContentLoaded", async () => {
+  caseData = await hentCase();
+
+  renderInvestmentCaseDetails();
+
+  const calculateBtn = document.getElementById("calculateBtn");
+  const hideBtn = document.getElementById("hideBtn");
+  const sim30Btn = document.getElementById("sim30Btn");
+
+  calculateBtn.addEventListener("click", () => {
+    const result = document.getElementById("simulationResult");
+    result.innerHTML = renderSimulationTabel();
+    result.style.display = "block";
+    hideBtn.style.display = "block";
+  });
+
+  hideBtn.addEventListener("click", () => {
+    const result = document.getElementById("simulationResult");
+    result.innerHTML = "";
+    result.style.display = "none";
+    hideBtn.style.display = "none";
+  });
+
+  sim30Btn.addEventListener("click", () => {
+    const result = document.getElementById("sim30Result");
+
+    if (result.innerHTML) {
+      result.innerHTML = "";
+      result.style.display = "none";
+      sim30Btn.textContent = "Simuler over 30 år";
+    } else {
+      result.innerHTML = render30ÅrTabel();
+      result.style.display = "block";
+      sim30Btn.textContent = "Skjul 30-årig simulering";
+    }
+  });
+});
+
 
 // ── Detaljer ─────────────────────────────────────────────────
 
@@ -83,6 +92,9 @@ function renderInvestmentCaseDetails() {
     <p>Antal værelser: ${caseData.antalVærelser}</p>
     <p>Købspris: ${caseData.købspris.toLocaleString("da-DK")} kr.</p>
     <p>Egenkapital: ${caseData.egenkapital.toLocaleString("da-DK")} kr.</p>
+    <p>Advokat: ${caseData.advokat.toLocaleString("da-DK")} kr.</p>
+    <p>Tinglysning: ${caseData.tinglysning.toLocaleString("da-DK")} kr.</p>
+    <p>Køberrådgivning: ${caseData.koeberRaadgivning.toLocaleString("da-DK")} kr.</p>
     <p>Andre omkostninger: ${caseData.andre_omkostninger.toLocaleString("da-DK")} kr.</p>
     <p>Renoveringsomkostninger: ${caseData.renoveringsomkostninger.toLocaleString("da-DK")} kr.</p>
 
