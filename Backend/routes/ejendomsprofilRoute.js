@@ -73,6 +73,24 @@ router.post("/ejendomsProfil", async (req, res) => {
 
     const adresseID = adresseResult.recordset[0].adresseID;
 
+    // Tjek for eksisterende ejendomsprofil
+    const existingProfil = await pool.request()
+  .input("brugerID", sql.Int, Number(brugerID))
+  .input("adresseID", sql.Int, adresseID)
+  .query(`
+    SELECT ejendomsProfilID
+    FROM EjendomsProfil
+    WHERE brugerID = @brugerID
+      AND adresseID = @adresseID
+  `);
+
+if (existingProfil.recordset.length > 0) {
+  return res.status(409).json({
+    success: false,
+    message: "Denne ejendomsprofil findes allerede."
+  });
+}
+
     // 2. Opret ejendomsprofil
     const profilResult = await pool.request()
       .input("brugerID", sql.Int, Number(brugerID))

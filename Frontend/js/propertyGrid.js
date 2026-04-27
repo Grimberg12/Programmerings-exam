@@ -56,7 +56,6 @@ async function renderPropertyGrid() {
           </div>
           <div class="property-card__footer">
             <span class="property-card__dato">Oprettet ${formatDato(property.datoOprettet)}</span>
-            <span class="property-card__link">Se ejendom →</span>SS
           </div>
         </div>
       `;

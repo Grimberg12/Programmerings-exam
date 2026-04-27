@@ -32,19 +32,39 @@ async function hentCases() {
   }));
 }
 
+async function sletCase(id) {
+  const bekraeft = confirm("Er du sikker på, at du vil slette denne investeringscase?");
+
+  if (!bekraeft) return;
+
+  const response = await fetch(`/api/v1/investment-cases/${id}`, {
+    method: "DELETE"
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    alert(result.message || "Kunne ikke slette case.");
+    return;
+  }
+
+  alert("Investeringscase slettet.");
+  render();
+}
+
 function formatKr(amount) {
   return amount.toLocaleString("da-DK") + " kr.";
 }
 
 function sorter(cases, valg) {
   const k = [...cases];
-  if (valg === "dato-desc")   return k.sort((a, b) => new Date(b.oprettetDato) - new Date(a.oprettetDato));
-  if (valg === "dato-asc")    return k.sort((a, b) => new Date(a.oprettetDato) - new Date(b.oprettetDato));
-  if (valg === "adresse")     return k.sort((a, b) => a.adresse.localeCompare(b.adresse, "da"));
-  if (valg === "pris-desc")   return k.sort((a, b) => b.købspris - a.købspris);
-  if (valg === "pris-asc")    return k.sort((a, b) => a.købspris - b.købspris);
+  if (valg === "dato-desc") return k.sort((a, b) => new Date(b.oprettetDato) - new Date(a.oprettetDato));
+  if (valg === "dato-asc") return k.sort((a, b) => new Date(a.oprettetDato) - new Date(b.oprettetDato));
+  if (valg === "adresse") return k.sort((a, b) => a.adresse.localeCompare(b.adresse, "da"));
+  if (valg === "pris-desc") return k.sort((a, b) => b.købspris - a.købspris);
+  if (valg === "pris-asc") return k.sort((a, b) => a.købspris - b.købspris);
   if (valg === "egenkapital") return k.sort((a, b) => b.egenkapital - a.egenkapital);
-  if (valg === "areal-desc")  return k.sort((a, b) => b.areal - a.areal);
+  if (valg === "areal-desc") return k.sort((a, b) => b.areal - a.areal);
   return k;
 }
 
@@ -83,35 +103,51 @@ async function render() {
       : "";
 
     return `
-      <div class="case-card" onclick="window.location.href='/investeringscase.html?id=${c.id}'">
-        <div class="case-card__accent"></div>
-        <div class="case-card__body">
-          <div class="case-card__header">
-            <h3 class="case-card__navn">${c.navn}</h3>
-            <p class="case-card__adresse">${c.adresse}</p>
-          </div>
-          <div class="case-card__chips">
-            <span class="chip">${c.areal} m²</span>
-            <span class="chip">${c.antalVærelser} værelser</span>
-          </div>
-          <div class="case-card__tal">
-            <div class="tal-row">
-              <span class="tal-label">Købspris</span>
-              <span class="tal-value">${formatKr(c.købspris)}</span>
-            </div>
-            <div class="tal-row">
-              <span class="tal-label">Egenkapital</span>
-              <span class="tal-value">${formatKr(c.egenkapital)}</span>
-            </div>
-            ${cashflowHtml}
-          </div>
-          <div class="case-card__footer">
-            <span class="case-card__dato">Oprettet ${dato}</span>
-            <span class="case-card__link">Se detaljer →</span>
-          </div>
+  <div class="case-card" onclick="window.location.href='/investeringscase.html?id=${c.id}'">
+    <div class="case-card__accent"></div>
+
+    <div class="case-card__body">
+      <div class="case-card__header">
+        <h3 class="case-card__navn">${c.navn}</h3>
+        <p class="case-card__adresse">${c.adresse}</p>
+      </div>
+
+      <div class="case-card__chips">
+        <span class="chip">${c.areal} m²</span>
+        <span class="chip">${c.antalVærelser} værelser</span>
+      </div>
+
+      <div class="case-card__tal">
+        <div class="tal-row">
+          <span class="tal-label">Købspris</span>
+          <span class="tal-value">${formatKr(c.købspris)}</span>
+        </div>
+
+        <div class="tal-row">
+          <span class="tal-label">Egenkapital</span>
+          <span class="tal-value">${formatKr(c.egenkapital)}</span>
+        </div>
+
+        ${cashflowHtml}
+      </div>
+
+      <div class="case-card__footer">
+        <span class="case-card__dato">Oprettet ${dato}</span>
+
+        <div class="case-card__actions">
+          <span class="case-card__link">Se detaljer</span>
+
+          <button 
+            class="delete-case-btn"
+            onclick="event.stopPropagation(); sletCase(${c.id});"
+          >
+            Slet
+          </button>
         </div>
       </div>
-    `;
+    </div>
+  </div>
+`;
   }).join("");
 }
 

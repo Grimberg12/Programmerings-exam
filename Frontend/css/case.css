@@ -205,3 +205,24 @@ body {
 .hidden {
   display: none;
 }
+
+.case-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delete-case-btn {
+  border: none;
+  background-color: var(--status-bad-bg);
+  color: var(--status-bad-text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-family);
+}
+
+.delete-case-btn:hover {
+  opacity: 0.85;
+}

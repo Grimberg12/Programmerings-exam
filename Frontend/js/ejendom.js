@@ -99,32 +99,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function addKrSuffix(input) {
-  const raw = input.value.replace(/\D/g, "");
-  if (raw) {
-    input.value = formatNumberDK(raw) + " kr.";
+    const raw = input.value.replace(/\D/g, "");
+    if (raw) {
+      input.value = formatNumberDK(raw) + " kr.";
+    }
   }
-}
 
-function removeKrSuffix(input) {
-  const raw = input.value.replace(/\D/g, "");
-  input.value = raw ? formatNumberDK(raw) : "";
-}
+  function removeKrSuffix(input) {
+    const raw = input.value.replace(/\D/g, "");
+    input.value = raw ? formatNumberDK(raw) : "";
+  }
 
-const numberInputs = document.querySelectorAll(".number-input");
+  const numberInputs = document.querySelectorAll(".number-input");
 
-numberInputs.forEach((input) => {
-  input.addEventListener("focus", () => {
-    removeKrSuffix(input);
+  numberInputs.forEach((input) => {
+    input.addEventListener("focus", () => {
+      removeKrSuffix(input);
+    });
+
+    input.addEventListener("input", () => {
+      removeKrSuffix(input);
+    });
+
+    input.addEventListener("blur", () => {
+      addKrSuffix(input);
+    });
   });
-
-  input.addEventListener("input", () => {
-    removeKrSuffix(input);
-  });
-
-  input.addEventListener("blur", () => {
-    addKrSuffix(input);
-  });
-});
 
   if (rentalSelect) {
     rentalSelect.addEventListener("change", toggleRentalInfo);
@@ -344,88 +344,131 @@ numberInputs.forEach((input) => {
       };
 
       if (isEditMode) {
-        /* PUT til database her.
-           Eksempel:
-           const response = await fetch(`/api/v1/investment-cases/${opdateretCase.id}`, {
-             method: "PUT",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify(opdateretCase)
-           });
-        */
-        localStorage.setItem("updatedCase", JSON.stringify(opdateretCase));
-        window.location.href = "/investeringscase.html";
-        return;
-      }
-      console.log("Sender til backend:", {
-        ejendomsProfilID: opdateretCase.ejendomsProfilID,
-        caseNavn: opdateretCase.navn,
-        simuleringsAar: 30
-      });
-      try {
-        const response = await fetch("/api/v1/investment-cases", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ejendomsProfilID: opdateretCase.ejendomsProfilID,
-            caseNavn: opdateretCase.navn,
-            beskrivelse: opdateretCase.beskrivelse,
-            simuleringsAar: 30,
+        try {
+          const response = await fetch(`/api/v1/investment-cases/${editCaseId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              caseNavn: opdateretCase.navn,
+              beskrivelse: opdateretCase.beskrivelse,
+              simuleringsAar: 30,
 
-            koebsPris: opdateretCase.koebsPris,
-            egenKapital: opdateretCase.egenKapital,
-            advokat: opdateretCase.advokat,
-            tinglysning: opdateretCase.tinglysning,
-            koeberRaadgivning: opdateretCase.koeberRaadgivning,
-            andreOmkostninger: opdateretCase.andreOmkostninger,
-            renovationOmkostninger: opdateretCase.renovationOmkostninger,
+              koebsPris: opdateretCase.koebsPris,
+              egenKapital: opdateretCase.egenKapital,
+              advokat: opdateretCase.advokat,
+              tinglysning: opdateretCase.tinglysning,
+              koeberRaadgivning: opdateretCase.koeberRaadgivning,
+              andreOmkostninger: opdateretCase.andreOmkostninger,
+              renovationOmkostninger: opdateretCase.renovationOmkostninger,
 
-            laaneBeloeb: opdateretCase.realkreditlån?.beløb || 0,
-            laaneType: opdateretCase.realkreditlån?.type || "",
-            rente: opdateretCase.realkreditlån?.rente * 100 || 0,
-            loebetid: opdateretCase.realkreditlån?.løbetid || 0,
+              laaneBeloeb: opdateretCase.realkreditlån?.beløb || 0,
+              laaneType: opdateretCase.realkreditlån?.type || "",
+              rente: opdateretCase.realkreditlån?.rente * 100 || 0,
+              loebetid: opdateretCase.realkreditlån?.løbetid || 0,
 
-            bankLaan: opdateretCase.banklån?.beløb || 0,
-            bankLaanType: opdateretCase.banklån?.type || "",
-            bankLaanRente: opdateretCase.banklån?.rente * 100 || 0,
-            bankLaanLoebetid: opdateretCase.banklån?.løbetid || 0,
+              bankLaan: opdateretCase.banklån?.beløb || 0,
+              bankLaanType: opdateretCase.banklån?.type || "",
+              bankLaanRente: opdateretCase.banklån?.rente * 100 || 0,
+              bankLaanLoebetid: opdateretCase.banklån?.løbetid || 0,
 
-            andreLaan: opdateretCase.andrelån?.beløb || 0,
-            andreLaanType: opdateretCase.andrelån?.type || "",
-            andreLaanRente: opdateretCase.andrelån?.rente * 100 || 0,
-            andreLaanLoebetid: opdateretCase.andrelån?.løbetid || 0,
+              andreLaan: opdateretCase.andrelån?.beløb || 0,
+              andreLaanType: opdateretCase.andrelån?.type || "",
+              andreLaanRente: opdateretCase.andrelån?.rente * 100 || 0,
+              andreLaanLoebetid: opdateretCase.andrelån?.løbetid || 0,
 
-            udlejning: String(opdateretCase.udlejning.udlejes),
-            udlejningIndkomst: opdateretCase.udlejning.månedligLeje,
-            udlejningUdgifter: opdateretCase.udlejning.månedligUdgifter
-          })
-        });
+              udlejning: String(opdateretCase.udlejning.udlejes),
+              udlejningIndkomst: opdateretCase.udlejning.månedligLeje,
+              udlejningUdgifter: opdateretCase.udlejning.månedligUdgifter
+            })
+          });
 
-        const result = await response.json();
-        if (response.ok) {
-          investeringscaseMessage.textContent = "Case oprettet!";
-          investeringscaseMessage.style.color = "green";
+          const result = await response.json();
 
-        } else {
-          investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
-          investeringscaseMessage.style.color = "red";
-        }
+          if (!response.ok) {
+            alert(result.message || "Kunne ikke gemme ændringer.");
+            return;
+          }
 
-        if (!response.ok) {
-          alert(result.message || "Noget gik galt.");
-          console.error("Backend-fejl:", result);
+          window.location.href = `/investeringscase.html?id=${editCaseId}`;
+          return;
+
+        } catch (error) {
+          console.error("Fejl ved opdatering:", error);
+          alert("Kunne ikke forbinde til serveren.");
           return;
         }
-
-        console.log("Case oprettet:", result);
-        investmentForm.reset();
-        toggleRentalInfo();
-        updateLoanSections();
-        updateMortgagePlaceholder();
-
-      } catch (error) {
-        console.error("Fejl ved oprettelse af case:", error);
-        alert("Kunne ikke forbinde til serveren.");
       }
+
+      console.log("Sender til backend:", {
+      ejendomsProfilID: opdateretCase.ejendomsProfilID,
+      caseNavn: opdateretCase.navn,
+      simuleringsAar: 30
     });
+    try {
+      const response = await fetch("/api/v1/investment-cases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ejendomsProfilID: opdateretCase.ejendomsProfilID,
+          caseNavn: opdateretCase.navn,
+          beskrivelse: opdateretCase.beskrivelse,
+          simuleringsAar: 30,
+
+          koebsPris: opdateretCase.koebsPris,
+          egenKapital: opdateretCase.egenKapital,
+          advokat: opdateretCase.advokat,
+          tinglysning: opdateretCase.tinglysning,
+          koeberRaadgivning: opdateretCase.koeberRaadgivning,
+          andreOmkostninger: opdateretCase.andreOmkostninger,
+          renovationOmkostninger: opdateretCase.renovationOmkostninger,
+
+          laaneBeloeb: opdateretCase.realkreditlån?.beløb || 0,
+          laaneType: opdateretCase.realkreditlån?.type || "",
+          rente: opdateretCase.realkreditlån?.rente * 100 || 0,
+          loebetid: opdateretCase.realkreditlån?.løbetid || 0,
+
+          bankLaan: opdateretCase.banklån?.beløb || 0,
+          bankLaanType: opdateretCase.banklån?.type || "",
+          bankLaanRente: opdateretCase.banklån?.rente * 100 || 0,
+          bankLaanLoebetid: opdateretCase.banklån?.løbetid || 0,
+
+          andreLaan: opdateretCase.andrelån?.beløb || 0,
+          andreLaanType: opdateretCase.andrelån?.type || "",
+          andreLaanRente: opdateretCase.andrelån?.rente * 100 || 0,
+          andreLaanLoebetid: opdateretCase.andrelån?.løbetid || 0,
+
+          udlejning: String(opdateretCase.udlejning.udlejes),
+          udlejningIndkomst: opdateretCase.udlejning.månedligLeje,
+          udlejningUdgifter: opdateretCase.udlejning.månedligUdgifter
+        })
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        investeringscaseMessage.textContent = "Case oprettet!";
+        investeringscaseMessage.style.color = "green";
+
+      } else {
+        investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
+        investeringscaseMessage.style.color = "red";
+      }
+
+      if (!response.ok) {
+        alert(result.message || "Noget gik galt.");
+        console.error("Backend-fejl:", result);
+        return;
+      }
+
+      console.log("Case oprettet:", result);
+      investmentForm.reset();
+      toggleRentalInfo();
+      updateLoanSections();
+      updateMortgagePlaceholder();
+
+    } catch (error) {
+      console.error("Fejl ved oprettelse af case:", error);
+      alert("Kunne ikke forbinde til serveren.");
+    }
+  });
   }
 });
