@@ -22,6 +22,26 @@ function formatDato(dato) {
   return new Date(dato).toLocaleDateString("da-DK");
 }
 
+async function sletEjendomsprofil(id) {
+  const bekraeft = confirm("Er du sikker på, at du vil slette denne ejendomsprofil? Alle tilknyttede investeringscases bliver også slettet.");
+
+  if (!bekraeft) return;
+
+  const response = await fetch(`/api/v1/ejendomsprofiler/${id}`, {
+    method: "DELETE"
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    alert(result.message || "Kunne ikke slette ejendomsprofil.");
+    return;
+  }
+
+  alert("Ejendomsprofil slettet.");
+  renderPropertyGrid();
+}
+
 async function renderPropertyGrid() {
   const gridContainer = document.getElementById("propertyGrid");
   const propertyCount = document.getElementById("propertyCount");
@@ -56,6 +76,13 @@ async function renderPropertyGrid() {
           </div>
           <div class="property-card__footer">
             <span class="property-card__dato">Oprettet ${formatDato(property.datoOprettet)}</span>
+
+            <button 
+            class="delete-property-btn"
+            onclick="event.stopPropagation(); sletEjendomsprofil(${property.id});"
+            >
+            Slet
+            </button>
           </div>
         </div>
       `;

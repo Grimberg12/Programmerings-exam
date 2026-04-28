@@ -175,4 +175,64 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
   }
 });
 
+router.delete("/ejendomsprofiler/:id", async (req, res) => {
+  let transaction;
+
+  try {
+    const { id } = req.params;
+    const pool = await db.connect();
+    transaction = new sql.Transaction(pool);
+
+    await transaction.begin();
+
+    // Find alle investeringscases til ejendomsprofilen
+    const casesResult = await new sql.Request(transaction)
+      .input("ejendomsProfilID", sql.Int, Number(id))
+      .query(`
+        SELECT investeringsCaseID
+        FROM InvesteringsCase
+        WHERE ejendomsProfilID = @ejendomsProfilID
+      `);
+
+    for (const c of casesResult.recordset) {
+      await new sql.Request(transaction)
+        .input("investeringsCaseID", sql.Int, c.investeringsCaseID)
+        .query(`
+          DELETE FROM Udlejning WHERE investeringsCaseID = @investeringsCaseID;
+          DELETE FROM Laan WHERE investeringsCaseID = @investeringsCaseID;
+          DELETE FROM Renovation WHERE investeringsCaseID = @investeringsCaseID;
+          DELETE FROM KoebsOmkostninger WHERE investeringsCaseID = @investeringsCaseID;
+          DELETE FROM InvesteringsCase WHERE investeringsCaseID = @investeringsCaseID;
+        `);
+    }
+
+    // Slet selve ejendomsprofilen
+    await new sql.Request(transaction)
+      .input("ejendomsProfilID", sql.Int, Number(id))
+      .query(`
+        DELETE FROM EjendomsProfil
+        WHERE ejendomsProfilID = @ejendomsProfilID
+      `);
+
+    await transaction.commit();
+
+    res.json({
+      success: true,
+      message: "Ejendomsprofil slettet"
+    });
+
+  } catch (error) {
+    console.error("Fejl ved sletning af ejendomsprofil:", error);
+
+    if (transaction) {
+      await transaction.rollback();
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Kunne ikke slette ejendomsprofil."
+    });
+  }
+});
+
 module.exports = router;
