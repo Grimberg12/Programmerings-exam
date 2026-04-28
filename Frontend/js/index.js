@@ -82,16 +82,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Grundareal: bruger byg041BebyggetAreal (bebygget areal) fra BBR bygning
     const grundareal = bygning.byg041BebyggetAreal ?? "–";
 
-    // Henter luftfoto-URL fra vores egen backend (mellemled mod Dataforsyningen).
-    // Backend slår koordinater op og bygger WMS-kaldet – vi får bare URL'en retur.
-    const luftfotoRes = await fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`);
+    // Henter luftfoto- og matrikelkort-URL fra vores egen backend (mellemled
+    // mod Dataforsyningen). Backend slår koordinater op og bygger WMS-kaldene
+    // – vi får bare URL'erne retur. Hentes parallelt da kaldene er uafhængige.
+    const [luftfotoRes, matrikelRes] = await Promise.all([
+      fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`),
+      fetch(`/api/v1/properties/matrikelkort?adresseid=${encodeURIComponent(adresseid)}`),
+    ]);
     const luftfotoJson = await luftfotoRes.json();
+    const matrikelJson = await matrikelRes.json();
     const luftfotoUrl = luftfotoJson.data?.url ?? "";
+    const matrikelUrl = matrikelJson.data?.url ?? "";
 
     container.innerHTML = `
       <h2>${adresse}</h2>
       <p>${by}</p>
-      ${luftfotoUrl ? `<img src="${luftfotoUrl}" alt="Luftfoto af ${adresse}" class="property-aerial-photo">` : ""}
+      <div class="property-maps">
+        ${luftfotoUrl ? `<img src="${luftfotoUrl}" alt="Luftfoto af ${adresse}" class="property-aerial-photo">` : ""}
+        ${matrikelUrl ? `<img src="${matrikelUrl}" alt="Matrikelkort af ${adresse}" class="property-aerial-photo">` : ""}
+      </div>
       <div class="property-info">
         <p><span class="property-label">Ejendomstype:</span> ${ejendomstype}</p>
         <p><span class="property-label">Byggeår:</span> ${byggeaar}</p>

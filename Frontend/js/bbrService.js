@@ -212,33 +212,87 @@ function saveAddressToDatabase(adresseData) {
         });
 }
 
-// Henter luftfoto-URL fra backend og viser billedet i preview-kortet.
-// Backend (mellemled) bygger selve WMS-kaldet mod Dataforsyningen.
+// State for kort-tabs i preview – holder de seneste URLs så vi kan skifte
+// mellem dem uden at hente data igen, og husker hvilken tab der er aktiv.
+const kortState = {
+    luftfoto: null,
+    matrikelkort: null,
+    aktiv: "luftfoto",
+};
+
+// Tegner det aktuelt valgte kort i preview-containeren ud fra kortState.
+// Kaldes både når en URL er hentet, og når brugeren klikker på en tab.
+function visAktivtKort() {
+    const photoContainer = document.querySelector(".address-display__photo");
+    if (!photoContainer) return;
+
+    const url = kortState[kortState.aktiv];
+    const alt = kortState.aktiv === "luftfoto"
+        ? "Luftfoto af ejendom"
+        : "Matrikelkort af ejendom";
+
+    if (url) {
+        photoContainer.innerHTML = `<img src="${url}" alt="${alt}" class="property-aerial-photo">`;
+    } else {
+        // URL'en for det valgte korttype er ikke hentet endnu
+        photoContainer.innerHTML = `<span>Henter kort fra API...</span>`;
+    }
+}
+
+// Henter luftfoto-URL fra backend, gemmer den i state og opdaterer visningen
+// hvis luftfoto er den aktive tab. Backend (mellemled) bygger WMS-kaldet mod
+// Dataforsyningen.
 async function hentOgVisLuftfoto(adresseid) {
     try {
         const response = await fetch(
             `/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`
         );
         const json = await response.json();
-        const url = json.data?.url;
-        if (!url) return;
-
-        // Erstatter placeholder-teksten med et <img> der peger på WMS-URL'en
-        const photoContainer = document.querySelector(".address-display__photo");
-        if (photoContainer) {
-            photoContainer.innerHTML = `<img src="${url}" alt="Luftfoto af ejendom" class="property-aerial-photo">`;
-        }
+        kortState.luftfoto = json.data?.url ?? null;
+        if (kortState.aktiv === "luftfoto") visAktivtKort();
     } catch (error) {
         console.error("Fejl ved hentning af luftfoto:", error);
     }
 }
 
+// Samme mønster som hentOgVisLuftfoto, blot mod matrikelkort-endpointet.
+async function hentOgVisMatrikelkort(adresseid) {
+    try {
+        const response = await fetch(
+            `/api/v1/properties/matrikelkort?adresseid=${encodeURIComponent(adresseid)}`
+        );
+        const json = await response.json();
+        kortState.matrikelkort = json.data?.url ?? null;
+        if (kortState.aktiv === "matrikelkort") visAktivtKort();
+    } catch (error) {
+        console.error("Fejl ved hentning af matrikelkort:", error);
+    }
+}
+
+// Sætter event listeners på tab-knapperne, så et klik skifter aktivt korttype
+// og opdaterer både visning og knappens active-styling.
+document.querySelectorAll(".map-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+        const valgt = tab.dataset.map;
+        if (!valgt || valgt === kortState.aktiv) return;
+
+        kortState.aktiv = valgt;
+
+        document.querySelectorAll(".map-tab").forEach((t) => {
+            t.classList.toggle("map-tab--active", t.dataset.map === valgt);
+        });
+
+        visAktivtKort();
+    });
+});
+
 // Henter BBR-data fra vores backend og viser det i preview-boksen på forsiden
 // Kaldes automatisk når brugeren vælger en adresse fra dropdown
 // adresseid er DAR-adressens UUID fra DAWA API
 async function hentOgVisBBRData(adresseid) {
-    // Henter luftfoto parallelt med BBR-data (uafhængige kald)
+    // Henter luftfoto og matrikelkort parallelt med BBR-data (uafhængige kald)
     hentOgVisLuftfoto(adresseid);
+    hentOgVisMatrikelkort(adresseid);
 
     try {
         const [enhedRes, bygningRes, grundRes] = await Promise.all([

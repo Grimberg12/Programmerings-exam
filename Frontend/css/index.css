@@ -260,7 +260,42 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-/* Luftfoto-container i preview-kortet */
+/* Tabs til at skifte mellem luftfoto og matrikelkort i preview-kortet.
+   Sidder lige over selve photo-containeren med samme bredde. */
+.map-tabs {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  max-width: 240px;
+  margin-bottom: 8px;
+}
+
+.map-tab {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--muted-text);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.map-tab:hover {
+  background: var(--border-color);
+  color: var(--text-color);
+}
+
+.map-tab--active {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+/* Container til det aktive kort i preview-kortet.
+   Samme dimensioner som før, men nu deles af luftfoto og matrikelkort. */
 .address-display__photo {
   width: 100%;
   aspect-ratio: 1 / 1;

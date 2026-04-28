@@ -1,3 +1,21 @@
+/* Luftfoto + matrikelkort vises side om side over property-info.
+   Bryder til to rækker på smalle skærme. */
+.property-maps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.property-maps .property-aerial-photo {
+  flex: 1 1 240px;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
 /* Container */
 #propertyDetails {
   max-width: 800px;

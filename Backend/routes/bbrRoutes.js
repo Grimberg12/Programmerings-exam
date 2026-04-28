@@ -15,6 +15,9 @@ const {
 // Service-lag der håndterer luftfoto-opslaget mod DAWA og Dataforsyningen
 const { hentLuftfotoUrl } = require("../services/luftfotoService");
 
+// Service-lag der bygger WMS-URL til matrikelkortet (INSPIRE cp_inspire)
+const { hentMatrikelkortUrl } = require("../services/matrikelkortService");
+
 // Endpoint som henter enheder ud fra et adresse-id
 // Eksempel på request:
 // GET /api/v1/properties/enheder?adresseid=0a3f...
@@ -189,6 +192,44 @@ router.get("/properties/luftfoto", async (req, res) => {
     return res.status(502).json({
       success: false,
       message: "Kunne ikke hente luftfoto",
+    });
+  }
+});
+
+// Endpoint som returnerer en WMS-URL til et matrikelkort over ejendommen.
+// Samme opbygning som /properties/luftfoto: route-laget validerer kun input,
+// service-laget bygger selve WMS-URL'en mod Dataforsyningens cp_inspire.
+// Eksempel: GET /api/v1/properties/matrikelkort?adresseid=0a3f...
+router.get("/properties/matrikelkort", async (req, res) => {
+  try {
+    const { adresseid } = req.query;
+
+    if (!adresseid) {
+      return res.status(400).json({
+        success: false,
+        message: "Mangler query-parameteren adresseid",
+      });
+    }
+
+    const url = await hentMatrikelkortUrl(adresseid);
+
+    if (!url) {
+      return res.status(404).json({
+        success: false,
+        message: "Adressen blev ikke fundet i DAWA",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Matrikelkort-URL genereret",
+      data: { url },
+    });
+  } catch (error) {
+    console.error("Fejl i /properties/matrikelkort:", error.message);
+    return res.status(502).json({
+      success: false,
+      message: "Kunne ikke hente matrikelkort",
     });
   }
 });
