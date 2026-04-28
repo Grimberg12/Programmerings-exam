@@ -19,7 +19,12 @@ async function hentEjendomme() {
 
 function formatDato(dato) {
   if (!dato) return "ukendt dato";
-  return new Date(dato).toLocaleDateString("da-DK");
+
+  return new Date(dato).toLocaleDateString("da-DK", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
 }
 
 async function sletEjendomsprofil(id) {
