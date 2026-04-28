@@ -69,6 +69,10 @@ async function renderPropertyGrid() {
 
       const adresse = `${property.vejNavn} ${property.vejNummer}`;
 
+      const ændretDato = property.datoAendret
+        ? formatDato(property.datoAendret)
+          : "Ikke ændret endnu";
+
       propertyCard.innerHTML = `
         <div class="property-card__accent"></div>
         <div class="property-card__body">
@@ -80,7 +84,9 @@ async function renderPropertyGrid() {
             <span class="property-chip">${property.antalCases} case${property.antalCases !== 1 ? "s" : ""}</span>
           </div>
           <div class="property-card__footer">
-            <span class="property-card__dato">Oprettet ${formatDato(property.datoOprettet)}</span>
+            <span class="property-card__dato">Oprettet ${formatDato(property.datoOprettet)}</span><br>
+            <span class="property-card__dato">Sidst ændret ${ændretDato}</span>
+          </div>
 
             <button 
             class="delete-property-btn"

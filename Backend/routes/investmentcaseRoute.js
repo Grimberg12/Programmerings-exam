@@ -265,6 +265,7 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
           ic.beskrivelse,
           ic.simuleringsAar,
           ic.datoOprettet,
+          ic.datoAendret,
 
           ep.ejendomsProfilID,
           a.vejNavn,
@@ -390,7 +391,8 @@ router.put("/investment-cases/:id", async (req, res) => {
         UPDATE InvesteringsCase
         SET caseNavn = @caseNavn,
             beskrivelse = @beskrivelse,
-            simuleringsAar = @simuleringsAar
+            simuleringsAar = @simuleringsAar,
+            datoAendret = GETDATE()
         WHERE investeringsCaseID = @id
       `);
 

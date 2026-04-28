@@ -153,6 +153,7 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
           a.postnummer,
           a.bynavn,
           ep.datoOprettet,
+          ep.datoAendret,
           COUNT(ic.investeringsCaseID) AS antalCases
         FROM EjendomsProfil ep
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
@@ -164,7 +165,8 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
           a.vejNummer,
           a.postnummer,
           a.bynavn,
-          ep.datoOprettet
+          ep.datoOprettet,
+          ep.datoAendret
         ORDER BY ep.datoOprettet DESC
       `);
 

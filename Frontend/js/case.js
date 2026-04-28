@@ -18,6 +18,7 @@ async function hentCases() {
   return result.data.map(c => ({
     id: c.id,
     oprettetDato: c.datoOprettet,
+    ændretDato: c.datoAendret,
     navn: c.navn,
     adresse: `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
     areal: Number(c.areal || 0),
@@ -91,6 +92,10 @@ async function render() {
       day: "numeric", month: "short", year: "numeric"
     });
 
+    const ændretDato = c.ændretDato ? new Date(c.ændretDato).toLocaleDateString("da-DK", {
+      day: "numeric", month: "short", year: "numeric"
+    }) : null;
+
     const cashflow = c.udlejning.udlejes
       ? c.udlejning.månedligLeje - c.udlejning.månedligUdgifter
       : null;
@@ -132,7 +137,8 @@ async function render() {
       </div>
 
       <div class="case-card__footer">
-        <span class="case-card__dato">Oprettet ${dato}</span>
+        <span class="case-card__dato">Oprettet ${dato}</span><br>
+        <span class="case-card__dato">Sidst ændret ${ændretDato || "N/A"}</span>
 
         <div class="case-card__actions">
           <span class="case-card__link">Se detaljer</span>
