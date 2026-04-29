@@ -21,7 +21,8 @@ router.post("/investment-cases", async (req, res) => {
       tinglysning,
       koeberRaadgivning,
       andreOmkostninger,
-      renovationOmkostninger,
+      renovations,
+      driftsOmkostninger,
 
       laaneBeloeb,
       laaneType,
@@ -40,13 +41,13 @@ router.post("/investment-cases", async (req, res) => {
 
       udlejning,
       udlejningIndkomst,
-      udlejningUdgifter
+      udlejningUdgifter,
     } = req.body;
 
     if (!ejendomsProfilID || !caseNavn || !simuleringsAar) {
       return res.status(400).json({
         success: false,
-        message: "Mangler nødvendige felter."
+        message: "Mangler nødvendige felter.",
       });
     }
 
@@ -58,8 +59,7 @@ router.post("/investment-cases", async (req, res) => {
       .input("ejendomsProfilID", sql.Int, Number(ejendomsProfilID))
       .input("caseNavn", sql.VarChar(50), caseNavn)
       .input("beskrivelse", sql.VarChar(255), beskrivelse || null)
-      .input("simuleringsAar", sql.Int, Number(simuleringsAar))
-      .query(`
+      .input("simuleringsAar", sql.Int, Number(simuleringsAar)).query(`
         INSERT INTO InvesteringsCase (
           ejendomsProfilID,
           caseNavn,
@@ -81,13 +81,12 @@ router.post("/investment-cases", async (req, res) => {
     await new sql.Request(transaction)
       .input("investeringsCaseID", sql.Int, investeringsCaseID)
       .input("pris", sql.Decimal(10, 2), Number(koebsPris))
-      .input("egenKapital", sql.Decimal(10,2), Number(egenKapital))
-      .input("advokat", sql.Decimal(10,2), Number(advokat))
-      .input("tinglysning", sql.Decimal(10,2), Number(tinglysning))
-      .input("koeberRaadgivning", sql.Decimal(10,2), Number(koeberRaadgivning))
-      .input("andreOmkostninger", sql.Decimal(10,2), Number(andreOmkostninger))
-      .input("noter", sql.VarChar(255), "Købspris")
-      .query(`
+      .input("egenKapital", sql.Decimal(10, 2), Number(egenKapital))
+      .input("advokat", sql.Decimal(10, 2), Number(advokat))
+      .input("tinglysning", sql.Decimal(10, 2), Number(tinglysning))
+      .input("koeberRaadgivning", sql.Decimal(10, 2), Number(koeberRaadgivning))
+      .input("andreOmkostninger", sql.Decimal(10, 2), Number(andreOmkostninger))
+      .input("noter", sql.VarChar(255), "Købspris").query(`
         INSERT INTO KoebsOmkostninger (
           investeringsCaseID,
           pris,
@@ -111,15 +110,53 @@ router.post("/investment-cases", async (req, res) => {
       `);
 
     // Gem renovation hvis relevant
-    if (Number(renovationOmkostninger) > 0) {
+    if (Array.isArray(renovations)) {
+      for (const renovation of renovations) {
+        if (Number(renovation.pris) > 0) {
+          await new sql.Request(transaction)
+            .input("investeringsCaseID", sql.Int, investeringsCaseID)
+            .input("navn", sql.VarChar(255), renovation.navn || "Renovering")
+            .input(
+              "beskrivelse",
+              sql.VarChar(255),
+              renovation.beskrivelse || null,
+            )
+            .input(
+              "planlagtStartDato",
+              sql.Date,
+              renovation.planlagtStartDato || null,
+            )
+            .input("omkostninger", sql.Decimal(10, 2), Number(renovation.pris))
+            .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
+            INSERT INTO Renovation (
+              investeringsCaseID,
+              navn,
+              beskrivelse,
+              planlagtStartDato,
+              omkostninger,
+              forventetVaerdiStigning
+            )
+            VALUES (
+              @investeringsCaseID,
+              @navn,
+              @beskrivelse,
+              @planlagtStartDato,
+              @omkostninger,
+              @forventetVaerdiStigning
+            )
+          `);
+        }
+      }
+    }
+
+    if (Number(driftsOmkostninger) > 0) {
       await new sql.Request(transaction)
         .input("investeringsCaseID", sql.Int, investeringsCaseID)
-        .input("navn", sql.VarChar(255), "Standard renovation")
-        .input("beskrivelse", sql.VarChar(255), "Oprettet fra formular")
+        .input("navn", sql.VarChar(255), "Driftsomkostninger")
+        .input("beskrivelse", sql.VarChar(255), "Samlede driftsomkostninger")
         .input("planlagtStartDato", sql.Date, null)
-        .input("omkostninger", sql.Decimal(10, 2), Number(renovationOmkostninger))
-        .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0)
-        .query(`
+        .input("omkostninger", sql.Decimal(10, 2), Number(driftsOmkostninger))
+        .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
           INSERT INTO Renovation (
             investeringsCaseID,
             navn,
@@ -145,20 +182,20 @@ router.post("/investment-cases", async (req, res) => {
         amount: laaneBeloeb,
         type: laaneType,
         interest: rente,
-        term: loebetid
+        term: loebetid,
       },
       {
         amount: bankLaan,
         type: bankLaanType,
         interest: bankLaanRente,
-        term: bankLaanLoebetid
+        term: bankLaanLoebetid,
       },
       {
         amount: andreLaan,
         type: andreLaanType,
         interest: andreLaanRente,
-        term: andreLaanLoebetid
-      }
+        term: andreLaanLoebetid,
+      },
     ];
 
     for (const loan of loans) {
@@ -168,8 +205,7 @@ router.post("/investment-cases", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type)
-          .query(`
+          .input("laaneType", sql.VarChar(50), loan.type).query(`
             INSERT INTO Laan (
               investeringsCaseID,
               laaneBeloeb,
@@ -197,15 +233,14 @@ router.post("/investment-cases", async (req, res) => {
       .input(
         "lejeIndkomst",
         sql.Decimal(10, 2),
-        erLejeBolig ? Number(udlejningIndkomst || 0) : 0
+        erLejeBolig ? Number(udlejningIndkomst || 0) : 0,
       )
       .input(
         "lejeUdgifter",
         sql.Decimal(10, 2),
-        erLejeBolig ? Number(udlejningUdgifter || 0) : 0
+        erLejeBolig ? Number(udlejningUdgifter || 0) : 0,
       )
-      .input("depositum", sql.Decimal(10, 2), 0)
-      .query(`
+      .input("depositum", sql.Decimal(10, 2), 0).query(`
         INSERT INTO Udlejning (
           investeringsCaseID,
           erLejeBolig,
@@ -228,10 +263,9 @@ router.post("/investment-cases", async (req, res) => {
       success: true,
       message: "Investeringscase oprettet",
       data: {
-        investeringsCaseID
-      }
+        investeringsCaseID,
+      },
     });
-
   } catch (error) {
     console.error("Fejl ved oprettelse af investeringscase:", error);
 
@@ -245,7 +279,7 @@ router.post("/investment-cases", async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Der opstod en fejl ved oprettelse af investeringscase"
+      message: "Der opstod en fejl ved oprettelse af investeringscase",
     });
   }
 });
@@ -256,9 +290,9 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
     const { brugerID } = req.params;
     const pool = await db.connect();
 
-    const result = await pool.request()
-      .input("brugerID", sql.Int, Number(brugerID))
-      .query(`
+    const result = await pool
+      .request()
+      .input("brugerID", sql.Int, Number(brugerID)).query(`
         SELECT 
           ic.investeringsCaseID AS id,
           ic.caseNavn AS navn,
@@ -306,7 +340,9 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
     res.json({ success: true, data: result.recordset });
   } catch (error) {
     console.error("Fejl ved hentning af investeringscases:", error);
-    res.status(500).json({ success: false, message: "Kunne ikke hente investeringscases." });
+    res
+      .status(500)
+      .json({ success: false, message: "Kunne ikke hente investeringscases." });
   }
 });
 
@@ -316,8 +352,7 @@ router.delete("/investment-cases/:id", async (req, res) => {
     const { id } = req.params;
     const pool = await db.connect();
 
-    await pool.request()
-      .input("investeringsCaseID", sql.Int, Number(id))
+    await pool.request().input("investeringsCaseID", sql.Int, Number(id))
       .query(`
         DELETE FROM Udlejning WHERE investeringsCaseID = @investeringsCaseID;
         DELETE FROM Laan WHERE investeringsCaseID = @investeringsCaseID;
@@ -328,13 +363,13 @@ router.delete("/investment-cases/:id", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Investeringscase slettet"
+      message: "Investeringscase slettet",
     });
   } catch (error) {
     console.error("Fejl ved sletning af investeringscase:", error);
     res.status(500).json({
       success: false,
-      message: "Kunne ikke slette investeringscase."
+      message: "Kunne ikke slette investeringscase.",
     });
   }
 });
@@ -360,7 +395,8 @@ router.put("/investment-cases/:id", async (req, res) => {
       tinglysning,
       koeberRaadgivning,
       andreOmkostninger,
-      renovationOmkostninger,
+      renovations,
+      driftsOmkostninger,
 
       laaneBeloeb,
       laaneType,
@@ -379,15 +415,14 @@ router.put("/investment-cases/:id", async (req, res) => {
 
       udlejning,
       udlejningIndkomst,
-      udlejningUdgifter
+      udlejningUdgifter,
     } = req.body;
 
     await new sql.Request(transaction)
       .input("id", sql.Int, Number(id))
       .input("caseNavn", sql.VarChar(50), caseNavn)
       .input("beskrivelse", sql.VarChar(255), beskrivelse || null)
-      .input("simuleringsAar", sql.Int, Number(simuleringsAar || 30))
-      .query(`
+      .input("simuleringsAar", sql.Int, Number(simuleringsAar || 30)).query(`
         UPDATE InvesteringsCase
         SET caseNavn = @caseNavn,
             beskrivelse = @beskrivelse,
@@ -396,14 +431,39 @@ router.put("/investment-cases/:id", async (req, res) => {
         WHERE investeringsCaseID = @id
       `);
 
-    await new sql.Request(transaction)
-      .input("id", sql.Int, Number(id))
-      .query(`
+    await new sql.Request(transaction).input("id", sql.Int, Number(id)).query(`
         DELETE FROM KoebsOmkostninger WHERE investeringsCaseID = @id;
         DELETE FROM Renovation WHERE investeringsCaseID = @id;
         DELETE FROM Laan WHERE investeringsCaseID = @id;
         DELETE FROM Udlejning WHERE investeringsCaseID = @id;
       `);
+    
+    if (Number(driftsOmkostninger) > 0) {
+      await new sql.Request(transaction)
+        .input("id", sql.Int, Number(id))
+        .input("navn", sql.VarChar(255), "Driftsomkostninger")
+        .input("beskrivelse", sql.VarChar(255), "Samlede driftsomkostninger")
+        .input("planlagtStartDato", sql.Date, null)
+        .input("omkostninger", sql.Decimal(10, 2), Number(driftsOmkostninger))
+        .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
+      INSERT INTO Renovation (
+        investeringsCaseID,
+        navn,
+        beskrivelse,
+        planlagtStartDato,
+        omkostninger,
+        forventetVaerdiStigning
+      )
+      VALUES (
+        @id,
+        @navn,
+        @beskrivelse,
+        @planlagtStartDato,
+        @omkostninger,
+        @forventetVaerdiStigning
+      )
+    `);
+    }
 
     await new sql.Request(transaction)
       .input("id", sql.Int, Number(id))
@@ -413,8 +473,7 @@ router.put("/investment-cases/:id", async (req, res) => {
       .input("tinglysning", sql.Decimal(10, 2), Number(tinglysning))
       .input("koeberRaadgivning", sql.Decimal(10, 2), Number(koeberRaadgivning))
       .input("andreOmkostninger", sql.Decimal(10, 2), Number(andreOmkostninger))
-      .input("noter", sql.VarChar(255), "Redigeret købspris")
-      .query(`
+      .input("noter", sql.VarChar(255), "Redigeret købspris").query(`
         INSERT INTO KoebsOmkostninger (
           investeringsCaseID, pris, egenKapital, advokat,
           tinglysning, koeberRaadgivning, andreOmkostninger, noter
@@ -425,28 +484,59 @@ router.put("/investment-cases/:id", async (req, res) => {
         )
       `);
 
-    if (Number(renovationOmkostninger) > 0) {
-      await new sql.Request(transaction)
-        .input("id", sql.Int, Number(id))
-        .input("navn", sql.VarChar(255), "Standard renovation")
-        .input("beskrivelse", sql.VarChar(255), "Redigeret fra formular")
-        .input("omkostninger", sql.Decimal(10, 2), Number(renovationOmkostninger))
-        .query(`
-          INSERT INTO Renovation (
-            investeringsCaseID, navn, beskrivelse,
-            planlagtStartDato, omkostninger, forventetVaerdiStigning
-          )
-          VALUES (
-            @id, @navn, @beskrivelse,
-            NULL, @omkostninger, 0
-          )
-        `);
+    if (Array.isArray(renovations)) {
+      for (const renovation of renovations) {
+        if (Number(renovation.pris) > 0) {
+          await new sql.Request(transaction)
+            .input("id", sql.Int, Number(id))
+            .input("navn", sql.VarChar(255), renovation.navn || "Renovering")
+            .input(
+              "beskrivelse",
+              sql.VarChar(255),
+              renovation.beskrivelse || null,
+            )
+            .input(
+              "planlagtStartDato",
+              sql.Date,
+              renovation.planlagtStartDato || null,
+            )
+            .input("omkostninger", sql.Decimal(10, 2), Number(renovation.pris))
+            .query(`
+              INSERT INTO Renovation (
+                investeringsCaseID,
+                navn,
+                beskrivelse,
+                planlagtStartDato,
+                omkostninger,
+                forventetVaerdiStigning
+              )
+              VALUES (
+                @id,
+                @navn,
+                @beskrivelse,
+                @planlagtStartDato,
+                @omkostninger,
+                0
+              )
+            `);
+        }
+      }
     }
 
     const loans = [
       { amount: laaneBeloeb, type: laaneType, interest: rente, term: loebetid },
-      { amount: bankLaan, type: bankLaanType, interest: bankLaanRente, term: bankLaanLoebetid },
-      { amount: andreLaan, type: andreLaanType, interest: andreLaanRente, term: andreLaanLoebetid }
+      {
+        amount: bankLaan,
+        type: bankLaanType,
+        interest: bankLaanRente,
+        term: bankLaanLoebetid,
+      },
+      {
+        amount: andreLaan,
+        type: andreLaanType,
+        interest: andreLaanRente,
+        term: andreLaanLoebetid,
+      },
     ];
 
     for (const loan of loans) {
@@ -456,8 +546,7 @@ router.put("/investment-cases/:id", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type)
-          .query(`
+          .input("laaneType", sql.VarChar(50), loan.type).query(`
             INSERT INTO Laan (
               investeringsCaseID, laaneBeloeb, rente, loebeTid, laaneType
             )
@@ -473,10 +562,17 @@ router.put("/investment-cases/:id", async (req, res) => {
     await new sql.Request(transaction)
       .input("id", sql.Int, Number(id))
       .input("erLejeBolig", sql.Bit, erLejeBolig)
-      .input("lejeIndkomst", sql.Decimal(10, 2), erLejeBolig ? Number(udlejningIndkomst || 0) : 0)
-      .input("lejeUdgifter", sql.Decimal(10, 2), erLejeBolig ? Number(udlejningUdgifter || 0) : 0)
-      .input("depositum", sql.Decimal(10, 2), 0)
-      .query(`
+      .input(
+        "lejeIndkomst",
+        sql.Decimal(10, 2),
+        erLejeBolig ? Number(udlejningIndkomst || 0) : 0,
+      )
+      .input(
+        "lejeUdgifter",
+        sql.Decimal(10, 2),
+        erLejeBolig ? Number(udlejningUdgifter || 0) : 0,
+      )
+      .input("depositum", sql.Decimal(10, 2), 0).query(`
         INSERT INTO Udlejning (
           investeringsCaseID, erLejeBolig, lejeIndkomst, lejeUdgifter, depositum
         )
@@ -489,9 +585,8 @@ router.put("/investment-cases/:id", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Investeringscase opdateret"
+      message: "Investeringscase opdateret",
     });
-
   } catch (error) {
     console.error("Fejl ved opdatering af investeringscase:", error);
 
@@ -501,7 +596,7 @@ router.put("/investment-cases/:id", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Kunne ikke opdatere investeringscase."
+      message: "Kunne ikke opdatere investeringscase.",
     });
   }
 });

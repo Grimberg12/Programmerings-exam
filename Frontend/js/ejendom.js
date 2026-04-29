@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     set("tinglysning", ec.tinglysning);
     set("koeberRaadgivning", ec.koeberRaadgivning);
     set("andreOmkostninger", ec.andreOmkostninger);
-    set("renovationCosts", ec.renoveringsomkostninger);
+    set("driftsOmkostninger", ec.driftsOmkostninger);
 
     if (ec.realkreditlån) {
       set("mortgage", ec.realkreditlån.beløb);
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const koeberRaadgivningInput = document.getElementById("koeberRaadgivning");
   const andreOmkostningerInput = document.getElementById("andreOmkostninger");
   const mortgageInput = document.getElementById("mortgage");
-  const renovationCostsInput = document.getElementById("renovationCosts");
+  const driftsOmkostningerInput = document.getElementById("driftsOmkostninger");
 
   function getNumber(input) {
     return parseNumber(input?.value);
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       !koeberRaadgivningInput ||
       !andreOmkostningerInput ||
       !mortgageInput ||
-      !renovationCostsInput
+      !driftsOmkostningerInput
     ) {
       return;
     }
@@ -165,7 +165,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tinglysning = getNumber(tinglysningInput);
     const koeberRaadgivning = getNumber(koeberRaadgivningInput);
     const andreOmkostninger = getNumber(andreOmkostningerInput);
-    const renovationCosts = getNumber(renovationCostsInput);
 
     const suggestedLoan =
       koebsPris -
@@ -173,8 +172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       advokat +
       tinglysning +
       koeberRaadgivning +
-      andreOmkostninger +
-      renovationCosts;
+      andreOmkostninger;
 
     if (suggestedLoan > 0) {
       mortgageInput.placeholder =
@@ -191,7 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     tinglysningInput,
     koeberRaadgivningInput,
     andreOmkostningerInput,
-    renovationCostsInput
+    driftsOmkostningerInput
   ].forEach((input) => {
     if (input) {
       input.addEventListener("input", updateMortgagePlaceholder);
@@ -290,6 +288,49 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   updateLoanSections();
 
+const renovationContainer = document.getElementById("renovationContainer");
+const addRenovationBtn = document.getElementById("addRenovationBtn");
+
+function createRenovationField() {
+  const renovationDiv = document.createElement("div");
+  renovationDiv.classList.add("renovation-item");
+
+  renovationDiv.innerHTML = `
+    <div class="form-group">
+      <label>Renoveringsnavn:</label>
+      <input type="text" class="renovation-name">
+    </div>
+
+    <div class="form-group">
+      <label>Beskrivelse:</label>
+      <textarea class="renovation-description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Pris (DKK):</label>
+      <input type="text" class="number-input renovation-price">
+    </div>
+
+    <div class="form-group">
+      <label>Planlagt startdato:</label>
+      <input type="date" class="renovation-start-date">
+    </div>
+
+    <button type="button" class="remove-renovation-btn">Fjern renovering</button>
+    <hr>
+  `;
+
+  renovationDiv.querySelector(".remove-renovation-btn").addEventListener("click", () => {
+    renovationDiv.remove();
+  });
+
+  renovationContainer.appendChild(renovationDiv);
+}
+
+if (addRenovationBtn) {
+  addRenovationBtn.addEventListener("click", createRenovationField);
+}
+  
   // Submit formular
   const investmentForm = document.getElementById("investmentForm");
 
@@ -302,6 +343,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const rentalValue = document.getElementById("rental")?.value;
       const udlejes = rentalValue === "true";
 
+      const renovations = Array.from(document.querySelectorAll(".renovation-item"))
+        .map((item) => ({
+        navn: item.querySelector(".renovation-name")?.value.trim(),
+        beskrivelse: item.querySelector(".renovation-description")?.value.trim(),
+        pris: parseNumber(item.querySelector(".renovation-price")?.value),
+        planlagtStartDato: item.querySelector(".renovation-start-date")?.value || null
+      }))
+      .filter((renovation) => renovation.navn || renovation.pris > 0);
+
       const opdateretCase = {
         id: editCaseId,
         ejendomsProfilID: Number(new URLSearchParams(window.location.search).get("id")),
@@ -313,7 +363,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         tinglysning: parseNumber(document.getElementById("tinglysning")?.value),
         koeberRaadgivning: parseNumber(document.getElementById("koeberRaadgivning")?.value),
         andreOmkostninger: parseNumber(document.getElementById("andreOmkostninger")?.value),
-        renovationOmkostninger: parseNumber(document.getElementById("renovationCosts")?.value),
+        driftsOmkostninger: parseNumber(document.getElementById("driftsOmkostninger")?.value),
+        renovations,
 
         realkreditlån: parseNumber(document.getElementById("mortgage")?.value) > 0 ? {
           beløb: parseNumber(document.getElementById("mortgage")?.value),
@@ -359,7 +410,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               tinglysning: opdateretCase.tinglysning,
               koeberRaadgivning: opdateretCase.koeberRaadgivning,
               andreOmkostninger: opdateretCase.andreOmkostninger,
-              renovationOmkostninger: opdateretCase.renovationOmkostninger,
+              renovations: opdateretCase.renovations,
+              driftsOmkostninger: opdateretCase.driftsOmkostninger,
 
               laaneBeloeb: opdateretCase.realkreditlån?.beløb || 0,
               laaneType: opdateretCase.realkreditlån?.type || "",
@@ -420,7 +472,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           tinglysning: opdateretCase.tinglysning,
           koeberRaadgivning: opdateretCase.koeberRaadgivning,
           andreOmkostninger: opdateretCase.andreOmkostninger,
-          renovationOmkostninger: opdateretCase.renovationOmkostninger,
+          renovations: opdateretCase.renovations,
+          driftsOmkostninger: opdateretCase.driftsOmkostninger,
 
           laaneBeloeb: opdateretCase.realkreditlån?.beløb || 0,
           laaneType: opdateretCase.realkreditlån?.type || "",
