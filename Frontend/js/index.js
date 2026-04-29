@@ -55,8 +55,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const property = result.data;
 
+      // Slå DAWA adresseid op fra adressekomponenter, så vi kan hente kort
+      let luftfotoUrl = "";
+      let matrikelUrl = "";
+      try {
+        const dawaRes = await fetch(
+          `https://api.dataforsyningen.dk/adresser?vejnavn=${encodeURIComponent(property.vejNavn)}&husnr=${encodeURIComponent(property.vejNummer)}&postnr=${encodeURIComponent(property.postnummer)}&format=json`
+        );
+        const dawaData = await dawaRes.json();
+        const adresseid = dawaData[0]?.id;
+
+        if (adresseid) {
+          const [luftfotoRes, matrikelRes] = await Promise.all([
+            fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`),
+            fetch(`/api/v1/properties/matrikelkort?adresseid=${encodeURIComponent(adresseid)}`)
+          ]);
+          luftfotoUrl = (await luftfotoRes.json()).data?.url ?? "";
+          matrikelUrl = (await matrikelRes.json()).data?.url ?? "";
+        }
+      } catch (kortFejl) {
+        console.error("Fejl ved hentning af kortdata:", kortFejl);
+      }
+
       container.innerHTML = `
         <h2>${property.vejNavn} ${property.vejNummer}</h2>
+
+        ${luftfotoUrl || matrikelUrl ? `
+        <div class="property-maps">
+          ${luftfotoUrl ? `<img src="${luftfotoUrl}" alt="Luftfoto af ${property.vejNavn} ${property.vejNummer}" class="property-aerial-photo">` : ""}
+          ${matrikelUrl ? `<img src="${matrikelUrl}" alt="Matrikelkort af ${property.vejNavn} ${property.vejNummer}" class="property-aerial-photo">` : ""}
+        </div>` : ""}
 
         <div class="property-info">
           <p><span class="property-label">Vejnavn:</span> ${property.vejNavn}</p>
