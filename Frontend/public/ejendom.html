@@ -1,261 +1,384 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ejendom</title>
-     <link rel="stylesheet" href="/css/color.css">
-    <link rel="stylesheet" href="/css/footer-header.css">
-    <link rel="stylesheet" href="/css/ejendom.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejendomsprofil</title>
+  <link rel="stylesheet" href="/css/color.css">
+  <link rel="stylesheet" href="/css/footer-header.css">
+  <link rel="stylesheet" href="/css/ejendom.css">
 </head>
 <body>
 
 <div id="header"></div>
 
 <main>
+
+  <!-- Viser ejendomsprofilens adresse og BBR-data - hentes i index.js -->
   <h1>Ejendomsprofil</h1>
   <div id="propertyDetails"></div>
 
   <hr class="divider">
 
-  <!--Section for tidligere oprettet cases-->
+  <!-- Viser alle investeringscases der er knyttet til denne ejendom - hentes fra databasen -->
   <h1 id="relatedCasesHeading">Relaterede investeringscases</h1>
   <div id="relatedCases"></div>
-  
-<div class="center-container" id="createCaseContainer">
-  <!--Button for open input section-->
-  <button id="openFormButton-investeringscase">Opret ny investeringscase</button>
-</div>
 
+  <!-- Knap til at åbne/lukke formularen for ny investeringscase -->
+  <div class="center-container" id="createCaseContainer">
+    <button id="openFormButton-investeringscase">Opret ny investeringscase</button>
+  </div>
+
+  <!-- Selve wizard-formularen - skjult som standard, åbnes med knappen ovenfor -->
   <div class="input-section-investeringscase" id="inputSectionInvesteringscase" style="display: none;">
-  <h2>Opret ny investeringscase</h2>
 
-  <form id="investmentForm" novalidate>
+    <!-- Titel ændres til "Rediger din investeringscase" af ejendom.js i edit-mode -->
+    <h2 id="wizardFormTitle">Opret ny investeringscase</h2>
 
-    <!-- Sektion 1: Basisoplysninger -->
-    <section class="form-section">
-      <h3>1. Basisoplysninger</h3>
+    <!-- Viser "Trin X af 5 - Navn" og opdateres af ejendom-wizard.js -->
+    <p class="wizard-step-subtitle" id="wizardStepSubtitle">Trin 1 af 5 - Basisoplysninger</p>
 
-      <div class="form-group">
-        <label for="investmentName">Navn på investeringscase:</label>
-        <input type="text" id="investmentName" name="investmentName" required>
+    <!-- Progress bar - hvert trin har data-title som wizard.js læser til undertitlen -->
+    <!-- Titlerne bor her i HTML så de ikke er delt op over to filer -->
+    <div class="wizard-progress">
+      <div class="wizard-step-item active" data-step="1" data-title="Basisoplysninger">
+        <div class="wizard-step-circle">1</div>
+        <span class="wizard-step-label">Basis</span>
+      </div>
+      <div class="wizard-step-item" data-step="2" data-title="Købsdata">
+        <div class="wizard-step-circle">2</div>
+        <span class="wizard-step-label">Køb</span>
+      </div>
+      <div class="wizard-step-item" data-step="3" data-title="Renovering">
+        <div class="wizard-step-circle">3</div>
+        <span class="wizard-step-label">Renovering</span>
+      </div>
+      <div class="wizard-step-item" data-step="4" data-title="Finansiering">
+        <div class="wizard-step-circle">4</div>
+        <span class="wizard-step-label">Finansiering</span>
+      </div>
+      <div class="wizard-step-item" data-step="5" data-title="Udlejning">
+        <div class="wizard-step-circle">5</div>
+        <span class="wizard-step-label">Udlejning</span>
+      </div>
+    </div>
+
+    <!-- novalidate så browseren ikke selv validerer - vi gør det per trin i ejendom-wizard.js -->
+    <form id="investmentForm" novalidate>
+
+      <!-- =============================================
+           TRIN 1 - Basisoplysninger
+           Gemmes i tabellen InvesteringsCase (caseNavn, beskrivelse)
+           ============================================= -->
+      <div class="wizard-step" data-step="1">
+        <section class="form-section">
+          <h3>Basisoplysninger</h3>
+
+          <!-- Casens navn bruges som overskrift når den vises i oversigten -->
+          <div class="form-group">
+            <label for="investmentName" class="label-with-tooltip">
+              Navn på investeringscase:
+              <span class="tooltip">?<span class="tooltip-text">Et sigende navn gør det nemt at skelne dine cases. Fx "Lejlighed Vesterbro 2026" eller "Hus Aarhus - udlejning".</span></span>
+            </label>
+            <input type="text" id="investmentName" name="investmentName" required>
+          </div>
+
+          <!-- Beskrivelse er valgfri men gemmes i InvesteringsCase tabellen -->
+          <div class="form-group">
+            <label for="description" class="label-with-tooltip">
+              Beskrivelse:
+              <span class="tooltip">?<span class="tooltip-text">Beskriv kort din strategi eller hvad der gør ejendommen interessant. Fx forventet prisudvikling, beliggenhed eller renoveringspotentiale.</span></span>
+            </label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+          </div>
+        </section>
       </div>
 
-      <div class="form-group">
-        <label for="description">Beskrivelse:</label>
-        <textarea id="description" name="description" rows="4" required></textarea>
+      <!-- =============================================
+           TRIN 2 - Købsdata
+           Gemmes i tabellen KoebsOmkostninger
+           (koebsPris, egenKapital, advokat, tinglysning, koeberRaadgivning, andreOmkostninger, driftsOmkostninger)
+           ============================================= -->
+      <div class="wizard-step" data-step="2" hidden>
+        <section class="form-section">
+          <h3>Købsdata</h3>
+
+          <!-- Alle felter herunder lander i KoebsOmkostninger tabellen i databasen -->
+
+          <div class="form-group">
+            <label for="koebsPris" class="label-with-tooltip">
+              Købspris (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Den kontante handelspris på ejendommen som aftalt med sælger, ekskl. handelsomkostninger.</span></span>
+            </label>
+            <input type="text" class="number-input" id="koebsPris" name="koebsPris" required>
+          </div>
+
+          <div class="form-group">
+            <label for="egenkapital" class="label-with-tooltip">
+              Egenkapital (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Din udbetaling ved købet. Realkreditinstitutter kræver typisk minimum 5% i egenkapital. Jo mere du lægger, jo lavere gæld og renteomkostninger.</span></span>
+            </label>
+            <input type="text" class="number-input" id="egenkapital" name="egenkapital" required>
+          </div>
+
+          <div class="form-group">
+            <label for="advokat" class="label-with-tooltip">
+              Advokatsalær (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Advokaten sikrer korrekt overdragelse og gennemgår skøde samt servitutter. Typisk 10.000-25.000 kr. ved et boligkøb. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="advokat" name="advokat" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tinglysning" class="label-with-tooltip">
+              Tinglysningsafgift (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Statslig afgift for at registrere dit ejerskab og pantebrev i tingbogen. Udgør 0,6% af købesummen + 1.850 kr. i grundgebyr.</span></span>
+            </label>
+            <input type="text" class="number-input" id="tinglysning" name="tinglysning" required>
+          </div>
+
+          <div class="form-group">
+            <label for="koeberRaadgivning" class="label-with-tooltip">
+              Køberrådgivning (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Udgift til rådgiver der gennemgår de juridiske dokumenter og hjælper med forhandling. Kan spare dig for fejl i købet. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="koeberRaadgivning" name="koeberRaadgivning" required>
+          </div>
+
+          <div class="form-group">
+            <label for="andreOmkostninger" class="label-with-tooltip">
+              Andre omkostninger (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Øvrige udgifter ved købet - fx bygningssyn, energimærke, flytning eller uforudsete udgifter. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="andreOmkostninger" name="andreOmkostninger" required>
+          </div>
+
+          <!-- Driftsomkostninger hører til i KoebsOmkostninger - løbende udgifter til ejendommen -->
+          <div class="form-group">
+            <label for="driftsOmkostninger" class="label-with-tooltip">
+              Driftsomkostninger (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Løbende årlige udgifter til ejendommen - typisk ejendomsskat, forsikring, vedligehold og evt. fællesudgifter. Bruges i cashflow-beregningerne.</span></span>
+            </label>
+            <input type="text" class="number-input" id="driftsOmkostninger" name="driftsOmkostninger" required>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <!-- Sektion 2: Købsdata -->
-    <section class="form-section">
-      <h3>2. Købsdata</h3>
+      <!-- =============================================
+           TRIN 3 - Renovering
+           Gemmes i tabellen Renovation
+           (navn, beskrivelse, pris, planlagtStartDato)
+           Valgfrit trin - brugeren kan springe det over
+           ============================================= -->
+      <div class="wizard-step" data-step="3" hidden>
+        <section class="form-section">
+          <h3>Renovering</h3>
+          <p class="form-hint">Valgfrit - tilføj planlagte renoveringer, eller tryk Næste for at springe over.</p>
 
-      <div class="form-group">
-        <label for="koebsPris">Købspris (DKK):</label>
-        <input type="text" class="number-input" id="koebsPris" name="koebsPris" required>
+          <!-- Renoveringerne tilføjes dynamisk af ejendom.js med createRenovationField() -->
+          <div id="renovationContainer"></div>
+
+          <button type="button" id="addRenovationBtn">+ Tilføj renovering</button>
+        </section>
       </div>
 
-      <div class="form-group">
-        <label for="egenkapital">Egenkapital (DKK):</label>
-        <input type="text" class="number-input" id="egenkapital" name="egenkapital" required>
+      <!-- =============================================
+           TRIN 4 - Finansiering
+           Gemmes i tabellen Laan (op til 3 lån per case)
+           Detaljefelterne vises kun hvis beløbet er udfyldt - styret af ejendom.js
+           ============================================= -->
+      <div class="wizard-step" data-step="4" hidden>
+        <section class="form-section">
+          <h3>Finansiering</h3>
+
+          <!-- Realkreditlån - gemmes som lån type 1 i Laan tabellen -->
+          <div class="form-group">
+            <label for="mortgage" class="label-with-tooltip">
+              Realkreditlån (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Realkreditlån er typisk det billigste lån og kan finansiere op til 80% af ejendomsværdien. Ydes af institutter som Totalkredit og Nykredit. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="mortgage" name="mortgage">
+          </div>
+
+          <!-- Detaljer vises kun hvis realkreditlånet er udfyldt - styres af ejendom.js -->
+          <div id="mortgageDetails-realkredit" class="conditional-section" style="display: none;">
+            <div class="form-group">
+              <label for="mortgageType" class="label-with-tooltip">
+                Type af realkreditlån:
+                <span class="tooltip">?<span class="tooltip-text">Fast rente giver forudsigelighed over hele løbetiden. Variabel rente kan give lavere ydelse på kort sigt, men indebærer renterisiko.</span></span>
+              </label>
+              <select id="mortgageType" name="mortgageType">
+                <option value="" disabled selected hidden>Vælg en mulighed</option>
+                <option value="fast">Fast rente</option>
+                <option value="variabel">Variabel rente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="mortgageInterest" class="label-with-tooltip">
+                Rente på realkreditlån (%):
+                <span class="tooltip">?<span class="tooltip-text">Den årlige nominelle rente på dit realkreditlån. Fx hvis renten er 3%, skriv 3. Typisk lavere end banklån.</span></span>
+              </label>
+              <input type="text" class="number-input" id="mortgageInterest" name="mortgageInterest">
+            </div>
+            <div class="form-group">
+              <label for="mortgageTerm" class="label-with-tooltip">
+                Løbetid på realkreditlån (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 30-årigt lån = 360 måneder. Et 20-årigt lån = 240 måneder.</span></span>
+              </label>
+              <input type="number" id="mortgageTerm" name="mortgageTerm">
+            </div>
+          </div>
+
+          <!-- Banklån - gemmes som lån type 2 i Laan tabellen -->
+          <div class="form-group">
+            <label for="bankLoan" class="label-with-tooltip">
+              Banklån (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Banklånet dækker typisk den del af finansieringen som realkredittet ikke kan dække. Har normalt en højere rente end realkreditlån. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="bankLoan" name="bankLoan">
+          </div>
+
+          <!-- Detaljer vises kun hvis banklånet er udfyldt -->
+          <div id="mortgageDetails-bankLoan" class="conditional-section" style="display: none;">
+            <div class="form-group">
+              <label for="bankLoanType" class="label-with-tooltip">
+                Type af banklån:
+                <span class="tooltip">?<span class="tooltip-text">Fast rente giver forudsigelighed. Variabel rente følger markedsrenten og kan svinge over lånets løbetid.</span></span>
+              </label>
+              <select id="bankLoanType" name="bankLoanType">
+                <option value="" disabled selected hidden>Vælg en mulighed</option>
+                <option value="fast">Fast rente</option>
+                <option value="variabel">Variabel rente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bankLoanInterest" class="label-with-tooltip">
+                Rente på banklån (%):
+                <span class="tooltip">?<span class="tooltip-text">Den årlige nominelle rente på dit banklån. Fx hvis renten er 5%, skriv 5. Banklån har typisk højere rente end realkredit.</span></span>
+              </label>
+              <input type="number" step="0.01" id="bankLoanInterest" name="bankLoanInterest">
+            </div>
+            <div class="form-group">
+              <label for="bankLoanTerm" class="label-with-tooltip">
+                Løbetid på banklån (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 10-årigt lån = 120 måneder. Et 5-årigt lån = 60 måneder.</span></span>
+              </label>
+              <input type="number" id="bankLoanTerm" name="bankLoanTerm">
+            </div>
+          </div>
+
+          <!-- Andre lån - gemmes som lån type 3 i Laan tabellen -->
+          <div class="form-group">
+            <label for="otherLoans" class="label-with-tooltip">
+              Andre lån (DKK):
+              <span class="tooltip">?<span class="tooltip-text">Andre finansieringskilder, fx sælgerpantebrev, familielån eller anden privat finansiering. Skriv 0 hvis ikke relevant.</span></span>
+            </label>
+            <input type="text" class="number-input" id="otherLoans" name="otherLoans">
+          </div>
+
+          <!-- Detaljer vises kun hvis andre lån er udfyldt -->
+          <div id="mortgageDetails-otherLoans" class="conditional-section" style="display: none;">
+            <div class="form-group">
+              <label for="otherLoansType" class="label-with-tooltip">
+                Type af andre lån:
+                <span class="tooltip">?<span class="tooltip-text">Fast rente giver forudsigelighed. Variabel rente kan give lavere ydelse men indebærer renterisiko over lånets løbetid.</span></span>
+              </label>
+              <select id="otherLoansType" name="otherLoansType">
+                <option value="" disabled selected hidden>Vælg en mulighed</option>
+                <option value="fast">Fast rente</option>
+                <option value="variabel">Variabel rente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="otherLoansInterest" class="label-with-tooltip">
+                Rente på andre lån (%):
+                <span class="tooltip">?<span class="tooltip-text">Den årlige nominelle rente på lånet. Fx hvis renten er 7%, skriv 7.</span></span>
+              </label>
+              <input type="number" step="0.01" id="otherLoansInterest" name="otherLoansInterest">
+            </div>
+            <div class="form-group">
+              <label for="otherLoansTerm" class="label-with-tooltip">
+                Løbetid på andre lån (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 5-årigt lån = 60 måneder. Et 3-årigt lån = 36 måneder.</span></span>
+              </label>
+              <input type="number" id="otherLoansTerm" name="otherLoansTerm">
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="form-group">
-        <label for="advokat">Advokatsalær (DKK):</label>
-        <input type="text" class="number-input" id="advokat" name="advokat" required>
+      <!-- =============================================
+           TRIN 5 - Udlejning
+           Gemmes i tabellen Udlejning
+           (udlejes, maanedligLeje, maanedligUdgifter)
+           Dette er det sidste trin - submit-knappen vises her
+           ============================================= -->
+      <div class="wizard-step" data-step="5" hidden>
+        <section class="form-section">
+          <h3>Udlejning</h3>
+
+          <!-- Svar på dette spørgsmål afgør om udlejningsfelterne vises - styret af ejendom.js -->
+          <div class="form-group">
+            <label for="rental" class="label-with-tooltip">
+              Udlejer du ejendommen?
+              <span class="tooltip">?<span class="tooltip-text">Angiv om du planlægger at udleje ejendommen. Svarer du Ja, indgår lejeindtægter og -udgifter i cashflow-beregningerne.</span></span>
+            </label>
+            <select id="rental" name="rental" required>
+              <option value="" disabled selected hidden>Vælg en mulighed</option>
+              <option value="true">Ja</option>
+              <option value="false">Nej</option>
+            </select>
+          </div>
+
+          <!-- Disse felter vises kun hvis svaret er Ja - styres af ejendom.js -->
+          <div id="rentalInfo" class="conditional-section" style="display: none;">
+            <div class="form-group">
+              <label for="rentalIncome" class="label-with-tooltip">
+                Månedlig lejeindtægt (DKK):
+                <span class="tooltip">?<span class="tooltip-text">Den månedlige huslejeindtægt du forventer fra din lejer, ekskl. aconto forbrug. Kan slås op på lejebolig.dk for sammenlignelige lejemål.</span></span>
+              </label>
+              <input type="text" class="number-input" id="rentalIncome" name="rentalIncome">
+            </div>
+            <div class="form-group">
+              <label for="rentalExpenses" class="label-with-tooltip">
+                Månedlige lejeudgifter (DKK):
+                <span class="tooltip">?<span class="tooltip-text">Løbende udgifter ved udlejning - fx administration, vicevært og forventede tomgangsperioder. Tomgang på 1 måned pr. år svarer til ca. 8% af lejeindtægten.</span></span>
+              </label>
+              <input type="text" class="number-input" id="rentalExpenses" name="rentalExpenses">
+            </div>
+          </div>
+        </section>
+
+        <!-- Feedback-besked vises her efter submit - opdateres af ejendom.js -->
+        <p id="investeringscaseMessage"></p>
       </div>
 
-      <div class="form-group">
-        <label for="tinglysning">Tinglysningsafgift (DKK):</label>
-        <input type="text" class="number-input" id="tinglysning" name="tinglysning" required>
+      <!-- Wizard navigation - Tilbage og Næste knapper -->
+      <!-- ejendom-wizard.js skifter Næste til type="submit" på trin 5 -->
+      <div class="wizard-nav">
+        <button type="button" id="wizardPrevBtn">← Tilbage</button>
+        <button type="button" id="wizardNextBtn" class="btn">Næste →</button>
       </div>
 
-      <div class="form-group">
-        <label for="koeberRaadgivning">Køberrådgivning (DKK):</label>
-        <input type="text" class="number-input" id="koeberRaadgivning" name="koeberRaadgivning" required>
-      </div>
+      <!-- Skjult submit-knap som ejendom.js bruger til at sætte tekst i edit-mode -->
+      <!-- Den er ikke synlig, men ejendom.js finder den via getElementById -->
+      <button type="submit" id="submitFormButton-investeringscase" style="display: none;"></button>
 
-      <div class="form-group">
-        <label for="andreOmkostninger">Andre omkostninger (DKK):</label>
-        <input type="text" class="number-input" id="andreOmkostninger" name="andreOmkostninger" required>
-      </div>
-    </section>
-
-    <!-- Sektion 3: Renovering -->
-    <section class="form-section">
-      <h3>3. Renovering</h3>
-
-      <div id="renovationContainer"></div>
-
-      <button type="button" id="addRenovationBtn">
-        Tilføj renovering
-  </button>
-</section>
-
-      <div class="form-group">
-        <label for="driftsOmkostninger">Driftsomkostninger (DKK):</label>
-        <input type="text" class="number-input" id="driftsOmkostninger" name="driftsOmkostninger" required>
-      </div>
-    </section>
-
-        <!-- Sektion 4: Finansiering -->
-    <section class="form-section">
-  <h3>4. Finansiering</h3>
-
-  <div class="form-group">
-    <label for="mortgage">Realkreditlån (DKK):</label>
-    <input type="text" class="number-input" id="mortgage" name="mortgage">
+    </form>
   </div>
-
-  <div id="mortgageDetails-realkredit" class="conditional-section" style="display: none;">
-    <div class="form-group">
-      <label for="mortgageType">Type af realkreditlån:</label>
-      <select id="mortgageType" name="mortgageType">
-        <option value="" disabled selected hidden>Vælg en mulighed</option>
-        <option value="fast">Fast rente</option>
-        <option value="variabel">Variabel rente</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="mortgageInterest" class="label-with-tooltip">Rente på realkreditlån (%):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret årlige rente for realkreditlånet. For eksempel, hvis renten er 3%, indtast 3.
-        </span>
-      </span>
-      <input type="text" class="number-input" id="mortgageInterest" name="mortgageInterest">
-    </div>
-
-    <div class="form-group">
-      <label for="mortgageTerm" class="label-with-tooltip">Løbetid på realkreditlån (Måneder):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret løbetid for realkreditlånet i måneder. For eksempel, hvis løbetiden er 20 år, indtast 240.
-        </span>
-      </span>
-      </span>
-      <input type="number" id="mortgageTerm" name="mortgageTerm">
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="bankLoan">Banklån (DKK):</label>
-    <input type="text" class="number-input" id="bankLoan" name="bankLoan">
-  </div>
-
-  <div id="mortgageDetails-bankLoan" class="conditional-section" style="display: none;">
-    <div class="form-group">
-      <label for="bankLoanType">Type af banklån:</label>
-      <select id="bankLoanType" name="bankLoanType">
-        <option value="" disabled selected hidden>Vælg en mulighed</option>
-        <option value="fast">Fast rente</option>
-        <option value="variabel">Variabel rente</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="bankLoanInterest" class="label-with-tooltip">Rente på banklån (%):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret årlige rente for banklånet. For eksempel, hvis renten er 5%, indtast 5.
-        </span>
-      </span>
-      <input type="number" step="0.01" id="bankLoanInterest" name="bankLoanInterest">
-    </div>
-
-    <div class="form-group">
-      <label for="bankLoanTerm" class="label-with-tooltip">Løbetid på banklån (Måneder):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret løbetid for banklånet i måneder. For eksempel, hvis løbetiden er 10 år, indtast 120.
-        </span>
-      </span>
-      </span>
-      <input type="number" id="bankLoanTerm" name="bankLoanTerm">
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="otherLoans">Andre lån (DKK):</label>
-    <input type="text" class="number-input" id="otherLoans" name="otherLoans">
-  </div>
-
-  <div id="mortgageDetails-otherLoans" class="conditional-section" style="display: none;">
-    <div class="form-group">
-      <label for="otherLoansType">Type af andre lån:</label>
-      <select id="otherLoansType" name="otherLoansType">
-        <option value="" disabled selected hidden>Vælg en mulighed</option>
-        <option value="fast">Fast rente</option>
-        <option value="variabel">Variabel rente</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="otherLoansInterest" class="label-with-tooltip">Rente på andre lån (%):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret årlige rente for andre lån. For eksempel, hvis renten er 7%, indtast 7.
-        </span>
-      </span>
-      <input type="number" step="0.01" id="otherLoansInterest" name="otherLoansInterest">
-    </div>
-
-    <div class="form-group">
-      <label for="otherLoansTerm" class="label-with-tooltip">Løbetid på andre lån (Måneder):
-        <span class="tooltip">?
-        <span class="tooltip-text">
-          Angiv den estimeret løbetid for andre lån i måneder. For eksempel, hvis løbetiden er 5 år, indtast 60.
-        </span>
-      </span>
-      <input type="number" id="otherLoansTerm" name="otherLoansTerm">
-    </div>
-  </div>
-</section>
-
-    <!-- Sektion 5: Udlejning -->
-    <section class="form-section">
-      <h3>5. Udlejning</h3>
-
-      <div class="form-group">
-        <label for="rental">Udlejer du ejendommen?</label>
-        <select id="rental" name="rental" required>
-          <option value="" disabled selected hidden>Vælg en mulighed</option>
-          <option value="true">Ja</option>
-          <option value="false">Nej</option>
-        </select>
-      </div>
-
-      <div id="rentalInfo" class="conditional-section" style="display: none;">
-        <div class="form-group">
-          <label for="rentalIncome">Månedlig lejeindtægt (DKK):</label>
-          <input type="text" class="number-input" id="rentalIncome" name="rentalIncome">
-        </div>
-
-        <div class="form-group">
-          <label for="rentalExpenses">Månedlige lejeudgifter (DKK):</label>
-          <input type="text" class="number-input" id="rentalExpenses" name="rentalExpenses">
-        </div>
-      </div>
-    </section>
-     <div class="center-container">
-  <!--Button for submit form-->  
-      <button type="submit" id="submitFormButton-investeringscase">Opret investeringscase</button>
-      <p id="investeringscaseMessage"></p>
-  </div>
-  </form>
-</div>
-
 
 </main>
 
 <div id="footer"></div>
 
+<!-- getlayout.js indsætter header og footer -->
 <script src="/js/getlayout.js"></script>
+<!-- index.js henter BBR-data og viser dem i propertyDetails -->
 <script src="/js/index.js"></script>
+<!-- ejendom.js håndterer formular-logik og database-kald -->
 <script src="/js/ejendom.js"></script>
-
+<!-- ejendom-wizard.js håndterer trin-navigation - loades sidst så ejendom.js kører først -->
+<script src="/js/ejendom-wizard.js"></script>
 
 </body>
 </html>

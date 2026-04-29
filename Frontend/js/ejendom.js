@@ -316,6 +316,11 @@ function createRenovationField() {
       <input type="date" class="renovation-start-date">
     </div>
 
+    <div class="form-group">
+      <label>Forventet varighed (måneder):</label>
+      <input type="number" class="renovation-duration" min="1" placeholder="fx 3">
+    </div>
+
     <button type="button" class="remove-renovation-btn">Fjern renovering</button>
     <hr>
   `;
@@ -348,7 +353,8 @@ if (addRenovationBtn) {
         navn: item.querySelector(".renovation-name")?.value.trim(),
         beskrivelse: item.querySelector(".renovation-description")?.value.trim(),
         pris: parseNumber(item.querySelector(".renovation-price")?.value),
-        planlagtStartDato: item.querySelector(".renovation-start-date")?.value || null
+        planlagtStartDato: item.querySelector(".renovation-start-date")?.value || null,
+        varighedMaaneder: Number(item.querySelector(".renovation-duration")?.value) || null
       }))
       .filter((renovation) => renovation.navn || renovation.pris > 0);
 
@@ -498,9 +504,12 @@ if (addRenovationBtn) {
 
       const result = await response.json();
       if (response.ok) {
-        investeringscaseMessage.textContent = "Case oprettet!";
+        const caseID = result.data.investeringsCaseID;
+        investeringscaseMessage.textContent = "Case oprettet! Åbner casen om lidt...";
         investeringscaseMessage.style.color = "green";
-
+        setTimeout(() => {
+          window.location.href = `/investeringscase.html?id=${caseID}`;
+        }, 2000);
       } else {
         investeringscaseMessage.textContent = result.message || "Kunne ikke oprette case.";
         investeringscaseMessage.style.color = "red";
