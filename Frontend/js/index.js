@@ -45,12 +45,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   const id = params.get("id");
 
   if (id) {
-    container.innerHTML = `
-      <h2>${vejnavn || ""} ${vejnummer || ""}</h2>
-      <p>${postnummer || ""} ${bynavn || ""}</p>
-      <p>Ejendommen er hentet fra databasen. BBR-data kan kun hentes direkte efter adressesøgning.</p>
-    `;
-    return;
+    try {
+      const response = await fetch(`/api/v1/ejendomsprofiler/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message);
+      }
+
+      const property = result.data;
+
+      container.innerHTML = `
+        <h2>${property.vejNavn} ${property.vejNummer}</h2>
+
+        <div class="property-info">
+          <p><span class="property-label">Vejnavn:</span> ${property.vejNavn}</p>
+          <p><span class="property-label">Vejnummer:</span> ${property.vejNummer}</p>
+          <p><span class="property-label">Etage:</span> ${property.etage || "–"}</p>
+          <p><span class="property-label">Postnummer:</span> ${property.postnummer}</p>
+          <p><span class="property-label">Bynavn:</span> ${property.bynavn}</p>
+
+          <p><span class="property-label">Byggeår:</span> ${property.byggeAar || "–"}</p>
+          <p><span class="property-label">Boligareal:</span> ${property.boligAreal ? property.boligAreal + " m²" : "–"}</p>
+          <p><span class="property-label">Antal værelser:</span> ${property.antalVaerelser || "–"}</p>
+          <p><span class="property-label">Grundareal:</span> ${property.grundAreal ? property.grundAreal + " m²" : "–"}</p>
+        </div>
+      `;
+      return;
+
+    } catch (error) {
+      console.error("Fejl ved hentning af ejendomsprofil:", error);
+      container.innerHTML = `<p>Kunne ikke hente ejendomsprofilen.</p>`;
+      return;
+    }
   }
 
   container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;

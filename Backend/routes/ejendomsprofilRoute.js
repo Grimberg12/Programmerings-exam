@@ -177,6 +177,51 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
   }
 });
 
+router.get("/ejendomsprofiler/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await db.connect();
+
+    const result = await pool.request()
+      .input("id", sql.Int, Number(id))
+      .query(`
+        SELECT
+          ep.ejendomsProfilID AS id,
+          a.vejNavn,
+          a.vejNummer,
+          a.etage,
+          a.postnummer,
+          a.bynavn,
+          ep.byggeAar,
+          ep.boligArealM2 AS boligAreal,
+          ep.antalVaerelser,
+          ep.grundArealM2 AS grundAreal
+        FROM EjendomsProfil ep
+        INNER JOIN Adresse a ON ep.adresseID = a.adresseID
+        WHERE ep.ejendomsProfilID = @id
+      `);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Ejendomsprofilen blev ikke fundet."
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result.recordset[0]
+    });
+
+  } catch (error) {
+    console.error("Fejl ved hentning af ejendomsprofil:", error);
+    res.status(500).json({
+      success: false,
+      message: "Kunne ikke hente ejendomsprofil."
+    });
+  }
+});
+
 router.delete("/ejendomsprofiler/:id", async (req, res) => {
   let transaction;
 

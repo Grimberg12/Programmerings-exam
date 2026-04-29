@@ -99,16 +99,8 @@ async function renderPropertyGrid() {
       `;
 
       propertyCard.addEventListener("click", () => {
-  const query = new URLSearchParams({
-    id: property.id,
-    vejnavn: property.vejNavn,
-    vejnummer: property.vejNummer,
-    postnummer: property.postnummer,
-    bynavn: property.bynavn
-  });
-
-  window.location.href = `/ejendom.html?${query.toString()}`;
-});
+        window.location.href = `/ejendom.html?id=${property.id}`;
+      });
 
       gridContainer.appendChild(propertyCard);
     });
