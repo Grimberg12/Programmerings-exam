@@ -1,42 +1,33 @@
-// Mock-data — samme som investeringscase.js, erstattes med API-kald
-const mockCases = [
-  {
-    id: 1,
-    oprettetDato: "2026-01-10",
-    navn: "Lejlighed i København",
-    beskrivelse: "En flot ejendom i København",
-    adresse: "Rosenvængets Allé 2",
-    areal: 120,
-    antalVærelser: 3,
-    købspris: 5000000,
-    egenkapital: 1000000,
-    udlejning: { udlejes: true, månedligLeje: 20000, månedligUdgifter: 5000 }
-  },
-  {
-    id: 2,
-    oprettetDato: "2026-02-20",
-    navn: "Rækkehus i Aarhus",
-    beskrivelse: "Rækkehus tæt på centrum",
-    adresse: "Åboulevarden 45",
-    areal: 145,
-    antalVærelser: 4,
-    købspris: 3200000,
-    egenkapital: 640000,
-    udlejning: { udlejes: true, månedligLeje: 14000, månedligUdgifter: 4000 }
-  },
-  {
-    id: 3,
-    oprettetDato: "2026-03-05",
-    navn: "Villa i Odense",
-    beskrivelse: "Stor villa med have",
-    adresse: "Frederiksgade 8",
-    areal: 210,
-    antalVærelser: 6,
-    købspris: 7500000,
-    egenkapital: 1875000,
-    udlejning: { udlejes: false, månedligLeje: 0, månedligUdgifter: 0 }
-  }
-];
+"use strict";
+
+let alleCases = [];
+
+async function hentCases() {
+  const savedUser = localStorage.getItem("loggedInUser");
+  if (!savedUser) { window.location.href = "/login.html"; return []; }
+
+  const user     = JSON.parse(savedUser);
+  const response = await fetch(`/api/v1/users/${user.brugerID}/investment-cases`);
+  const result   = await response.json();
+  if (!response.ok) return [];
+
+  return result.data.map(c => ({
+    id:          Number(c.id),
+    oprettetDato: c.datoOprettet,
+    navn:        c.navn,
+    beskrivelse: c.beskrivelse,
+    adresse:     `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
+    areal:       Number(c.areal || 0),
+    antalVærelser: Number(c.antalVaerelser || 0),
+    købspris:    Number(c.koebsPris || 0),
+    egenkapital: Number(c.egenKapital || 0),
+    udlejning: {
+      udlejes:          Boolean(c.erLejeBolig),
+      månedligLeje:     Number(c.lejeIndkomst || 0),
+      månedligUdgifter: Number(c.lejeUdgifter || 0)
+    }
+  }));
+}
 
 function sorter(cases, valg) {
   const k = [...cases];
@@ -49,20 +40,28 @@ function sorter(cases, valg) {
 }
 
 function render() {
-  const valg = document.getElementById("sortSelect").value;
-  const sorterede = sorter(mockCases, valg);
-  const liste = document.getElementById("casesList");
-  const antal = document.getElementById("casesAntal");
+  const valg     = document.getElementById("sortSelect").value;
+  const sorterede = sorter(alleCases, valg);
+  const liste    = document.getElementById("casesList");
+  const antal    = document.getElementById("casesAntal");
 
   antal.textContent = `${sorterede.length} case${sorterede.length !== 1 ? "s" : ""}`;
 
+  if (sorterede.length === 0) {
+    liste.innerHTML = `<p style="text-align:center;color:var(--muted-text);padding:40px 0;">
+      Du har ingen investeringscases endnu. Opret en via en ejendomsprofil.
+    </p>`;
+    return;
+  }
+
   liste.innerHTML = sorterede.map(c => {
-    const dato = new Date(c.oprettetDato).toLocaleDateString("da-DK", {
+    const dato     = new Date(c.oprettetDato).toLocaleDateString("da-DK", {
       day: "numeric", month: "long", year: "numeric"
     });
     const cashflow = c.udlejning.udlejes
       ? c.udlejning.månedligLeje - c.udlejning.månedligUdgifter
       : null;
+    const cfKlasse = cashflow === null ? "" : cashflow >= 0 ? "value-pos" : "value-neg";
 
     return `
       <div class="case-row" onclick="window.location.href='/investeringscase.html?id=${c.id}'">
@@ -81,7 +80,7 @@ function render() {
           </div>
           <div class="case-row__tal-item">
             <span class="case-row__label">Cashflow/md.</span>
-            <span class="case-row__value ${cashflow === null ? "" : cashflow >= 0 ? "value-pos" : "value-neg"}">
+            <span class="case-row__value ${cfKlasse}">
               ${cashflow !== null ? cashflow.toLocaleString("da-DK") + " kr." : "—"}
             </span>
           </div>
@@ -94,5 +93,8 @@ function render() {
   }).join("");
 }
 
-document.getElementById("sortSelect").addEventListener("change", render);
-render();
+document.addEventListener("DOMContentLoaded", async () => {
+  alleCases = await hentCases();
+  render();
+  document.getElementById("sortSelect").addEventListener("change", render);
+});

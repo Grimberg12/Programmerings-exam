@@ -200,3 +200,20 @@ body {
 .sammenlign-tabel thead th[rowspan] {
   vertical-align: middle;
 }
+
+/* ── Graf i sammenligning ─────────────────────────── */
+.graf-container {
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  overflow-x: auto;
+}
+
+/* ── Small tekst i lånceller ──────────────────────── */
+.sammenlign-tabel tbody td small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted-text);
+  line-height: 1.4;
+}

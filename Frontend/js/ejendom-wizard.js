@@ -63,49 +63,58 @@ class InvesteringWizard {
     }
   }
 
-  // Tjekker finansieringsbalance inden vi går videre fra trin 4
-  // Første klik - opdaterer advarslen og blokerer
-  // Andet klik uden ændringer - lader brugeren gå videre
+  // Kun kaldt ved klik på Næste fra trin 4.
+  // Første klik: vis advarsel UNDER formularen og bloker.
+  // Andet klik: lad brugeren gå videre uanset.
   #bekraeftFinansiering() {
     if (this.#currentStep !== 4) return true;
 
-    const parseVal = (id) => {
-      const el = document.getElementById(id);
-      return Number(el?.value.replace(/\D/g, "") || 0);
-    };
+    const parseVal = (id) => Number(document.getElementById(id)?.value.replace(/\D/g, "") || 0);
 
-    const koebsPris    = parseVal("koebsPris");
-    const egenkapital  = parseVal("egenkapital");
-    const realkredit   = parseVal("mortgage");
-    const bankLaan     = parseVal("bankLoan");
-    const andreLaan    = parseVal("otherLoans");
-    const finansiering = egenkapital + realkredit + bankLaan + andreLaan;
+    const koebsPris     = parseVal("koebsPris");
+    const advokat       = parseVal("advokat");
+    const tinglysning   = parseVal("tinglysning");
+    const koeberRadg    = parseVal("koeberRaadgivning");
+    const andreOmk      = parseVal("andreOmkostninger");
+    const egenkapital   = parseVal("egenkapital");
+    const realkredit    = parseVal("mortgage");
+    const bankLaan      = parseVal("bankLoan");
+    const andreLaan     = parseVal("otherLoans");
 
-    if (koebsPris === 0 || finansiering === 0 || finansiering === koebsPris) {
+    // Samlede købs­omk. der skal finansieres (ekskl. drifts­omk. som er løbende)
+    const totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
+    const finansiering  = egenkapital + realkredit + bankLaan + andreLaan;
+
+    if (totalKoebsOmk === 0 || finansiering === 0 || finansiering === totalKoebsOmk) {
       this.#finansieringAdvaret = false;
       return true;
     }
 
     if (this.#finansieringAdvaret) {
-      // Brugeren har set advarslen og trykker Næste igen - lad dem gå videre
+      // Brugeren har set advarslen og trykker Næste igen — lad dem gå videre
       this.#finansieringAdvaret = false;
       return true;
     }
 
-    // Første klik med mismatch - vis advarsel og bloker
+    // Første klik med mismatch — vis advarsel UNDER form-section og bloker
     this.#finansieringAdvaret = true;
     const trin4 = this.#getTrinElement(4);
     let advarsel = trin4?.querySelector(".finansiering-advarsel");
     if (!advarsel) {
       advarsel = document.createElement("div");
       advarsel.className = "finansiering-advarsel";
-      trin4?.querySelector(".form-section")?.prepend(advarsel);
+      trin4?.appendChild(advarsel);   // append = under, ikke prepend = over
     }
-    const forskel = Math.abs(koebsPris - finansiering).toLocaleString("da-DK");
-    advarsel.textContent =
-      `Er du sikker? Din finansiering (${finansiering.toLocaleString("da-DK")} kr.) ` +
-      `svarer ikke til din købspris (${koebsPris.toLocaleString("da-DK")} kr.) — ` +
-      `${forskel} kr. i difference. Tryk Næste igen for at fortsætte alligevel.`;
+    const forskel    = totalKoebsOmk - finansiering;
+    const forskelTxt = forskel > 0
+      ? `${forskel.toLocaleString("da-DK")} kr. mangler i finansiering`
+      : `${Math.abs(forskel).toLocaleString("da-DK")} kr. for meget finansiering`;
+
+    advarsel.innerHTML =
+      `<strong>Er du sikker?</strong> Din samlede finansiering er ` +
+      `<strong>${finansiering.toLocaleString("da-DK")} kr.</strong>, men de samlede ` +
+      `købs­omkostninger er <strong>${totalKoebsOmk.toLocaleString("da-DK")} kr.</strong> ` +
+      `— <em>${forskelTxt}</em>. Tryk Næste igen for at fortsætte alligevel.`;
     return false;
   }
 
@@ -268,54 +277,35 @@ class InvesteringWizard {
     });
   }
 
-  // Tjekker om egenkapital + alle lån svarer til købsprisen
-  // Viser en gul advarselsboks øverst i trin 4 hvis tallene ikke går op
-  // Det er en advarsel og ikke en blokering - brugeren kan stadig gå videre
+  // Tjekker om finansiering svarer til samlede købs­omk. (ekskl. drifts­omk.)
+  // Bruges til at fjerne en eksisterende advarsel når tallene nu passer.
+  // Opretter IKKE ny advarsel live — det gør #bekraeftFinansiering() ved klik på Næste.
   #tjekFinansieringBalance() {
-    // Hjælpefunktion til at parse DKK-felter - fjerner "kr.", mellemrum og punktum
-    const parseVal = (id) => {
-      const el = document.getElementById(id);
-      return Number(el?.value.replace(/\D/g, "") || 0);
-    };
+    const parseVal = (id) => Number(document.getElementById(id)?.value.replace(/\D/g, "") || 0);
 
-    const koebsPris   = parseVal("koebsPris");
-    const egenkapital = parseVal("egenkapital");
-    const realkredit  = parseVal("mortgage");
-    const bankLaan    = parseVal("bankLoan");
-    const andreLaan   = parseVal("otherLoans");
+    const koebsPris    = parseVal("koebsPris");
+    const advokat      = parseVal("advokat");
+    const tinglysning  = parseVal("tinglysning");
+    const koeberRadg   = parseVal("koeberRaadgivning");
+    const andreOmk     = parseVal("andreOmkostninger");
+    const egenkapital  = parseVal("egenkapital");
+    const realkredit   = parseVal("mortgage");
+    const bankLaan     = parseVal("bankLoan");
+    const andreLaan    = parseVal("otherLoans");
 
-    // Samlet finansiering = hvad brugeren har angivet de betaler med
-    const finansiering = egenkapital + realkredit + bankLaan + andreLaan;
+    const totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
+    const finansiering  = egenkapital + realkredit + bankLaan + andreLaan;
 
-    // Finder trin 4 hvor advarslen skal vises
-    const trin4 = this.#getTrinElement(4);
+    const trin4    = this.#getTrinElement(4);
     if (!trin4) return;
+    const advarsel = trin4.querySelector(".finansiering-advarsel");
 
-    // Finder eller opretter advarselsboksen - vi laver max én ad gangen
-    let advarsel = trin4.querySelector(".finansiering-advarsel");
-
-    // Vis kun advarsel hvis begge tal er større end 0 og ikke matcher hinanden
-    // Hvis et af beløbene er 0, er brugeren sandsynligvis stadig i gang med at udfylde
-    if (koebsPris > 0 && finansiering > 0 && finansiering !== koebsPris) {
-      if (!advarsel) {
-        advarsel = document.createElement("div");
-        advarsel.className = "finansiering-advarsel";
-        // Indsæt øverst i form-section på trin 4 så brugeren ser det med det samme
-        trin4.querySelector(".form-section")?.prepend(advarsel);
-      }
-      // Viser de konkrete tal så brugeren nemt kan se hvad der mangler
-      const forskel = koebsPris - finansiering;
-      const forskelTekst = forskel > 0
-        ? `${forskel.toLocaleString("da-DK")} kr. mangler`
-        : `${Math.abs(forskel).toLocaleString("da-DK")} kr. for meget`;
-
-      advarsel.textContent =
-        `Er du sikker? Finansiering (${finansiering.toLocaleString("da-DK")} kr.) ≠ Købspris (${koebsPris.toLocaleString("da-DK")} kr.) - ${forskelTekst}`;
-
-    } else {
-      // Tallene passer - fjern advarslen hvis den er der
+    // Fjern eksisterende advarsel og nulstil flag hvis tallene nu er i balance
+    if (totalKoebsOmk === 0 || finansiering === 0 || finansiering === totalKoebsOmk) {
       if (advarsel) advarsel.remove();
+      this.#finansieringAdvaret = false;
     }
+    // Vis ikke ny advarsel live — det sker kun ved klik på Næste
   }
 
   // Opretter og viser en rød popup-besked direkte over det givne felt

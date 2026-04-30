@@ -1,17 +1,17 @@
 const { DATAFORSYNING_TOKEN } = require("../config/env");
 const { hentKoordinaterFraDawa } = require("./dawaCoords");
 
-// Bygger en WMS GetMap-URL til Dataforsyningens matrikelkort via Datafordeler.
-// Service-stien har wms/-præfiks (jf. Dataforsyningens egen webservice-guide),
-// modsat orto_foraar_DAF som ligger i roden. Vi bruger samme WMS 1.1.1 /
-// EPSG:25832-opsætning og samme radius som luftfotoet, så de to billeder
-// dækker præcis samme udsnit.
-// LAYERS=SamletFastEjendom_Gaeldende viser ejendomsfladerne (matrikelskel)
-// og Centroide_Gaeldende lægger matrikelnumrene oven på – tilsammen er det
-// det klassiske matrikelkort-look.
-// STYLES bestemmer farver: tom string for SamletFastEjendom_Gaeldende giver
-// default-stilen (gul flade), Sorte_centroider giver sort matrikelnummer-tekst
-// så tallene er læsbare oven på den gule baggrund (rækkefølgen matcher LAYERS).
+/* Bygger en WMS GetMap-URL til Dataforsyningens matrikelkort via Datafordeler.
+Service-stien har wms/-præfiks (jf. Dataforsyningens egen webservice-guide),
+modsat orto_foraar_DAF som ligger i roden. Vi bruger samme WMS 1.1.1 /
+EPSG:25832-opsætning og samme radius som luftfotoet, så de to billeder
+dækker præcis samme udsnit.
+LAYERS=SamletFastEjendom_Gaeldende viser ejendomsfladerne (matrikelskel)
+og Centroide_Gaeldende lægger matrikelnumrene oven på – tilsammen er det
+det klassiske matrikelkort-look.
+STYLES bestemmer farver: tom string for SamletFastEjendom_Gaeldende giver
+default-stilen (gul flade), Sorte_centroider giver sort matrikelnummer-tekst
+så tallene er læsbare oven på den gule baggrund (rækkefølgen matcher LAYERS).*/
 function byggMatrikelkortUrl(x, y, radius = 40) {
   const bbox = `${x - radius},${y - radius},${x + radius},${y + radius}`;
 

@@ -156,8 +156,8 @@
           <!-- Driftsomkostninger hører til i KoebsOmkostninger - løbende udgifter til ejendommen -->
           <div class="form-group">
             <label for="driftsOmkostninger" class="label-with-tooltip">
-              Driftsomkostninger (DKK):
-              <span class="tooltip">?<span class="tooltip-text">Løbende årlige udgifter til ejendommen - typisk ejendomsskat, forsikring, vedligehold og evt. fællesudgifter. Bruges i cashflow-beregningerne.</span></span>
+              Driftsomkostninger pr. måned (DKK/md.):
+              <span class="tooltip">?<span class="tooltip-text">Løbende månedlige udgifter til ejendommen - typisk ejendomsskat, forsikring, vedligehold og evt. fællesudgifter fordelt pr. måned. Trækkes fra cashflow i beregningerne.</span></span>
             </label>
             <input type="text" class="number-input" id="driftsOmkostninger" name="driftsOmkostninger" required>
           </div>
@@ -216,18 +216,36 @@
             <div class="form-group">
               <label for="mortgageInterest" class="label-with-tooltip">
                 Rente på realkreditlån (%):
-                <span class="tooltip">?<span class="tooltip-text">Den årlige nominelle rente på dit realkreditlån. Fx hvis renten er 3%, skriv 3. Typisk lavere end banklån.</span></span>
+                <span class="tooltip">?<span class="tooltip-text">Den årlige nominelle rente på dit realkreditlån. Fx hvis renten er 3,5%, skriv 3.5. Typisk lavere end banklån.</span></span>
               </label>
-              <input type="text" class="number-input" id="mortgageInterest" name="mortgageInterest">
+              <input type="number" step="0.01" min="0" max="100" id="mortgageInterest" name="mortgageInterest" placeholder="fx 3.5">
             </div>
             <div class="form-group">
               <label for="mortgageTerm" class="label-with-tooltip">
                 Løbetid på realkreditlån (måneder):
                 <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 30-årigt lån = 360 måneder. Et 20-årigt lån = 240 måneder.</span></span>
               </label>
-              <input type="number" id="mortgageTerm" name="mortgageTerm">
+              <input type="number" id="mortgageTerm" name="mortgageTerm" placeholder="fx 360">
+            </div>
+            <div class="form-group">
+              <label for="mortgageAfdragsFri" class="label-with-tooltip">
+                Afdragsfri periode (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Antal måneder fra lånets start, hvor du kun betaler renter og ikke afdrag. Typisk 0–120 måneder. Skriv 0 hvis ingen afdragsfri periode.</span></span>
+              </label>
+              <input type="number" id="mortgageAfdragsFri" name="mortgageAfdragsFri" min="0" value="0" placeholder="0">
+            </div>
+            <div class="ydelse-info-boks" id="mortgageYdelseVis" style="display:none;">
+              <span class="ydelse-info-label">Ydelse i afdragsfri periode:</span>
+              <strong id="mortgageRenteYdelse">—</strong><br>
+              <span class="ydelse-info-label">Ydelse efter afdragsfri periode:</span>
+              <strong id="mortgageAmortYdelse">—</strong>
             </div>
           </div>
+
+          <!-- Hint: vises når egenkapital < 20% af købsprisen -->
+          <p id="bankLoanHint" class="finansiering-advarsel" style="display:none;">
+            Din egenkapital er under 20% af købsprisen — overvej at supplere med et banklån herunder.
+          </p>
 
           <!-- Banklån - gemmes som lån type 2 i Laan tabellen -->
           <div class="form-group">
@@ -263,7 +281,20 @@
                 Løbetid på banklån (måneder):
                 <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 10-årigt lån = 120 måneder. Et 5-årigt lån = 60 måneder.</span></span>
               </label>
-              <input type="number" id="bankLoanTerm" name="bankLoanTerm">
+              <input type="number" id="bankLoanTerm" name="bankLoanTerm" placeholder="fx 120">
+            </div>
+            <div class="form-group">
+              <label for="bankLoanAfdragsFri" class="label-with-tooltip">
+                Afdragsfri periode (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Antal måneder hvor du kun betaler renter på banklånet. Skriv 0 hvis ingen afdragsfri periode.</span></span>
+              </label>
+              <input type="number" id="bankLoanAfdragsFri" name="bankLoanAfdragsFri" min="0" value="0" placeholder="0">
+            </div>
+            <div class="ydelse-info-boks" id="bankLoanYdelseVis" style="display:none;">
+              <span class="ydelse-info-label">Ydelse i afdragsfri periode:</span>
+              <strong id="bankLoanRenteYdelse">—</strong><br>
+              <span class="ydelse-info-label">Ydelse efter afdragsfri periode:</span>
+              <strong id="bankLoanAmortYdelse">—</strong>
             </div>
           </div>
 
@@ -301,7 +332,20 @@
                 Løbetid på andre lån (måneder):
                 <span class="tooltip">?<span class="tooltip-text">Lånets samlede løbetid i måneder. Et 5-årigt lån = 60 måneder. Et 3-årigt lån = 36 måneder.</span></span>
               </label>
-              <input type="number" id="otherLoansTerm" name="otherLoansTerm">
+              <input type="number" id="otherLoansTerm" name="otherLoansTerm" placeholder="fx 60">
+            </div>
+            <div class="form-group">
+              <label for="otherLoansAfdragsFri" class="label-with-tooltip">
+                Afdragsfri periode (måneder):
+                <span class="tooltip">?<span class="tooltip-text">Antal måneder hvor du kun betaler renter på dette lån. Skriv 0 hvis ingen afdragsfri periode.</span></span>
+              </label>
+              <input type="number" id="otherLoansAfdragsFri" name="otherLoansAfdragsFri" min="0" value="0" placeholder="0">
+            </div>
+            <div class="ydelse-info-boks" id="otherLoansYdelseVis" style="display:none;">
+              <span class="ydelse-info-label">Ydelse i afdragsfri periode:</span>
+              <strong id="otherLoansRenteYdelse">—</strong><br>
+              <span class="ydelse-info-label">Ydelse efter afdragsfri periode:</span>
+              <strong id="otherLoansAmortYdelse">—</strong>
             </div>
           </div>
         </section>

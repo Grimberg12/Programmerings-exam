@@ -386,7 +386,23 @@ main > h1 {
   border-top: 6px solid var(--error-color);
 }
 
-/* Finansieringsadvarsel - gul advarselsboks øverst i trin 4 */
+/* ── Live ydelsesvisning i wizard ───────────────────────────── */
+.ydelse-info-boks {
+  background: var(--status-good-bg);
+  border: 1px solid #a3d9b1;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  margin-top: -8px;
+  margin-bottom: 16px;
+  line-height: 1.8;
+}
+
+.ydelse-info-label {
+  color: var(--muted-text);
+}
+
+/* ── Finansieringsadvarsel - gul advarselsboks øverst i trin 4 */
 /* Vises når egenkapital + lån ikke svarer til købsprisen */
 /* Det er en advarsel og ikke en blokering - brugeren kan stadig gå videre */
 .finansiering-advarsel {
