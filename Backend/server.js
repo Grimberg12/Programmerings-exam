@@ -1,27 +1,24 @@
-﻿const express = require("express");
+// ── Importer moduler ──────────────────────────────────────────────────────────
+const express = require("express");
 const path = require("path");
 
-// Routere
 const apiRouter = require("./routes/api");
 const webhookRouter = require("./routes/webhooks");
 
-// Middleware
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 
-//Services
 const { db } = require("./services/db");
 
-// Konfiguration
 const { PORT, NODE_ENV } = require("./config/env");
 
 const app = express();
 
-// Middleware til at læse JSON body
+// ── Body-parsing ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-// CORS headers for alle requests
+// ── CORS ──────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -34,7 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Simpel logger
+// ── Logger ────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   if (req.body && Object.keys(req.body).length > 0) {
@@ -43,28 +40,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// Statiske mapper
+// ── Statiske mapper ───────────────────────────────────────────────────────────
 app.use("/css", express.static(path.join(__dirname, "../Frontend/css")));
 app.use("/js", express.static(path.join(__dirname, "../Frontend/js")));
 app.use("/layout", express.static(path.join(__dirname, "../Frontend/layout")));
 app.use("/pictures", express.static(path.join(__dirname, "../Frontend/pictures")));
 
-// Public HTML-filer
 app.use(express.static(path.join(__dirname, "../Frontend/public")));
 
-// API routes
+// ── API og webhook routes ─────────────────────────────────────────────────────
 app.use("/api/v1", apiRouter);
-
-// Webhook routes
 app.use("/webhooks", webhookRouter);
 
-// 404 middleware
+// ── Fejlhåndtering ────────────────────────────────────────────────────────────
 app.use(notFound);
-
-// Global error handler
 app.use(errorHandler);
 
-// Start server
+// ── Start server ──────────────────────────────────────────────────────────────
 db.connect()
   .then(() => {
     app.listen(PORT, () => {

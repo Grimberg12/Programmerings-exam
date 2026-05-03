@@ -1,9 +1,11 @@
+// ── DOM-elementer ─────────────────────────────────────────────────────────────
 // Hent elementer fra DOM
 const searchInput = document.querySelector(".search-input");
 const searchButton = document.querySelector(".search-button");
 const suggestionsList = document.getElementById("suggestionsList");
 const opretBtn = document.getElementById("opretEjendomBtn");
 
+// ── BBR bygningsanvendelse-koder ──────────────────────────────────────────────
 // Oversættes BBR-koder til læsbare betegnelser for ejendomstype
 // Kilderne er Datafordeler BBR feltbeskrivelse for byg021BygningensAnvendelse
 const BYGNINGSANVENDELSE = {
@@ -12,11 +14,13 @@ const BYGNINGSANVENDELSE = {
     150: "Kollegium", 160: "Fritidshus", 190: "Anden helårsbeboelse",
 };
 
+// ── Tilstand: valgt adresse og BBR-data ───────────────────────────────────────
 // Gemmer den valgte adresse,
 // så vi kan bruge den senere når brugeren klikker på knappen
 let valgtAdresse = null;
 let valgtBBRData = null;
 
+// ── Adressesøgning via DAWA ───────────────────────────────────────────────────
 // Når brugeren klikker på søg
 searchInput.addEventListener("input", () => {
     // Hent input fra bruger
@@ -74,6 +78,7 @@ searchInput.addEventListener("input", () => {
         });
 });
 
+// ── Valg af adresse fra dropdown ──────────────────────────────────────────────
 // Når bruger vælger en adresse i dropdown
 suggestionsList.addEventListener("change", () => {
     const selectedOption = suggestionsList.options[suggestionsList.selectedIndex];
@@ -109,6 +114,7 @@ suggestionsList.addEventListener("change", () => {
     hentOgVisBBRData(valgtAdresse.adresseid);
 });
 
+// ── Opret ejendomsprofil ──────────────────────────────────────────────────────
 // Når brugeren klikker på "Opret ejendomsprofil"
 opretBtn.addEventListener("click", async () => {
   if (!valgtAdresse) {
@@ -166,7 +172,7 @@ console.log("payload sendt til backend:", payload);
     if (!response.ok) {
       throw new Error(result.message);
     }
-    
+
     const query = new URLSearchParams({
         id: result.ejendomsProfilID,
         adresseid: valgtAdresse.adresseid,
@@ -184,6 +190,7 @@ console.log("payload sendt til backend:", payload);
   }
 });
 
+// ── Kan muligvis slettes: saveAddressToDatabase() kaldes ingen steder ─────────
 // Funktion der sender adresse til backend
 function saveAddressToDatabase(adresseData) {
     fetch("/api/v1/address/register", {
@@ -212,6 +219,7 @@ function saveAddressToDatabase(adresseData) {
         });
 }
 
+// ── Kort-tabs tilstand ────────────────────────────────────────────────────────
 // State for kort-tabs i preview – holder de seneste URLs så vi kan skifte
 // mellem dem uden at hente data igen, og husker hvilken tab der er aktiv.
 const kortState = {
@@ -220,6 +228,7 @@ const kortState = {
     aktiv: "luftfoto",
 };
 
+// ── Vis aktivt kort ───────────────────────────────────────────────────────────
 // Tegner det aktuelt valgte kort i preview-containeren ud fra kortState.
 // Kaldes både når en URL er hentet, og når brugeren klikker på en tab.
 function visAktivtKort() {
@@ -239,6 +248,7 @@ function visAktivtKort() {
     }
 }
 
+// ── Hent luftfoto-URL fra backend ─────────────────────────────────────────────
 // Henter luftfoto-URL fra backend, gemmer den i state og opdaterer visningen
 // hvis luftfoto er den aktive tab. Backend (mellemled) bygger WMS-kaldet mod
 // Dataforsyningen.
@@ -255,6 +265,7 @@ async function hentOgVisLuftfoto(adresseid) {
     }
 }
 
+// ── Hent matrikelkort-URL fra backend ─────────────────────────────────────────
 // Samme mønster som hentOgVisLuftfoto, blot mod matrikelkort-endpointet.
 async function hentOgVisMatrikelkort(adresseid) {
     try {
@@ -269,6 +280,7 @@ async function hentOgVisMatrikelkort(adresseid) {
     }
 }
 
+// ── Kort-tab event listeners ──────────────────────────────────────────────────
 // Sætter event listeners på tab-knapperne, så et klik skifter aktivt korttype
 // og opdaterer både visning og knappens active-styling.
 document.querySelectorAll(".map-tab").forEach((tab) => {
@@ -286,6 +298,7 @@ document.querySelectorAll(".map-tab").forEach((tab) => {
     });
 });
 
+// ── Hent og vis BBR-data ──────────────────────────────────────────────────────
 // Henter BBR-data fra vores backend og viser det i preview-boksen på forsiden
 // Kaldes automatisk når brugeren vælger en adresse fra dropdown
 // adresseid er DAR-adressens UUID fra DAWA API
@@ -309,9 +322,7 @@ async function hentOgVisBBRData(adresseid) {
 
         const ejendomstype = BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
         const byggeAar = byggeaarKey ? Number(bygning[byggeaarKey]) : null;
-        const boligArealM2 = enhed.enh026EnhedensSamledeAreal
-            ? Number(enhed.enh026EnhedensSamledeAreal)
-            : 0;
+        const boligArealM2 = Number(enhed.enh027EnhedensBoligareal ?? enhed.enh026EnhedensSamledeAreal ?? 0);
         const antalVaerelser = enhed.enh031AntalVærelser
             ? Number(enhed.enh031AntalVærelser)
             : null;
@@ -343,6 +354,7 @@ async function hentOgVisBBRData(adresseid) {
     }
 }
 
+// ── Skjul dropdown ved klik udenfor ──────────────────────────────────────────
 // Skjul dropdown hvis man klikker udenfor
 document.addEventListener("click", (e) => {
     if (!document.querySelector(".search-block").contains(e.target)) {

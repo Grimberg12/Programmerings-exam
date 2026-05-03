@@ -1,9 +1,10 @@
+// ── Velkomstbesked ved sideindlæsning ────────────────────────────────────────
 // Venter på at siden er loaded
 document.addEventListener("DOMContentLoaded", () => {
   // Henter velkomstbesked-elementet og tjekker for gemt bruger i localStorage
   const welcomeMessage = document.getElementById("welcomeMessage");
   const savedUser = localStorage.getItem("loggedInUser");
- // Hvis der ikke findes nogle af delene, gør vi ingenting
+ // Hvis der ikke er nogle af delene, gør vi ingenting
   if (!savedUser || !welcomeMessage) {
     return;
   }
@@ -15,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ── Kan muligvis slettes: INDEX_BYGNINGSANVENDELSE bruges ikke her ────────────
 // SKAL DET HER FJERNES HELT?????
 const INDEX_BYGNINGSANVENDELSE = {
   110: "Stuehus til landbrugsejendom",
@@ -26,6 +28,7 @@ const INDEX_BYGNINGSANVENDELSE = {
   190: "Anden helårsbeboelse"
 };
 
+// ── Vis BBR-data og kort på ejendomssiden ─────────────────────────────────────
 // Henter BBR-data fra backend og viser dem på ejendomssiden
 // Kører kun hvis siden har et #propertyDetails element (dvs. ejendom.html)
 document.addEventListener("DOMContentLoaded", async () => {
@@ -115,27 +118,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   container.innerHTML = `<p>Henter ejendomsdata fra BBR...</p>`;
 
   try {
-    // Henter enhed og bygning parallelt fra BBR via backend
-    const [enhedRes, bygningRes] = await Promise.all([
+    // Henter enhed, bygning og grundareal parallelt fra BBR/DAWA via backend
+    const [enhedRes, bygningRes, grundRes] = await Promise.all([
       fetch(`/api/v1/properties/enheder?adresseid=${encodeURIComponent(adresseid)}`),
       fetch(`/api/v1/properties/bygning?adresseid=${encodeURIComponent(adresseid)}`),
+      fetch(`/api/v1/properties/grund?adresseid=${encodeURIComponent(adresseid)}`),
     ]);
 
-    const enhedJson = await enhedRes.json();
-    const bygningJson = await bygningRes.json();
-
-    const enhed = enhedJson.data?.[0] ?? {};
-    const bygning = bygningJson.data?.[0] ?? {};
+    const enhed = (await enhedRes.json()).data?.[0] ?? {};
+    const bygning = (await bygningRes.json()).data?.[0] ?? {};
+    const jordstykke = (await grundRes.json()).data?.[0] ?? {};
 
     const adresse = `${vejnavn || ""} ${vejnummer || ""}`.trim();
     const by = `${postnummer || ""} ${bynavn || ""}`.trim();
     const ejendomstype = INDEX_BYGNINGSANVENDELSE[bygning.byg021BygningensAnvendelse] ?? "Ukendt";
     const byggeaarKey = Object.keys(bygning).find(k => k.startsWith("byg026"));
     const byggeaar = byggeaarKey ? bygning[byggeaarKey] : "–";
-    const boligareal = enhed.enh026EnhedensSamledeAreal ?? "–";
+    const boligareal = enhed.enh027EnhedensBoligareal ?? enhed.enh026EnhedensSamledeAreal ?? "–";
     const vaerelser = enhed.enh031AntalVærelser ?? "–";
-    // Grundareal: bruger byg041BebyggetAreal (bebygget areal) fra BBR bygning
-    const grundareal = bygning.byg041BebyggetAreal ?? "–";
+    const grundareal = jordstykke.registreretareal ?? "–";
 
     // Henter luftfoto- og matrikelkort-URL fra vores egen backend (mellemled
     // mod Dataforsyningen). Backend slår koordinater op og bygger WMS-kaldene

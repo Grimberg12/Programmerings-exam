@@ -1,32 +1,20 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
-
-// Opretter en router-instans
 const router = express.Router();
 
-// Importerer funktion fra service-laget,
-// som kalder Datafordeler REST API
 const {
   hentEnhederFraAdresseId,
   hentBygningFraId,
-  hentGrundFraId,
-  hentJordstykkeViaDawa,
 } = require("../services/datafordelerService");
 
-// Service-lag der håndterer luftfoto-opslaget mod DAWA og Dataforsyningen
 const { hentLuftfotoUrl } = require("../services/luftfotoService");
-
-// Service-lag der bygger WMS-URL til matrikelkortet (INSPIRE cp_inspire)
 const { hentMatrikelkortUrl } = require("../services/matrikelkortService");
 
-// Endpoint som henter enheder ud fra et adresse-id
-// Eksempel på request:
-// GET /api/v1/properties/enheder?adresseid=0a3f...
+// ── GET /properties/enheder ───────────────────────────────────────────────────
 router.get("/properties/enheder", async (req, res) => {
   try {
-    // Henter adresseid fra query string
     const { adresseid } = req.query;
 
-    // Validerer at adresseid er sendt med
     if (!adresseid) {
       return res.status(400).json({
         success: false,
@@ -34,20 +22,16 @@ router.get("/properties/enheder", async (req, res) => {
       });
     }
 
-    // Kalder service-laget, som henter enheder fra Datafordeler
     const data = await hentEnhederFraAdresseId(adresseid);
 
-    // Returnerer svaret til klienten
     return res.status(200).json({
       success: true,
       message: "Enheder hentet",
       data,
     });
   } catch (error) {
-    // Logger fejlen i terminalen
     console.error("Fejl i /properties/enheder:", error.message);
 
-    // Returnerer en kontrolleret fejl til klienten
     return res.status(502).json({
       success: false,
       message: "Kunne ikke hente enheder fra Datafordeler",
@@ -55,6 +39,7 @@ router.get("/properties/enheder", async (req, res) => {
   }
 });
 
+// ── GET /properties/bygning ───────────────────────────────────────────────────
 router.get("/properties/bygning", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -66,7 +51,6 @@ router.get("/properties/bygning", async (req, res) => {
       });
     }
 
-    // Hent enheder for at finde bygning-referencen
     const enheder = await hentEnhederFraAdresseId(adresseid);
     const bygningId = enheder?.[0]?.bygning;
 
@@ -93,10 +77,8 @@ router.get("/properties/bygning", async (req, res) => {
   }
 });
 
-// Endpoint der henter grunddata ud fra et adresse-id
-// Grund-id'et hentes fra bygningen, som er knyttet til adressen
-// Grunddata indeholder det faktiske jordareal (grundareal)
-// Eksempel: GET /api/v1/properties/grund?adresseid=0a3f...
+// ── GET /properties/grund ─────────────────────────────────────────────────────
+// Henter grundareal via DAWA: adresse → matrikelnr + ejerlavskode → jordstykker
 router.get("/properties/grund", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -108,40 +90,37 @@ router.get("/properties/grund", async (req, res) => {
       });
     }
 
-    // Henter enheder for at finde bygning-id
-    const enheder = await hentEnhederFraAdresseId(adresseid);
-    const bygningId = enheder?.[0]?.bygning;
+    const dawaAdresseRes = await fetch(
+      `https://api.dataforsyningen.dk/adresser/${encodeURIComponent(adresseid)}?format=json`
+    );
 
-    if (!bygningId) {
+    if (!dawaAdresseRes.ok) {
       return res.status(404).json({
         success: false,
-        message: "Ingen bygning fundet for denne adresse",
+        message: "Adressen blev ikke fundet i DAWA",
       });
     }
 
-    // Henter bygningen for at finde grund-id
-    const bygninger = await hentBygningFraId(bygningId);
-    const grundId = bygninger?.[0]?.grund;
+    const dawaAdresse = await dawaAdresseRes.json();
+    const matrikelnr = dawaAdresse.adgangsadresse?.matrikelnr;
+    const ejerlavskode = dawaAdresse.adgangsadresse?.ejerlav?.kode;
 
-    if (!grundId) {
+    if (!matrikelnr || !ejerlavskode) {
       return res.status(404).json({
         success: false,
-        message: "Ingen grund fundet for denne bygning",
+        message: "Matrikelnr eller ejerlavskode ikke fundet for adressen",
       });
     }
 
-    // Henter grunddata og udtrækker BFE-nummer
-    const grundData = await hentGrundFraId(grundId);
-    const bfeNummer = grundData?.[0]?.bestemtFastEjendom?.bfeNummer;
+    const jordRes = await fetch(
+      `https://api.dataforsyningen.dk/jordstykker?ejerlavskode=${ejerlavskode}&matrikelnr=${encodeURIComponent(matrikelnr)}&format=json`
+    );
 
-    if (!bfeNummer) {
-      return res.status(404).json({
-        success: false,
-        message: "Ingen BFE-nummer fundet for denne grund",
-      });
+    if (!jordRes.ok) {
+      throw new Error(`DAWA jordstykker fejl ${jordRes.status}`);
     }
 
-    const data = await hentJordstykkeViaDawa(bfeNummer);
+    const data = await jordRes.json();
 
     return res.status(200).json({
       success: true,
@@ -152,16 +131,12 @@ router.get("/properties/grund", async (req, res) => {
     console.error("Fejl i /properties/grund:", error.message);
     return res.status(502).json({
       success: false,
-      message: "Kunne ikke hente grund fra Datafordeler",
+      message: "Kunne ikke hente grundareal fra DAWA",
     });
   }
 });
 
-// Endpoint som returnerer en WMS-URL til et luftfoto af ejendommen.
-// Route-laget håndterer kun HTTP-delen: validerer input, kalder service
-// og pakker svaret som JSON. Selve opslaget mod DAWA og WMS-kaldet
-// ligger i luftfotoService.js.
-// Eksempel: GET /api/v1/properties/luftfoto?adresseid=0a3f...
+// ── GET /properties/luftfoto ──────────────────────────────────────────────────
 router.get("/properties/luftfoto", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -196,10 +171,7 @@ router.get("/properties/luftfoto", async (req, res) => {
   }
 });
 
-// Endpoint som returnerer en WMS-URL til et matrikelkort over ejendommen.
-// Samme opbygning som /properties/luftfoto: route-laget validerer kun input,
-// service-laget bygger selve WMS-URL'en mod Dataforsyningens cp_inspire.
-// Eksempel: GET /api/v1/properties/matrikelkort?adresseid=0a3f...
+// ── GET /properties/matrikelkort ──────────────────────────────────────────────
 router.get("/properties/matrikelkort", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -234,5 +206,5 @@ router.get("/properties/matrikelkort", async (req, res) => {
   }
 });
 
-// Eksporterer routeren
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;

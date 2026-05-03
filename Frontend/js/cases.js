@@ -1,7 +1,9 @@
 "use strict";
 
+// ── Tilstand ──────────────────────────────────────────────────────────────────
 let alleCases = [];
 
+// ── Hent alle investeringscases for den loggede bruger ────────────────────────
 async function hentCases() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) { window.location.href = "/login.html"; return []; }
@@ -29,6 +31,7 @@ async function hentCases() {
   }));
 }
 
+// ── Sortér cases efter valgt kriterie ────────────────────────────────────────
 function sorter(cases, valg) {
   const k = [...cases];
   if (valg === "dato")        return k.sort((a, b) => new Date(b.oprettetDato) - new Date(a.oprettetDato));
@@ -39,6 +42,7 @@ function sorter(cases, valg) {
   return k;
 }
 
+// ── Render case-liste i DOM ───────────────────────────────────────────────────
 function render() {
   const valg     = document.getElementById("sortSelect").value;
   const sorterede = sorter(alleCases, valg);
@@ -93,6 +97,7 @@ function render() {
   }).join("");
 }
 
+// ── Start ved sideindlæsning ──────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   alleCases = await hentCases();
   render();

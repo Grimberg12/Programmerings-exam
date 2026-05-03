@@ -1,52 +1,51 @@
+// ── Hent alle cases fra backend ───────────────────────────────────────────────
 async function hentCases() {
   const savedUser = localStorage.getItem("loggedInUser");
+  if (!savedUser) { window.location.href = "/login.html"; return []; }
 
-  if (!savedUser) {
-    window.location.href = "/login.html";
-    return [];
-  }
-
-  const user = JSON.parse(savedUser);
-
+  const user     = JSON.parse(savedUser);
   const response = await fetch(`/api/v1/users/${user.brugerID}/investment-cases`);
-  const result = await response.json();
+  const result   = await response.json();
 
   if (!response.ok) {
     throw new Error(result.message || "Kunne ikke hente cases");
   }
 
   return result.data.map(c => ({
-    id: c.id,
+    id:           c.id,
     oprettetDato: c.oprettetDato,
-    navn: c.navn,
-    adresse: `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
-    areal: Number(c.areal || 0),
+    navn:         c.navn,
+    adresse:      `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
+    areal:        Number(c.areal || 0),
     antalVærelser: c.antalVaerelser || 0,
-    købspris: Number(c.koebsPris || 0),
-    egenkapital: Number(c.egenKapital || 0),
+    købspris:     Number(c.koebsPris || 0),
+    egenkapital:  Number(c.egenKapital || 0),
     udlejning: {
-      udlejes: Boolean(c.erLejeBolig),
-      månedligLeje: Number(c.lejeIndkomst || 0),
+      udlejes:          Boolean(c.erLejeBolig),
+      månedligLeje:     Number(c.lejeIndkomst || 0),
       månedligUdgifter: Number(c.lejeUdgifter || 0)
     }
   }));
 }
 
+// ── Tilstand: hvilke cases er valgt (maks. 3) ─────────────────────────────────
 const valgte = new Set();
 
+// ── Hjælpefunktion: formatér beløb til dansk ─────────────────────────────────
 function formatKr(amount) {
   return amount.toLocaleString("da-DK") + " kr.";
 }
 
+// ── Render sammenligningsgrid med alle cases ──────────────────────────────────
 async function render() {
-  const grid = document.getElementById("compareGrid");
+  const grid    = document.getElementById("compareGrid");
   const maxNået = valgte.size >= 3;
 
   const cases = await hentCases();
   grid.innerHTML = cases.map(c => {
-    const erValgt = valgte.has(c.id);
+    const erValgt    = valgte.has(c.id);
     const erDisabled = maxNået && !erValgt;
-    const cashflow = c.udlejning.udlejes
+    const cashflow   = c.udlejning.udlejes
       ? c.udlejning.månedligLeje - c.udlejning.månedligUdgifter
       : null;
 
@@ -92,6 +91,7 @@ async function render() {
   document.getElementById("sammenlignBtn").disabled = valgte.size < 2;
 }
 
+// ── Slå valg til/fra for én case ─────────────────────────────────────────────
 function toggleValg(id) {
   if (valgte.has(id)) {
     valgte.delete(id);
@@ -102,6 +102,7 @@ function toggleValg(id) {
   render();
 }
 
+// ── Start ved sideindlæsning ──────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   render();
 

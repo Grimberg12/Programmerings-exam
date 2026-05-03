@@ -1,3 +1,4 @@
+// ── Hent ejendomme fra backend ────────────────────────────────────────────────
 async function hentEjendomme() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) {
@@ -17,6 +18,7 @@ async function hentEjendomme() {
   return result.data;
 }
 
+// ── Formatér dato til dansk format ───────────────────────────────────────────
 function formatDato(dato) {
   if (!dato) return "ukendt dato";
 
@@ -27,6 +29,7 @@ function formatDato(dato) {
   });
 }
 
+// ── Slet ejendomsprofil med bekræftelsesdialog ───────────────────────────────
 async function sletEjendomsprofil(id) {
   const bekraeft = confirm("Er du sikker på, at du vil slette denne ejendomsprofil? Alle tilknyttede investeringscases bliver også slettet.");
 
@@ -47,6 +50,7 @@ async function sletEjendomsprofil(id) {
   renderPropertyGrid();
 }
 
+// ── Byg og vis ejendomsgrid i DOM ────────────────────────────────────────────
 async function renderPropertyGrid() {
   const gridContainer = document.getElementById("propertyGrid");
   const propertyCount = document.getElementById("propertyCount");
@@ -110,4 +114,5 @@ async function renderPropertyGrid() {
   }
 }
 
+// ── Start ved sideindlæsning ──────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", renderPropertyGrid);

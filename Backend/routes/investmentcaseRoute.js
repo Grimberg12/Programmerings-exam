@@ -1,7 +1,9 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 const router = express.Router();
 const { db, sql } = require("../services/db");
 
+// ── POST /investment-cases ────────────────────────────────────────────────────
 router.post("/investment-cases", async (req, res) => {
   let transaction;
 
@@ -284,7 +286,7 @@ router.post("/investment-cases", async (req, res) => {
   }
 });
 
-// Hent alle investeringscases for en given bruger, inkl. ejendomsprofil og adresse
+// ── GET /users/:brugerID/investment-cases ─────────────────────────────────────
 router.get("/users/:brugerID/investment-cases", async (req, res) => {
   try {
     const { brugerID } = req.params;
@@ -346,7 +348,7 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
   }
 });
 
-// Slet investeringscase og alle tilknyttede data, ved tryk på slet-knap
+// ── DELETE /investment-cases/:id ──────────────────────────────────────────────
 router.delete("/investment-cases/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -374,6 +376,7 @@ router.delete("/investment-cases/:id", async (req, res) => {
   }
 });
 
+// ── PUT /investment-cases/:id ─────────────────────────────────────────────────
 router.put("/investment-cases/:id", async (req, res) => {
   let transaction;
 
@@ -601,4 +604,5 @@ router.put("/investment-cases/:id", async (req, res) => {
   }
 });
 
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;

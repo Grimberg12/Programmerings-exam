@@ -1,6 +1,8 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 require("dotenv").config();
 const sql = require("mssql");
-//Opretter en datbase klasse
+
+// ── Database-klasse med lazy connection pool ──────────────────────────────────
 class Database {
   constructor() {
     this.config = {
@@ -17,7 +19,8 @@ class Database {
     this.pool = null;
     this.connected = false;
   }
-// connect function
+
+  // ── Forbind til database ────────────────────────────────────────────────────
   async connect() {
     try {
       if (this.pool && this.connected) {
@@ -34,7 +37,8 @@ class Database {
       throw error;
     }
   }
-// disconnect funktion
+
+  // ── Afbryd forbindelsen ─────────────────────────────────────────────────────
   async disconnect() {
     try {
       if (this.pool && this.connected) {
@@ -48,18 +52,21 @@ class Database {
       throw error;
     }
   }
-// SQL - request
+
+  // ── Opret SQL-request (bruges til parameteriserede forespørgsler) ───────────
   async request() {
     const pool = await this.connect();
     return pool.request();
   }
-// SQL - Query
+
+  // ── Kør rå SQL-forespørgsel ─────────────────────────────────────────────────
   async query(queryString) {
     const request = await this.request();
     return request.query(queryString);
   }
 }
 
+// ── Eksporter singleton-instans og sql-objekt ─────────────────────────────────
 const database = new Database();
 
 module.exports = {

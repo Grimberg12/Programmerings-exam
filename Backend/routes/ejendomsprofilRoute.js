@@ -1,7 +1,9 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 const router = express.Router();
 const { db, sql } = require("../services/db");
 
+// ── POST /ejendomsProfil ──────────────────────────────────────────────────────
 router.post("/ejendomsProfil", async (req, res) => {
   try {
     const {
@@ -27,7 +29,7 @@ router.post("/ejendomsProfil", async (req, res) => {
 
     const pool = await db.connect();
 
-    // 1. Find eller opret adresse
+    // Find eller opret adresse
     const adresseResult = await pool.request()
       .input("vejNavn", sql.VarChar(255), vejNavn)
       .input("vejNummer", sql.VarChar(255), vejNummer)
@@ -91,7 +93,7 @@ if (existingProfil.recordset.length > 0) {
   });
 }
 
-    // 2. Opret ejendomsprofil
+    // Opret ejendomsprofil
     const profilResult = await pool.request()
       .input("brugerID", sql.Int, Number(brugerID))
       .input("adresseID", sql.Int, adresseID)
@@ -138,6 +140,7 @@ if (existingProfil.recordset.length > 0) {
   }
 });
 
+// ── GET /users/:brugerID/ejendomsprofiler ─────────────────────────────────────
 router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
   try {
     const { brugerID } = req.params;
@@ -146,7 +149,7 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
     const result = await pool.request()
       .input("brugerID", sql.Int, Number(brugerID))
       .query(`
-        SELECT 
+        SELECT
           ep.ejendomsProfilID AS id,
           a.vejNavn,
           a.vejNummer,
@@ -159,7 +162,7 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
         LEFT JOIN InvesteringsCase ic ON ep.ejendomsProfilID = ic.ejendomsProfilID
         WHERE ep.brugerID = @brugerID
-        GROUP BY 
+        GROUP BY
           ep.ejendomsProfilID,
           a.vejNavn,
           a.vejNummer,
@@ -177,6 +180,7 @@ router.get("/users/:brugerID/ejendomsprofiler", async (req, res) => {
   }
 });
 
+// ── GET /ejendomsprofiler/:id ─────────────────────────────────────────────────
 router.get("/ejendomsprofiler/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -222,6 +226,7 @@ router.get("/ejendomsprofiler/:id", async (req, res) => {
   }
 });
 
+// ── DELETE /ejendomsprofiler/:id ──────────────────────────────────────────────
 router.delete("/ejendomsprofiler/:id", async (req, res) => {
   let transaction;
 
@@ -282,4 +287,5 @@ router.delete("/ejendomsprofiler/:id", async (req, res) => {
   }
 });
 
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;

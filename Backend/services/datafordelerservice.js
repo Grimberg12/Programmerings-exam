@@ -1,9 +1,11 @@
+// ── Importer konfiguration ────────────────────────────────────────────────────
 const {
   DATAFORDELER_USERNAME,
   DATAFORDELER_PASSWORD,
   DATAFORDELER_BASE_URL,
 } = require("../config/env");
 
+// ── Hjælpefunktioner til HTTP og URL-byggeri ──────────────────────────────────
 async function fetchJson(url) {
   const response = await fetch(url, {
     headers: {
@@ -35,6 +37,7 @@ function buildUrl(path, extraParams = {}) {
   return url.toString();
 }
 
+// ── Kan muligvis slettes: bruges ikke i nogen route ───────────────────────────
 async function hentEjendomsrelationFraAdresseId(adresseId) {
   const url = buildUrl("/BBR/BBRPublic/1/rest/ejendomsrelation", {
     AdresseIdentificerer: adresseId,
@@ -45,10 +48,8 @@ async function hentEjendomsrelationFraAdresseId(adresseId) {
   return fetchJson(url);
 }
 
-// Henter enheder ud fra et DAR adresse-id
-// Denne funktion bruges til at finde enhedsdata som fx areal og antal værelser
+// ── Hent enheder fra Datafordeler ud fra DAR adresse-id ───────────────────────
 async function hentEnhederFraAdresseId(adresseId) {
-  // Bygger URL til Datafordeler endpointet for enhed
   const url = buildUrl("/BBR/BBRPublic/1/rest/enhed", {
     AdresseIdentificerer: adresseId,
     RegistreringFra: "1900-01-01",
@@ -59,6 +60,7 @@ async function hentEnhederFraAdresseId(adresseId) {
   return data;
 }
 
+// ── Hent bygning fra Datafordeler ud fra bygning-id ───────────────────────────
 async function hentBygningFraId(bygningId) {
   const url = buildUrl("/BBR/BBRPublic/1/rest/bygning", {
     id: bygningId,
@@ -69,8 +71,7 @@ async function hentBygningFraId(bygningId) {
   return fetchJson(url);
 }
 
-// Henter grunddata fra BBR ud fra et grund-id
-// Grund-id'et findes i bygning-objektets 'grund'-felt
+// ── Kan muligvis slettes: grundareal hentes nu direkte fra DAWA ───────────────
 async function hentGrundFraId(grundId) {
   const url = buildUrl("/BBR/BBRPublic/1/rest/grund", {
     id: grundId,
@@ -80,11 +81,13 @@ async function hentGrundFraId(grundId) {
   return fetchJson(url);
 }
 
+// ── Kan muligvis slettes: grundareal hentes nu direkte fra DAWA ───────────────
 async function hentJordstykkeViaDawa(bfeNummer) {
   const url = `https://api.dataforsyningen.dk/jordstykker?bfenummer=${bfeNummer}&format=json`;
   return fetchJson(url);
 }
 
+// ── Eksporter funktioner ──────────────────────────────────────────────────────
 module.exports = {
   hentEjendomsrelationFraAdresseId,
   hentEnhederFraAdresseId,

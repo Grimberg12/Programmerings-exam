@@ -1,8 +1,9 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 const router = express.Router();
 const { db, sql } = require("../services/db");
 
-// POST /api/v1/users/login
+// ── POST /api/v1/users/login ──────────────────────────────────────────────────
 router.post("/users/login", async (req, res) => {
   try {
     const { email, adgangskode } = req.body;
@@ -68,4 +69,5 @@ router.post("/users/login", async (req, res) => {
   }
 });
 
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;

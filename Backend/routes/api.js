@@ -1,21 +1,20 @@
+// ── Kan muligvis slettes: debug-log fra udviklingsperioden ───────────────────
 console.log("LOADER: Backend/routes/api.js");
-// Importerer Express
+
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 
-// Opretter router
 const router = express.Router();
 
-// Importerer eksisterende routes
+// ── Importer routes ───────────────────────────────────────────────────────────
 const testDbRouter = require("./testRouteDB");
 const userRoutes = require("./userRoutes");
 const loginRoutes = require("./loginRoutes");
 const investmentcaseRoute = require("./investmentcaseRoute");
 const ejendomsprofilRoute = require("./ejendomsprofilRoute");
-
-// Importerer BBR-routes
 const bbrRoutes = require("./bbrRoutes");
 
-// Health-check endpoint
+// ── Health-check endpoint ─────────────────────────────────────────────────────
 router.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -23,15 +22,16 @@ router.get("/health", (req, res) => {
   });
 });
 
-// Kobler eksisterende routes på
+// ── Monter routes ─────────────────────────────────────────────────────────────
 router.use("/", testDbRouter);
 router.use("/", userRoutes);
 router.use("/", loginRoutes);
 router.use("/", investmentcaseRoute);
 router.use("/", ejendomsprofilRoute);
-
-// Kobler BBR-routes på API'et
 router.use("/", bbrRoutes);
+
+// ── Kan muligvis slettes: debug-log fra udviklingsperioden ───────────────────
 console.log("MONTERER: bbrRoutes i api.js");
-// Eksporterer routeren
+
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;

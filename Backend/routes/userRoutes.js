@@ -1,8 +1,9 @@
+// ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 const router = express.Router();
 const { db, sql } = require("../services/db");
 
-// POST /api/v1/users/register
+// ── POST /api/v1/users/register ───────────────────────────────────────────────
 router.post("/users/register", async (req, res) => {
   try {
     const {
@@ -100,4 +101,5 @@ router.post("/users/register", async (req, res) => {
   }
 });
 
+// ── Eksporter router ──────────────────────────────────────────────────────────
 module.exports = router;
