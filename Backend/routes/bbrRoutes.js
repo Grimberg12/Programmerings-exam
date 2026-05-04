@@ -5,6 +5,8 @@ const router = express.Router();
 const {
   hentEnhederFraAdresseId,
   hentBygningFraId,
+  hentGrundFraId,
+  hentJordstykkeViaDawa,
 } = require("../services/datafordelerService");
 
 const { hentLuftfotoUrl } = require("../services/luftfotoService");
@@ -78,7 +80,7 @@ router.get("/properties/bygning", async (req, res) => {
 });
 
 // ── GET /properties/grund ─────────────────────────────────────────────────────
-// Henter grundareal via DAWA: adresse → matrikelnr + ejerlavskode → jordstykker
+// Henter grundareal via BBR: enhed → bygning → grund → BFE-nummer → DAWA jordstykker
 router.get("/properties/grund", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -90,37 +92,37 @@ router.get("/properties/grund", async (req, res) => {
       });
     }
 
-    const dawaAdresseRes = await fetch(
-      `https://api.dataforsyningen.dk/adresser/${encodeURIComponent(adresseid)}?format=json`
-    );
+    const enheder = await hentEnhederFraAdresseId(adresseid);
+    const bygningId = enheder?.[0]?.bygning;
 
-    if (!dawaAdresseRes.ok) {
+    if (!bygningId) {
       return res.status(404).json({
         success: false,
-        message: "Adressen blev ikke fundet i DAWA",
+        message: "Ingen bygning fundet for denne adresse",
       });
     }
 
-    const dawaAdresse = await dawaAdresseRes.json();
-    const matrikelnr = dawaAdresse.adgangsadresse?.matrikelnr;
-    const ejerlavskode = dawaAdresse.adgangsadresse?.ejerlav?.kode;
+    const bygninger = await hentBygningFraId(bygningId);
+    const grundId = bygninger?.[0]?.grund;
 
-    if (!matrikelnr || !ejerlavskode) {
+    if (!grundId) {
       return res.status(404).json({
         success: false,
-        message: "Matrikelnr eller ejerlavskode ikke fundet for adressen",
+        message: "Ingen grund fundet for denne bygning",
       });
     }
 
-    const jordRes = await fetch(
-      `https://api.dataforsyningen.dk/jordstykker?ejerlavskode=${ejerlavskode}&matrikelnr=${encodeURIComponent(matrikelnr)}&format=json`
-    );
+    const grundData = await hentGrundFraId(grundId);
+    const bfeNummer = grundData?.[0]?.bestemtFastEjendom?.bfeNummer;
 
-    if (!jordRes.ok) {
-      throw new Error(`DAWA jordstykker fejl ${jordRes.status}`);
+    if (!bfeNummer) {
+      return res.status(404).json({
+        success: false,
+        message: "Ingen BFE-nummer fundet for denne grund",
+      });
     }
 
-    const data = await jordRes.json();
+    const data = await hentJordstykkeViaDawa(bfeNummer);
 
     return res.status(200).json({
       success: true,
