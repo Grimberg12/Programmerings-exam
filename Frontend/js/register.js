@@ -5,7 +5,7 @@ const confirmPasswordInput = document.getElementById("confirm_password");
 const passwordError = document.getElementById("passwordError");
 const registerMessage = document.getElementById("registerMessage");
 
-// 🔹 Password styrke validering
+// Password styrke validering
 function validatePassword() {
   const value = passwordInput.value;
 
@@ -20,7 +20,7 @@ function validatePassword() {
   return true;
 }
 
-// 🔹 Password match validering
+// Password match validering
 function validatePasswordMatch() {
   if (confirmPasswordInput.value !== passwordInput.value) {
     confirmPasswordInput.setCustomValidity("Adgangskoderne er ikke ens.");
@@ -34,7 +34,7 @@ function validatePasswordMatch() {
 passwordInput.addEventListener("input", validatePasswordMatch);
 confirmPasswordInput.addEventListener("input", validatePasswordMatch);
 
-// 🔴 MAIN SUBMIT CONTROL (det vigtigste)
+// MAIN SUBMIT CONTROL (det vigtigste)
 form.addEventListener("submit", async function (e) {
   // Stopper standard submit, så siden ikke reloades
   e.preventDefault();

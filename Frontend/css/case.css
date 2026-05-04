@@ -229,8 +229,8 @@ body {
 
 .duplicate-case-btn {
   border: none;
-  background-color: #e8f0ff;
-  color: #1d4ed8;
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 12px;

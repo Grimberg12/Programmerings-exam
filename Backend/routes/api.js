@@ -7,7 +7,6 @@ const express = require("express");
 const router = express.Router();
 
 // ── Importer routes ───────────────────────────────────────────────────────────
-const testDbRouter = require("./testRouteDB");
 const userRoutes = require("./userRoutes");
 const loginRoutes = require("./loginRoutes");
 const investmentcaseRoute = require("./investmentcaseRoute");
@@ -23,7 +22,6 @@ router.get("/health", (req, res) => {
 });
 
 // ── Monter routes ─────────────────────────────────────────────────────────────
-router.use("/", testDbRouter);
 router.use("/", userRoutes);
 router.use("/", loginRoutes);
 router.use("/", investmentcaseRoute);

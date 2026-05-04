@@ -3,7 +3,6 @@ const express = require("express");
 const path = require("path");
 
 const apiRouter = require("./routes/api");
-const webhookRouter = require("./routes/webhooks");
 
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
@@ -50,7 +49,6 @@ app.use(express.static(path.join(__dirname, "../Frontend/public")));
 
 // ── API og webhook routes ─────────────────────────────────────────────────────
 app.use("/api/v1", apiRouter);
-app.use("/webhooks", webhookRouter);
 
 // ── Fejlhåndtering ────────────────────────────────────────────────────────────
 app.use(notFound);

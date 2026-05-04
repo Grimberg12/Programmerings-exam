@@ -1,5 +1,3 @@
-"use strict";
-
 // ── Låneberegning ─────────────────────────────────────────────────────────────
 function beregnMånedligYdelse(beløb, rente, løbetidMdr, afdragsFriMdr = 0) {
   if (!beløb || beløb <= 0 || !løbetidMdr || løbetidMdr <= 0) return 0;
