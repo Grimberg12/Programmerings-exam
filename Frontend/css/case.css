@@ -226,3 +226,18 @@ body {
 .delete-case-btn:hover {
   opacity: 0.85;
 }
+
+.duplicate-case-btn {
+  border: none;
+  background-color: #e8f0ff;
+  color: #1d4ed8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-family);
+}
+
+.duplicate-case-btn:hover {
+  background-color: #dbeafe;
+}

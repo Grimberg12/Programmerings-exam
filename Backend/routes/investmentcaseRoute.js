@@ -604,5 +604,166 @@ router.put("/investment-cases/:id", async (req, res) => {
   }
 });
 
-// ── Eksporter router ──────────────────────────────────────────────────────────
+// Dupliker investeringscase og alle tilknyttede data
+router.post("/investment-cases/:id/duplicate", async (req, res) => {
+  let transaction;
+
+  try {
+    const { id } = req.params;
+    const pool = await db.connect();
+    transaction = new sql.Transaction(pool);
+
+    await transaction.begin();
+
+    // Opretter ny investeringscase baseret på den gamle
+    const caseResult = await new sql.Request(transaction)
+      .input("id", sql.Int, Number(id))
+      .query(`
+        INSERT INTO InvesteringsCase (
+          ejendomsProfilID,
+          caseNavn,
+          beskrivelse,
+          simuleringsAar
+        )
+        OUTPUT INSERTED.investeringsCaseID
+        SELECT
+          ejendomsProfilID,
+          LEFT('Kopi af ' + caseNavn, 50),
+          beskrivelse,
+          simuleringsAar
+        FROM InvesteringsCase
+        WHERE investeringsCaseID = @id;
+      `);
+
+    if (caseResult.recordset.length === 0) {
+      await transaction.rollback();
+
+      return res.status(404).json({
+        success: false,
+        message: "Den valgte investeringscase blev ikke fundet.",
+      });
+    }
+
+    const nyInvesteringsCaseID = caseResult.recordset[0].investeringsCaseID;
+
+    // Kopier købsomkostninger
+    await new sql.Request(transaction)
+      .input("gammelId", sql.Int, Number(id))
+      .input("nyId", sql.Int, nyInvesteringsCaseID)
+      .query(`
+        INSERT INTO KoebsOmkostninger (
+          investeringsCaseID,
+          pris,
+          egenKapital,
+          advokat,
+          tinglysning,
+          koeberRaadgivning,
+          andreOmkostninger,
+          noter
+        )
+        SELECT
+          @nyId,
+          pris,
+          egenKapital,
+          advokat,
+          tinglysning,
+          koeberRaadgivning,
+          andreOmkostninger,
+          'Kopieret fra tidligere case'
+        FROM KoebsOmkostninger
+        WHERE investeringsCaseID = @gammelId;
+      `);
+
+    // Kopier renoveringer og driftsomkostninger
+    await new sql.Request(transaction)
+      .input("gammelId", sql.Int, Number(id))
+      .input("nyId", sql.Int, nyInvesteringsCaseID)
+      .query(`
+        INSERT INTO Renovation (
+          investeringsCaseID,
+          navn,
+          beskrivelse,
+          planlagtStartDato,
+          omkostninger,
+          forventetVaerdiStigning
+        )
+        SELECT
+          @nyId,
+          navn,
+          beskrivelse,
+          planlagtStartDato,
+          omkostninger,
+          forventetVaerdiStigning
+        FROM Renovation
+        WHERE investeringsCaseID = @gammelId;
+      `);
+
+    // Kopier lån
+    await new sql.Request(transaction)
+      .input("gammelId", sql.Int, Number(id))
+      .input("nyId", sql.Int, nyInvesteringsCaseID)
+      .query(`
+        INSERT INTO Laan (
+          investeringsCaseID,
+          laaneBeloeb,
+          rente,
+          loebeTid,
+          laaneType
+        )
+        SELECT
+          @nyId,
+          laaneBeloeb,
+          rente,
+          loebeTid,
+          laaneType
+        FROM Laan
+        WHERE investeringsCaseID = @gammelId;
+      `);
+
+    // Kopier udlejning
+    await new sql.Request(transaction)
+      .input("gammelId", sql.Int, Number(id))
+      .input("nyId", sql.Int, nyInvesteringsCaseID)
+      .query(`
+        INSERT INTO Udlejning (
+          investeringsCaseID,
+          erLejeBolig,
+          lejeIndkomst,
+          lejeUdgifter,
+          depositum
+        )
+        SELECT
+          @nyId,
+          erLejeBolig,
+          lejeIndkomst,
+          lejeUdgifter,
+          depositum
+        FROM Udlejning
+        WHERE investeringsCaseID = @gammelId;
+      `);
+
+    await transaction.commit();
+
+    res.status(201).json({
+      success: true,
+      message: "Investeringscase duplikeret",
+      data: {
+        investeringsCaseID: nyInvesteringsCaseID,
+      },
+    });
+  } catch (error) {
+    console.error("Fejl ved duplikering af investeringscase:", error);
+
+    if (transaction) {
+      await transaction.rollback();
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Kunne ikke duplikere investeringscase.",
+    });
+  }
+});
+
+>>>>>>> 9506adf (Duplikerings funktion)
 module.exports = router;

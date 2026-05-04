@@ -53,6 +53,33 @@ async function sletCase(id) {
   render();
 }
 
+async function duplikerCase(id) {
+  const bekraeft = confirm("Vil du duplikere denne investeringscase?");
+
+  if (!bekraeft) return;
+
+  try {
+    const response = await fetch(`/api/v1/investment-cases/${id}/duplicate`, {
+      method: "POST"
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || "Kunne ikke duplikere case.");
+      return;
+    }
+
+    const nyCaseId = result.data.investeringsCaseID;
+
+    alert("Casen er duplikeret. Du åbner nu kopien.");
+    window.location.href = `/investeringscase.html?id=${nyCaseId}`;
+  } catch (error) {
+    console.error("Fejl ved duplikering:", error);
+    alert("Kunne ikke forbinde til serveren.");
+  }
+}
+
 function formatKr(amount) {
   return amount.toLocaleString("da-DK") + " kr.";
 }
@@ -136,20 +163,23 @@ async function render() {
         ${cashflowHtml}
       </div>
 
-      <div class="case-card__footer">
-        <span class="case-card__dato">Oprettet ${dato}</span><br>
-        <span class="case-card__dato">Sidst ændret ${ændretDato || "N/A"}</span>
+      <div class="case-card__actions">
+        <span class="case-card__link">Se detaljer</span>
 
-        <div class="case-card__actions">
-          <span class="case-card__link">Se detaljer</span>
+        <button 
+          class="duplicate-case-btn"
+          onclick="event.stopPropagation(); duplikerCase(${c.id});"
+        >
+          Dupliker
+        </button>
 
-          <button 
-            class="delete-case-btn"
-            onclick="event.stopPropagation(); sletCase(${c.id});"
-          >
-            Slet
-          </button>
-        </div>
+        <button 
+          class="delete-case-btn"
+          onclick="event.stopPropagation(); sletCase(${c.id});"
+        >
+          Slet
+        </button>
+      </div>
       </div>
     </div>
   </div>
