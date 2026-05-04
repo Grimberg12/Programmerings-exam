@@ -765,5 +765,4 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
   }
 });
 
->>>>>>> 9506adf (Duplikerings funktion)
 module.exports = router;
