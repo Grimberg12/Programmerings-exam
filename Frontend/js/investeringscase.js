@@ -108,6 +108,22 @@ function tegnLinjeGraf(container, serier, options = {}) {
   canvas.style.cssText = "width:100%;max-width:" + W + "px;display:block;border-radius:8px;";
   const ctx          = canvas.getContext("2d");
 
+  const cs = getComputedStyle(document.documentElement);
+  const C = {
+    bg:       cs.getPropertyValue("--chart-bg").trim(),
+    grid:     cs.getPropertyValue("--chart-grid").trim(),
+    axisText: cs.getPropertyValue("--chart-axis-text").trim(),
+    baseline: cs.getPropertyValue("--chart-baseline").trim(),
+    label:    cs.getPropertyValue("--chart-label").trim(),
+    farver: [
+      cs.getPropertyValue("--chart-color-1").trim(),
+      cs.getPropertyValue("--chart-color-2").trim(),
+      cs.getPropertyValue("--chart-color-3").trim(),
+      cs.getPropertyValue("--chart-color-4").trim(),
+      cs.getPropertyValue("--chart-color-5").trim(),
+    ],
+  };
+
   const alleY = serier.flatMap(s => s.data);
   const minY  = Math.min(0, ...alleY);
   const maxY  = Math.max(...alleY, 1);
@@ -116,16 +132,16 @@ function tegnLinjeGraf(container, serier, options = {}) {
   const xPos = i => PAD.left + (i / 29) * (W - PAD.left - PAD.right);
   const yPos = v => PAD.top  + (1 - (v - minY) / spanY) * (H - PAD.top - PAD.bottom);
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = C.bg;
   ctx.fillRect(0, 0, W, H);
 
   // Vandrette gitterlinjer + y-etiketter
   for (let t = 0; t <= 5; t++) {
     const v = minY + (spanY * t / 5);
     const y = yPos(v);
-    ctx.strokeStyle = "#e5e7eb"; ctx.lineWidth = 1;
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
-    ctx.fillStyle = "#9ca3af"; ctx.font = "11px Arial"; ctx.textAlign = "right";
+    ctx.fillStyle = C.axisText; ctx.font = "11px Arial"; ctx.textAlign = "right";
     const abs = Math.abs(v);
     const lbl = abs >= 1e6 ? (v / 1e6).toFixed(1) + " mio." : abs >= 1000 ? (v / 1000).toFixed(0) + "k" : Math.round(v).toString();
     ctx.fillText(lbl, PAD.left - 4, y + 4);
@@ -135,24 +151,23 @@ function tegnLinjeGraf(container, serier, options = {}) {
   ctx.textAlign = "center";
   for (let år = 5; år <= 30; år += 5) {
     const x = xPos(år - 1);
-    ctx.strokeStyle = "#e5e7eb"; ctx.lineWidth = 1;
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, H - PAD.bottom); ctx.stroke();
-    ctx.fillStyle = "#9ca3af"; ctx.font = "11px Arial";
+    ctx.fillStyle = C.axisText; ctx.font = "11px Arial";
     ctx.fillText("År " + år, x, H - PAD.bottom + 14);
   }
 
   // Nul-linje
   if (minY < 0) {
     const y0 = yPos(0);
-    ctx.strokeStyle = "#6b7280"; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = C.baseline; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(PAD.left, y0); ctx.lineTo(W - PAD.right, y0); ctx.stroke();
     ctx.setLineDash([]);
   }
 
   // Linjer
-  const farver = ["#4f46e5", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
   serier.forEach((serie, si) => {
-    const farve = serie.farve || farver[si % farver.length];
+    const farve = serie.farve || C.farver[si % C.farver.length];
     ctx.strokeStyle = farve; ctx.lineWidth = 2.5;
     ctx.setLineDash(serie.stiplet ? [6, 3] : []);
     ctx.beginPath();
@@ -169,12 +184,12 @@ function tegnLinjeGraf(container, serier, options = {}) {
   const lx0   = PAD.left;
   const ly0   = H - PAD.bottom + 28;
   serier.forEach((serie, si) => {
-    const farve = serie.farve || farver[si % farver.length];
+    const farve = serie.farve || C.farver[si % C.farver.length];
     const lx    = lx0 + (si % kol) * 200;
     const ly    = ly0 + Math.floor(si / kol) * 16;
     ctx.fillStyle = farve;
     ctx.fillRect(lx, ly - 4, 16, 4);
-    ctx.fillStyle = "#374151"; ctx.font = "11px Arial"; ctx.textAlign = "left";
+    ctx.fillStyle = C.label; ctx.font = "11px Arial"; ctx.textAlign = "left";
     ctx.fillText(serie.label, lx + 20, ly);
   });
 
@@ -514,8 +529,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (grafContainer) {
         grafContainer.innerHTML = "";
         tegnLinjeGraf(grafContainer, [
-          { label: "Akkumuleret cashflow", data: cashflowData, farve: "#4f46e5" },
-          { label: "Egenkapital",          data: egenkapitalData, farve: "#10b981" }
+          { label: "Akkumuleret cashflow", data: cashflowData },
+          { label: "Egenkapital",          data: egenkapitalData }
         ]);
       }
     }

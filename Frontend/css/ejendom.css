@@ -53,7 +53,7 @@
 }
 
 
-/* Button styling moved to color.css */
+/* Button styling moved to global.css */
 #openFormButton-investeringscase {
   margin-top: 20px;
 }
@@ -121,7 +121,7 @@
   border-radius: 6px;
 }
 
-/* Button styling moved to color.css */
+/* Button styling moved to global.css */
 
 /* Tooltip styling til info */
 .tooltip {
@@ -152,7 +152,7 @@
   margin-bottom: 32px;
   margin-top: 0;
   padding-top: 32px;
-  border-top: 2px solid #f0f0f0;
+  border-top: 2px solid var(--hover-bg);
   font-size: 28px;
   font-weight: 700;
   color: var(--text-color);
@@ -215,7 +215,7 @@ main > h1 {
   position: relative;
 }
 
-/* Delete button styling moved to color.css */
+/* Delete button styling moved to global.css */
 
 /* Case header with title and delete button */
 .case-header {
@@ -232,8 +232,8 @@ main > h1 {
 }
 
 .success-message {
-  background-color: #4CAF50;
-  color: white;
+  background-color: var(--success-bg);
+  color: var(--white);
   padding: 15px;
   text-align: center;
   font-weight: bold;
@@ -389,7 +389,7 @@ main > h1 {
 /* ── Live ydelsesvisning i wizard ───────────────────────────── */
 .ydelse-info-boks {
   background: var(--status-good-bg);
-  border: 1px solid #a3d9b1;
+  border: 1px solid var(--ydelse-border);
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;

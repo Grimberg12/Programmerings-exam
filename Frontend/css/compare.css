@@ -94,7 +94,7 @@ body {
 
 .compare-card--valgt {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(141, 146, 192, 0.25);
+  box-shadow: 0 0 0 3px var(--primary-alpha-25);
 }
 
 .compare-card--disabled {
@@ -158,7 +158,7 @@ body {
   font-size: 12px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(141, 146, 192, 0.15);
+  background: var(--primary-alpha-15);
   color: var(--primary-color);
   font-weight: 600;
 }

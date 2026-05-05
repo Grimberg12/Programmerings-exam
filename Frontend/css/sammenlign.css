@@ -172,7 +172,7 @@ body {
 }
 
 .sim30-milepæl {
-  background: rgba(141, 146, 192, 0.07);
+  background: var(--primary-alpha-07);
 }
 
 .sim30-milepæl td {
@@ -185,7 +185,7 @@ body {
 
 .sim30-case-header {
   text-align: center !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--white-alpha-20);
   font-size: 14px !important;
 }
 

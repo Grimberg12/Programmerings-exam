@@ -171,7 +171,7 @@ main > h1 {
 
 .edit-case-btn:hover {
   background: var(--hover-bg);
-  border-color: #bbb !important;
+  border-color: var(--edit-btn-hover-border) !important;
   transform: none;
   box-shadow: none;
 }

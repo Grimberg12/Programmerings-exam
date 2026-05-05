@@ -32,6 +32,46 @@
   --status-neutral-text: #856404;
   --status-bad-bg: #f8d7da;
   --status-bad-text: #842029;
+
+  /* Succes */
+  --success-bg: #4caf50;
+
+  /* Søgeknap */
+  --search-btn-bg: #2f80ed;
+
+  /* Slet-knap (neutral) */
+  --delete-btn-border: #ccc;
+  --delete-btn-text: #999;
+  --delete-btn-hover-bg: #cecece;
+  --delete-btn-hover-border: #ddd;
+  --delete-btn-hover-text: #666;
+
+  /* Redigér-knap hover */
+  --edit-btn-hover-border: #bbb;
+
+  /* Ydelse info boks */
+  --ydelse-border: #a3d9b1;
+
+  /* Primary farve med gennemsigtighed */
+  --primary-alpha-07: rgba(141, 146, 192, 0.07);
+  --primary-alpha-15: rgba(141, 146, 192, 0.15);
+  --primary-alpha-25: rgba(141, 146, 192, 0.25);
+
+  /* Hvid med gennemsigtighed */
+  --white-alpha-20: rgba(255, 255, 255, 0.2);
+
+  /* Graf-farver */
+  --chart-bg: #ffffff;
+  --chart-grid: #e5e7eb;
+  --chart-axis-text: #9ca3af;
+  --chart-baseline: #6b7280;
+  --chart-label: #374151;
+  --chart-color-1: #4f46e5;
+  --chart-color-2: #10b981;
+  --chart-color-3: #f59e0b;
+  --chart-color-4: #ef4444;
+  --chart-color-5: #8b5cf6;
+  --chart-color-6: #06b6d4;
 }
 
 
@@ -50,7 +90,7 @@
   text-align: left;
   padding: 8px;
   border-radius: 6px;
-  border: black 1px solid;
+  border: 1px solid var(--text-color);
 
   position: absolute;
   z-index: 1;
@@ -72,7 +112,7 @@
 .divider {
   margin: 40px auto;
   border: none;
-  border-top: 2px solid #f0f0f0;
+  border-top: 2px solid var(--hover-bg);
   max-width: 800px;
 }
 
@@ -118,8 +158,8 @@ button {
 
 /* Search button variant */
 .search-button {
-  background: #2f80ed;
-  color: white;
+  background: var(--search-btn-bg);
+  color: var(--white);
   padding: 12px 25px;
   border-radius: 50px;
 }
@@ -132,7 +172,7 @@ button {
 /* Delete button variant - neutral design */
 .case-delete-button {
   background-color: transparent;
-  border: 1px solid #ccc !important;
+  border: 1px solid var(--delete-btn-border) !important;
   border-radius: 4px;
   width: 28px;
   height: 28px;
@@ -140,15 +180,15 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  color: #999;
+  color: var(--delete-btn-text);
   padding: 0;
   flex-shrink: 0;
 }
 
 .case-delete-button:hover {
-  background-color: #cecece;
-  border-color: #ddd;
-  color: #666;
+  background-color: var(--delete-btn-hover-bg);
+  border-color: var(--delete-btn-hover-border);
+  color: var(--delete-btn-hover-text);
   transform: none;
   box-shadow: none;
 }
