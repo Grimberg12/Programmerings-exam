@@ -1,3 +1,4 @@
+// Henter brugerens investeringscases fra backend og mapper feltnavne til dansk JS-format.
 async function hentCases() {
   const savedUser = localStorage.getItem("loggedInUser");
 
@@ -33,6 +34,7 @@ async function hentCases() {
   }));
 }
 
+// Backend håndterer cascade-sletning: lån, renovation, udlejning, omkostninger og casen selv.
 async function sletCase(id) {
   const bekraeft = confirm("Er du sikker på, at du vil slette denne investeringscase?");
 
@@ -53,6 +55,7 @@ async function sletCase(id) {
   render();
 }
 
+// Backend kopierer hele casen (inkl. lån, renovation, udlejning) til en ny case med "Kopi af"-navn.
 async function duplikerCase(id) {
   const bekraeft = confirm("Vil du duplikere denne investeringscase?");
 
@@ -84,6 +87,7 @@ function formatKr(amount) {
   return amount.toLocaleString("da-DK") + " kr.";
 }
 
+// Spread-kopi ([...cases]) ved sort så det originale array ikke muteres.
 function sorter(cases, valg) {
   const k = [...cases];
   if (valg === "dato-desc") return k.sort((a, b) => new Date(b.oprettetDato) - new Date(a.oprettetDato));
@@ -96,6 +100,7 @@ function sorter(cases, valg) {
   return k;
 }
 
+// Re-henter og gentegner hele grid-oversigten ved hvert kald (inkl. efter sletning/duplikering).
 async function render() {
   const valg = document.getElementById("sortSelect").value;
   const cases = await hentCases();

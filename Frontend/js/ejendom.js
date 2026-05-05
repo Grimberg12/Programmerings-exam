@@ -1,4 +1,5 @@
-// parseNumber og formatNumberDK er defineret her øverst så alle funktioner kan bruge dem
+// parseNumber fjerner alt ikke-numerisk og returnerer et tal. formatNumberDK laver dansk 1.000-format.
+// Begge bruges overalt i formularen til at håndtere input med "kr." suffiks og kommaer.
 function parseNumber(value) {
   return Number(String(value || "").replace(/\D/g, ""));
 }
@@ -10,6 +11,7 @@ function formatNumberDK(value) {
 }
 
 // ── Låneberegningshjælpere (bruges til live ydelsesvisning i wizarden) ───────
+// Duplikeret fra sammenlign.js så ejendom.js er selvstændig — samme annuitetsformel.
 function beregnMånedligYdelseWizard(beløb, rente, løbetidMdr, afdragsFriMdr) {
   if (!beløb || beløb <= 0 || !løbetidMdr || løbetidMdr <= 0) return 0;
   const i = rente / 12;
@@ -54,6 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   let editCaseId = null;
 
   // ── Edit-mode: udfyld formular fra localStorage ──────────────────
+  // Edit-flow: investeringscase.js gemmer caseData i localStorage["editCase"] og redirecter hertil.
+  // Her læser vi det, fyldes formularen ud og skifte submit-url til PUT i stedet for POST.
   const editCaseRaw = localStorage.getItem("editCase");
   if (editCaseRaw) {
     const ec = JSON.parse(editCaseRaw);
@@ -166,6 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function getNumber(input) { return parseNumber(input?.value); }
 
+  // Foreslår realkreditlån baseret på 80%-loft (realkreditlovens grænse) og vis banklån-hint ved lav egenkapital.
   function updateMortgagePlaceholder() {
     if (!koebsPrisInput || !egenkapitalInput || !mortgageInput) return;
     const koebsPris   = getNumber(koebsPrisInput);
@@ -222,6 +227,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const otherLoansInterest = document.getElementById("otherLoansInterest");
   const otherLoansTerm     = document.getElementById("otherLoansTerm");
 
+  // Viser/skjuler lånedetaljer dynamisk baseret på om der er et beløb i hoved-inputtet.
+  // Sætter required=true på underfelter kun når de er synlige, så HTML-validering ikke blokerer.
   function toggleLoanSection(inputField, detailSection, fields) {
     if (!inputField || !detailSection || !fields) return;
     const value = parseNumber(inputField.value);
@@ -374,7 +381,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       };
 
-      // Backend-payload — rente sendes som procent (backend dividerer ikke selv)
+      // Backend-payload: rente sendes som procent (fx 3.5 for 3,5%) — backend gemmer det direkte i DB.
+      // Låndata gemmes BÅDE i DB (beløb/rente/løbetid) OG i localStorage (fuld objekt inkl. afdragsfri),
+      // fordi backend ikke returnerer låndata i GET — investeringscase.js henter det fra localStorage.
       const backendPayload = {
         ejendomsProfilID:  opdateretCase.ejendomsProfilID,
         caseNavn:          opdateretCase.navn,

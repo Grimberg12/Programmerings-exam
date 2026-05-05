@@ -4,6 +4,8 @@ const router = express.Router();
 const { db, sql } = require("../services/db");
 
 // ── POST /ejendomsProfil ──────────────────────────────────────────────────────
+// UPSERT-mønster: finder eller opretter adresse i Adresse-tabellen inden profil oprettes.
+// En bruger kan kun have én profil per adresse — dubletter afvises med 409.
 router.post("/ejendomsProfil", async (req, res) => {
   try {
     const {
@@ -228,7 +230,7 @@ router.get("/ejendomsprofiler/:id", async (req, res) => {
 });
 
 // ── PUT /ejendomsprofiler/:id ─────────────────────────────────────────────────
-// Opdaterer kun de felter brugeren må redigere: boligareal og antal værelser
+// Kun boligareal og antal værelser kan redigeres — adresse og BBR-data er fra ekstern kilde.
 router.put("/ejendomsprofiler/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -296,6 +298,8 @@ router.put("/ejendomsprofiler/:id", async (req, res) => {
 });
 
 // ── DELETE /ejendomsprofiler/:id ──────────────────────────────────────────────
+// Cascade-sletning i SQL-transaktion: henter alle cases → sletter undertabeller per case → sletter profil.
+// Transaction sikrer at alt slettes eller intet (atomisk operation).
 router.delete("/ejendomsprofiler/:id", async (req, res) => {
   let transaction;
 

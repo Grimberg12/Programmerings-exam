@@ -1,11 +1,14 @@
-// Hetner formular og felter fra HTML-input
+// Registreringsformular med to-trins klient-validering (styrke + match) inden POST til backend.
+// Backend tjekker om email allerede er i brug og returnerer fejl ved dubletter.
+
+// Henter formular og felter fra HTML
 const form = document.getElementById("registerForm");
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirm_password");
 const passwordError = document.getElementById("passwordError");
 const registerMessage = document.getElementById("registerMessage");
 
-// Password styrke validering
+// Password-styrke: kræver mindst ét bogstav, ét tal og 8 tegns længde
 function validatePassword() {
   const value = passwordInput.value;
 

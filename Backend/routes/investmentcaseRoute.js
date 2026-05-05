@@ -4,6 +4,9 @@ const router = express.Router();
 const { db, sql } = require("../services/db");
 
 // ── POST /investment-cases ────────────────────────────────────────────────────
+// Opretter case i én SQL-transaktion: InvesteringsCase → KoebsOmkostninger → Renovation → Laan → Udlejning.
+// Driftsomkostninger gemmes i Renovation-tabellen (genbrug af eksisterende tabel til løbende udgifter).
+// Op til 3 lån (realkredit, bank, andre) — kun dem med beløb > 0 indsættes.
 router.post("/investment-cases", async (req, res) => {
   let transaction;
 
@@ -297,6 +300,8 @@ router.post("/investment-cases", async (req, res) => {
 });
 
 // ── GET /users/:brugerID/investment-cases ─────────────────────────────────────
+// JOIN-query samler data fra 5 tabeller. Renoveringsomkostninger summeres via subquery.
+// NB: Låndata (rente, løbetid, afdragsfri) returneres ikke — de hentes fra localStorage af frontend.
 router.get("/users/:brugerID/investment-cases", async (req, res) => {
   try {
     const { brugerID } = req.params;
@@ -673,7 +678,9 @@ router.put("/investment-cases/:id", async (req, res) => {
   }
 });
 
-// Dupliker investeringscase og alle tilknyttede data
+// ── POST /investment-cases/:id/duplicate ──────────────────────────────────────
+// Kopierer hele casen med SQL SELECT INTO: InvesteringsCase, KoebsOmkostninger, Renovation, Laan, Udlejning.
+// OBS: Kopierer ikke localStorage-låndata — bruger skal åbne kopien og gemme for at synkronisere.
 router.post("/investment-cases/:id/duplicate", async (req, res) => {
   let transaction;
 

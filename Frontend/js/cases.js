@@ -4,6 +4,7 @@
 let alleCases = [];
 
 // ── Hent alle investeringscases for den loggede bruger ────────────────────────
+// Mapper backend-feltnavne (camelCase SQL) til danske JS-navne, og konverterer strenge til tal.
 async function hentCases() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) { window.location.href = "/login.html"; return []; }
@@ -32,6 +33,7 @@ async function hentCases() {
 }
 
 // ── Sortér cases efter valgt kriterie ────────────────────────────────────────
+// Spread-kopi ([...cases]) bruges så alleCases ikke muteres ved sortering — original bevares til næste sort.
 function sorter(cases, valg) {
   const k = [...cases];
   if (valg === "dato")        return k.sort((a, b) => new Date(b.oprettetDato) - new Date(a.oprettetDato));
@@ -43,6 +45,7 @@ function sorter(cases, valg) {
 }
 
 // ── Render case-liste i DOM ───────────────────────────────────────────────────
+// Bruger alleCases (global, sat ved load) og sorterer ved hvert kald — ingen re-fetch.
 function render() {
   const valg     = document.getElementById("sortSelect").value;
   const sorterede = sorter(alleCases, valg);

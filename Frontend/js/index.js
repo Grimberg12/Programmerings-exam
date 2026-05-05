@@ -40,6 +40,7 @@ function formatDatoTid(dato) {
 }
 
 // ── Vis relaterede investeringscases på ejendomssiden ─────────────────────────
+// Vises kun på ejendom.html ved ID-opslag fra database (ikke ved ny adressesøgning fra forsiden).
 async function renderRelateredeCases(ejendomsProfilID) {
   const heading = document.getElementById("relatedCasesHeading");
   const container = document.getElementById("relatedCases");
@@ -107,8 +108,9 @@ async function renderRelateredeCases(ejendomsProfilID) {
 }
 
 // ── Vis BBR-data og kort på ejendomssiden ─────────────────────────────────────
-// Henter BBR-data fra backend og viser dem på ejendomssiden
-// Kører kun hvis siden har et #propertyDetails element (dvs. ejendom.html)
+// Kører på ejendom.html. To flows:
+// (1) adresseid i URL = ny adresse fra søgning → henter BBR og kort direkte.
+// (2) id i URL = eksisterende profil fra DB → henter fra backend og slår DAWA-koordinater op til kort.
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const adresseid = params.get("adresseid");
@@ -137,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const property = result.data;
         renderRelateredeCases(id);
 
-        // Slå DAWA adresseid op fra adressekomponenter, så vi kan hente kort
+        // Databasen gemmer kun vejnavn/nr/postnr — vi slår DAWA-UUID op herfra for at kunne hente kort.
         let luftfotoUrl = "";
         let matrikelUrl = "";
         try {

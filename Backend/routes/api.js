@@ -14,6 +14,7 @@ const ejendomsprofilRoute = require("./ejendomsprofilRoute");
 const bbrRoutes = require("./bbrRoutes");
 
 // ── Health-check endpoint ─────────────────────────────────────────────────────
+// Bruges til at teste at serveren kører uden at ramme databasen — nyttigt til debugging.
 router.get("/health", (req, res) => {
   res.status(200).json({
     success: true,

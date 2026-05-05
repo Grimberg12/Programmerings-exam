@@ -3,6 +3,7 @@ require("dotenv").config();
 const sql = require("mssql");
 
 // ── Database-klasse med lazy connection pool ──────────────────────────────────
+// Singleton-mønster: kun én instans eksporteres. Pool genanvendes ved alle kald — forbinder kun ved første brug.
 class Database {
   constructor() {
     this.config = {

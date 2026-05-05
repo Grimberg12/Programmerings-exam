@@ -1,3 +1,6 @@
+// Express-applikation: serverer frontend som statiske filer og monterer API-router på /api/v1.
+// Starter kun serveren efter vellykket DB-forbindelse (fail-fast mønster).
+
 // ── Importer moduler ──────────────────────────────────────────────────────────
 const express = require("express");
 const path = require("path");
@@ -18,6 +21,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// Tillader alle origins (*) — acceptabelt til eksamen men bør begrænses i produktion.
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -40,6 +44,7 @@ app.use((req, res, next) => {
 });
 
 // ── Statiske mapper ───────────────────────────────────────────────────────────
+// Frontend/public serveres som rod — Express finder automatisk index.html og de andre HTML-sider.
 app.use("/css", express.static(path.join(__dirname, "../Frontend/css")));
 app.use("/js", express.static(path.join(__dirname, "../Frontend/js")));
 app.use("/layout", express.static(path.join(__dirname, "../Frontend/layout")));

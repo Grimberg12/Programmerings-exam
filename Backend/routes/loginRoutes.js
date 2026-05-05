@@ -4,6 +4,8 @@ const router = express.Router();
 const { db, sql } = require("../services/db");
 
 // ── POST /api/v1/users/login ──────────────────────────────────────────────────
+// Slår email op i DB og sammenligner adgangskode direkte (plaintext — se userRoutes).
+// Ved succes returneres brugerID, navn, email og brugerStatus — frontend gemmer det i localStorage.
 router.post("/users/login", async (req, res) => {
   try {
     const { email, adgangskode } = req.body;

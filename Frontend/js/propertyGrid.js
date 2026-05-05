@@ -1,4 +1,5 @@
 // ── Hent ejendomme fra backend ────────────────────────────────────────────────
+// Henter alle ejendomsprofiler for den loggede bruger. brugerID læses fra localStorage-session.
 async function hentEjendomme() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) {
@@ -30,6 +31,7 @@ function formatDato(dato) {
 }
 
 // ── Slet ejendomsprofil med bekræftelsesdialog ───────────────────────────────
+// Backend håndterer cascade-sletning i én SQL-transaktion: cases → lån/renovation/udlejning → profil.
 async function sletEjendomsprofil(id) {
   const bekraeft = confirm("Er du sikker på, at du vil slette denne ejendomsprofil? Alle tilknyttede investeringscases bliver også slettet.");
 
@@ -51,6 +53,7 @@ async function sletEjendomsprofil(id) {
 }
 
 // ── Byg og vis ejendomsgrid i DOM ────────────────────────────────────────────
+// Henter og gentegner hele griddet fra scratch — også efter sletning. Klik på et kort navigerer til ejendom.html?id=...
 async function renderPropertyGrid() {
   const gridContainer = document.getElementById("propertyGrid");
   const propertyCount = document.getElementById("propertyCount");

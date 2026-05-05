@@ -4,6 +4,9 @@ const router = express.Router();
 const { db, sql } = require("../services/db");
 
 // ── POST /api/v1/users/register ───────────────────────────────────────────────
+// Opretter bruger i DB. Tjekker for email-dubletter inden insert.
+// OBS: Adgangskode gemmes i PLAINTEXT — kendt begrænsning; bcrypt bruges i produktion.
+// Alle nye brugere får brugerStatus "Freemium" (premium-logik er ikke implementeret).
 router.post("/users/register", async (req, res) => {
   try {
     const {

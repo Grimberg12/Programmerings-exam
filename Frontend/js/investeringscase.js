@@ -1,4 +1,6 @@
 "use strict";
+// Henter case-data fra backend + låndata fra localStorage og beregner 7 finansielle metrikker.
+// Viser detaljeside, simuleringstabel og 30-årig simulering med linjegraf.
 
 let caseData = null;
 
@@ -47,6 +49,8 @@ function hentLånDataFraStorage(caseId) {
 }
 
 // ── hentCase ─────────────────────────────────────────────────────────────────
+// Henter alle brugerens cases og finder den der matcher URL-parameteren ?id=.
+// Backend returnerer ikke låndata (afdragsfri, type) — det suppleres fra localStorage.
 async function hentCase() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) { window.location.href = "/login.html"; return null; }
@@ -97,6 +101,8 @@ async function hentCase() {
 }
 
 // ── Graf ─────────────────────────────────────────────────────────────────────
+// Tegner linjegraf med Canvas API. Farver og baggrund hentes fra CSS-variabler i global.css.
+// Beregner automatisk min/max og viser nul-linje ved negative værdier.
 function tegnLinjeGraf(container, serier, options = {}) {
   const W   = Math.min(container.clientWidth || 700, 900);
   const H   = options.height || 280;
@@ -283,6 +289,8 @@ function renderInvestmentCaseDetails() {
 }
 
 // ── renderSimulationTabel ─────────────────────────────────────────────────────
+// Beregner 7 finansielle metrikker: cashflow, ydelse, egenkapitalforrentning (EKF) og gældsgrad.
+// EKF > 8% = god, 3-8% = neutral, < 3% = dårlig. Gældsgrad < 60% = god, > 80% = dårlig.
 function renderSimulationTabel() {
   const månedligLeje      = caseData.udlejning.månedligLeje;
   const månedligeUdgifter = caseData.udlejning.månedligUdgifter;
@@ -397,6 +405,8 @@ function renderSimulationTabel() {
 }
 
 // ── render30ÅrTabel ───────────────────────────────────────────────────────────
+// Simulerer 30 år: cashflow akkumuleres år for år, restgæld beregnes via annuitetsformel,
+// egenkapital = købspris − restgæld. Markerer milepæle (år 5, 10, 15...) og begivenheder (lån udløber).
 function render30ÅrTabel() {
   const driftsMd = caseData.driftsOmkostninger || 0;
   const månedligtCashflow = (caseData.udlejning.udlejes

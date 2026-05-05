@@ -1,4 +1,5 @@
 // ── Hent alle cases fra backend ───────────────────────────────────────────────
+// Samme datahentning som cases.js og sammenlign.js — henter brugerens cases til valg-grid.
 async function hentCases() {
   const savedUser = localStorage.getItem("loggedInUser");
   if (!savedUser) { window.location.href = "/login.html"; return []; }
@@ -29,6 +30,7 @@ async function hentCases() {
 }
 
 // ── Tilstand: hvilke cases er valgt (maks. 3) ─────────────────────────────────
+// Set bruges fordi det håndterer dubletter automatisk og gør toggle-logikken simpel.
 const valgte = new Set();
 
 // ── Hjælpefunktion: formatér beløb til dansk ─────────────────────────────────
@@ -37,6 +39,7 @@ function formatKr(amount) {
 }
 
 // ── Render sammenligningsgrid med alle cases ──────────────────────────────────
+// Re-fetcher cases fra backend ved hvert kald og markerer valgte/disabled kort.
 async function render() {
   const grid    = document.getElementById("compareGrid");
   const maxNået = valgte.size >= 3;
@@ -92,6 +95,7 @@ async function render() {
 }
 
 // ── Slå valg til/fra for én case ─────────────────────────────────────────────
+// Tilføjer/fjerner case fra Set. Max 3 håndhæves her — sammenlignBtn aktiveres ved ≥ 2 valgte.
 function toggleValg(id) {
   if (valgte.has(id)) {
     valgte.delete(id);
