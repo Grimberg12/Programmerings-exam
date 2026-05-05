@@ -414,3 +414,22 @@ main > h1 {
   font-size: 14px;
   margin-bottom: 16px;
 }
+
+.related-case-card {
+  background: #fff;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.related-case-card h3 {
+  margin-top: 0;
+}
+
+.related-case-card a {
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 600;
+}

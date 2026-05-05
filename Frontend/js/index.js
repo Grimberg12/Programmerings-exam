@@ -16,8 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ── Kan muligvis slettes: INDEX_BYGNINGSANVENDELSE bruges ikke her ────────────
-// SKAL DET HER FJERNES HELT?????
+// ── Kan muligvis slettes: Bliver brugt ved redirect til ejendomsprofil istedet for database kald
 const INDEX_BYGNINGSANVENDELSE = {
   110: "Stuehus til landbrugsejendom",
   120: "Fritliggende enfamiliehus",
@@ -27,6 +26,74 @@ const INDEX_BYGNINGSANVENDELSE = {
   160: "Fritidshus",
   190: "Anden helårsbeboelse"
 };
+
+// ── Vis relaterede investeringscases på ejendomssiden ─────────────────────────
+async function renderRelateredeCases(ejendomsProfilID) {
+  const heading = document.getElementById("relatedCasesHeading");
+  const container = document.getElementById("relatedCases");
+
+  if (!heading || !container) return;
+
+  try {
+    container.innerHTML = "<p>Henter relaterede investeringscases...</p>";
+
+    const response = await fetch(`/api/v1/ejendomsprofiler/${ejendomsProfilID}/investment-cases`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Kunne ikke hente cases.");
+    }
+
+    const cases = result.data;
+
+    if (cases.length === 0) {
+      container.innerHTML = `
+        <p>Denne ejendomsprofil har endnu ingen tilknyttede investeringscases.</p>
+      `;
+      return;
+    }
+
+    container.innerHTML = cases.map(c => {
+      const dato = c.datoOprettet
+        ? new Date(c.datoOprettet).toLocaleDateString("da-DK")
+        : "Ukendt dato";
+
+      const koebsPris = Number(c.koebsPris || 0).toLocaleString("da-DK");
+      const egenKapital = Number(c.egenKapital || 0).toLocaleString("da-DK");
+
+      const cashflow =
+        c.erLejeBolig
+          ? Number(c.lejeIndkomst || 0) - Number(c.lejeUdgifter || 0)
+          : null;
+
+      return `
+        <div class="related-case-card">
+          <h3>${c.navn}</h3>
+          <p>${c.beskrivelse || "Ingen beskrivelse"}</p>
+
+          <p><strong>Oprettet:</strong> ${dato}</p>
+          <p><strong>Simuleringsperiode:</strong> ${c.simuleringsAar || "–"} år</p>
+          <p><strong>Købspris:</strong> ${koebsPris} kr.</p>
+          <p><strong>Egenkapital:</strong> ${egenKapital} kr.</p>
+
+          ${
+            cashflow !== null
+              ? `<p><strong>Cashflow/md.:</strong> ${cashflow.toLocaleString("da-DK")} kr.</p>`
+              : `<p><strong>Udlejning:</strong> Nej</p>`
+          }
+
+          <a href="/investeringscase.html?id=${c.id}">Se investeringscase →</a>
+        </div>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error("Fejl ved visning af relaterede cases:", error);
+    container.innerHTML = `
+      <p>Kunne ikke hente relaterede investeringscases.</p>
+    `;
+  }
+}
 
 // ── Vis BBR-data og kort på ejendomssiden ─────────────────────────────────────
 // Henter BBR-data fra backend og viser dem på ejendomssiden
@@ -57,6 +124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const property = result.data;
+      renderRelateredeCases(id);
 
       // Slå DAWA adresseid op fra adressekomponenter, så vi kan hente kort
       let luftfotoUrl = "";
@@ -114,6 +182,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
   return;
 }
+
+  const relatedHeading = document.getElementById("relatedCasesHeading");
+  const relatedCases = document.getElementById("relatedCases");
+
+  if (relatedHeading) relatedHeading.style.display = "none";
+  if (relatedCases) relatedCases.style.display = "none";
 
   container.innerHTML = `<p>Henter ejendomsdata fra BBR...</p>`;
 

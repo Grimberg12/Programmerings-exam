@@ -348,6 +348,53 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
   }
 });
 
+// ── GET /ejendomsprofiler/:id/investment-cases ────────────────────────────────
+router.get("/ejendomsprofiler/:id/investment-cases", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await db.connect();
+
+    const result = await pool
+      .request()
+      .input("ejendomsProfilID", sql.Int, Number(id))
+      .query(`
+        SELECT 
+          ic.investeringsCaseID AS id,
+          ic.caseNavn AS navn,
+          ic.beskrivelse,
+          ic.simuleringsAar,
+          ic.datoOprettet,
+          ic.datoAendret,
+
+          ko.pris AS koebsPris,
+          ko.egenKapital,
+
+          u.erLejeBolig,
+          u.lejeIndkomst,
+          u.lejeUdgifter
+        FROM InvesteringsCase ic
+        LEFT JOIN KoebsOmkostninger ko 
+          ON ic.investeringsCaseID = ko.investeringsCaseID
+        LEFT JOIN Udlejning u 
+          ON ic.investeringsCaseID = u.investeringsCaseID
+        WHERE ic.ejendomsProfilID = @ejendomsProfilID
+        ORDER BY ic.datoOprettet DESC
+      `);
+
+    res.json({
+      success: true,
+      data: result.recordset
+    });
+
+  } catch (error) {
+    console.error("Fejl ved hentning af relaterede investeringscases:", error);
+    res.status(500).json({
+      success: false,
+      message: "Kunne ikke hente relaterede investeringscases."
+    });
+  }
+});
+
 // ── DELETE /investment-cases/:id ──────────────────────────────────────────────
 router.delete("/investment-cases/:id", async (req, res) => {
   try {
