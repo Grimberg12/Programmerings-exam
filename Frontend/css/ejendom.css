@@ -433,3 +433,47 @@ main > h1 {
   margin-top: 10px;
   font-weight: 600;
 }
+
+.edit-property-box {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--background-color);
+}
+
+.edit-property-box h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.edit-property-box .form-hint {
+  margin-bottom: 16px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+#editPropertyMessage {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none;
+}
+
+.property-actions {
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.secondary-btn {
+  margin-left: 8px;
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+  background-color: var(--border-color);
+}

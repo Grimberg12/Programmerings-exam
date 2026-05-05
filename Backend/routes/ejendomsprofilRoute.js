@@ -199,7 +199,8 @@ router.get("/ejendomsprofiler/:id", async (req, res) => {
           ep.byggeAar,
           ep.boligArealM2 AS boligAreal,
           ep.antalVaerelser,
-          ep.grundArealM2 AS grundAreal
+          ep.grundArealM2 AS grundAreal,
+          ep.datoAendret
         FROM EjendomsProfil ep
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
         WHERE ep.ejendomsProfilID = @id
@@ -222,6 +223,74 @@ router.get("/ejendomsprofiler/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Kunne ikke hente ejendomsprofil."
+    });
+  }
+});
+
+// ── PUT /ejendomsprofiler/:id ─────────────────────────────────────────────────
+// Opdaterer kun de felter brugeren må redigere: boligareal og antal værelser
+router.put("/ejendomsprofiler/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { boligAreal, antalVaerelser } = req.body;
+
+    const boligArealNumber = Number(boligAreal);
+    const antalVaerelserNumber = Number(antalVaerelser);
+
+    // Simpel backend-validering
+    if (!boligArealNumber || boligArealNumber <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Boligareal skal være et tal større end 0."
+      });
+    }
+
+    if (!Number.isInteger(antalVaerelserNumber) || antalVaerelserNumber <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Antal værelser skal være et tal større end 0."
+      });
+    }
+
+    const pool = await db.connect();
+
+    const result = await pool.request()
+      .input("id", sql.Int, Number(id))
+      .input("boligArealM2", sql.Decimal(10, 2), boligArealNumber)
+      .input("antalVaerelser", sql.Int, antalVaerelserNumber)
+      .query(`
+        UPDATE EjendomsProfil
+        SET
+          boligArealM2 = @boligArealM2,
+          antalVaerelser = @antalVaerelser,
+          datoAendret = GETDATE()
+        OUTPUT
+          INSERTED.ejendomsProfilID AS id,
+          INSERTED.boligArealM2 AS boligAreal,
+          INSERTED.antalVaerelser,
+          INSERTED.datoAendret
+        WHERE ejendomsProfilID = @id
+      `);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Ejendomsprofilen blev ikke fundet."
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Ejendomsprofilen blev opdateret.",
+      data: result.recordset[0]
+    });
+
+  } catch (error) {
+    console.error("Fejl ved opdatering af ejendomsprofil:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Kunne ikke opdatere ejendomsprofil."
     });
   }
 });

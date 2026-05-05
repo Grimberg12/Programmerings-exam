@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Henter velkomstbesked-elementet og tjekker for gemt bruger i localStorage
   const welcomeMessage = document.getElementById("welcomeMessage");
   const savedUser = localStorage.getItem("loggedInUser");
- // Hvis der ikke er nogle af delene, gør vi ingenting
+  // Hvis der ikke er nogle af delene, gør vi ingenting
   if (!savedUser || !welcomeMessage) {
     return;
   }
-// Gemmer som objekt og viser velkomstbesked
+  // Gemmer som objekt og viser velkomstbesked
   const user = JSON.parse(savedUser);
 
   if (user.navn) {
@@ -26,6 +26,18 @@ const INDEX_BYGNINGSANVENDELSE = {
   160: "Fritidshus",
   190: "Anden helårsbeboelse"
 };
+
+function formatDatoTid(dato) {
+  if (!dato) return "Ikke ændret endnu";
+
+  return new Date(dato).toLocaleString("da-DK", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 
 // ── Vis relaterede investeringscases på ejendomssiden ─────────────────────────
 async function renderRelateredeCases(ejendomsProfilID) {
@@ -76,11 +88,10 @@ async function renderRelateredeCases(ejendomsProfilID) {
           <p><strong>Købspris:</strong> ${koebsPris} kr.</p>
           <p><strong>Egenkapital:</strong> ${egenKapital} kr.</p>
 
-          ${
-            cashflow !== null
-              ? `<p><strong>Cashflow/md.:</strong> ${cashflow.toLocaleString("da-DK")} kr.</p>`
-              : `<p><strong>Udlejning:</strong> Nej</p>`
-          }
+          ${cashflow !== null
+          ? `<p><strong>Cashflow/md.:</strong> ${cashflow.toLocaleString("da-DK")} kr.</p>`
+          : `<p><strong>Udlejning:</strong> Nej</p>`
+        }
 
           <a href="/investeringscase.html?id=${c.id}">Se investeringscase →</a>
         </div>
@@ -112,43 +123,43 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!container) return;
 
   if (!adresseid) {
-  const id = params.get("id");
+    const id = params.get("id");
 
-  if (id) {
-    try {
-      const response = await fetch(`/api/v1/ejendomsprofiler/${id}`);
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      const property = result.data;
-      renderRelateredeCases(id);
-
-      // Slå DAWA adresseid op fra adressekomponenter, så vi kan hente kort
-      let luftfotoUrl = "";
-      let matrikelUrl = "";
+    if (id) {
       try {
-        const dawaRes = await fetch(
-          `https://api.dataforsyningen.dk/adresser?vejnavn=${encodeURIComponent(property.vejNavn)}&husnr=${encodeURIComponent(property.vejNummer)}&postnr=${encodeURIComponent(property.postnummer)}&format=json`
-        );
-        const dawaData = await dawaRes.json();
-        const adresseid = dawaData[0]?.id;
+        const response = await fetch(`/api/v1/ejendomsprofiler/${id}`);
+        const result = await response.json();
 
-        if (adresseid) {
-          const [luftfotoRes, matrikelRes] = await Promise.all([
-            fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`),
-            fetch(`/api/v1/properties/matrikelkort?adresseid=${encodeURIComponent(adresseid)}`)
-          ]);
-          luftfotoUrl = (await luftfotoRes.json()).data?.url ?? "";
-          matrikelUrl = (await matrikelRes.json()).data?.url ?? "";
+        if (!response.ok) {
+          throw new Error(result.message);
         }
-      } catch (kortFejl) {
-        console.error("Fejl ved hentning af kortdata:", kortFejl);
-      }
 
-      container.innerHTML = `
+        const property = result.data;
+        renderRelateredeCases(id);
+
+        // Slå DAWA adresseid op fra adressekomponenter, så vi kan hente kort
+        let luftfotoUrl = "";
+        let matrikelUrl = "";
+        try {
+          const dawaRes = await fetch(
+            `https://api.dataforsyningen.dk/adresser?vejnavn=${encodeURIComponent(property.vejNavn)}&husnr=${encodeURIComponent(property.vejNummer)}&postnr=${encodeURIComponent(property.postnummer)}&format=json`
+          );
+          const dawaData = await dawaRes.json();
+          const adresseid = dawaData[0]?.id;
+
+          if (adresseid) {
+            const [luftfotoRes, matrikelRes] = await Promise.all([
+              fetch(`/api/v1/properties/luftfoto?adresseid=${encodeURIComponent(adresseid)}`),
+              fetch(`/api/v1/properties/matrikelkort?adresseid=${encodeURIComponent(adresseid)}`)
+            ]);
+            luftfotoUrl = (await luftfotoRes.json()).data?.url ?? "";
+            matrikelUrl = (await matrikelRes.json()).data?.url ?? "";
+          }
+        } catch (kortFejl) {
+          console.error("Fejl ved hentning af kortdata:", kortFejl);
+        }
+
+        container.innerHTML = `
         <h2>${property.vejNavn} ${property.vejNummer}</h2>
 
         ${luftfotoUrl || matrikelUrl ? `
@@ -165,23 +176,146 @@ document.addEventListener("DOMContentLoaded", async () => {
           <p><span class="property-label">Bynavn:</span> ${property.bynavn}</p>
 
           <p><span class="property-label">Byggeår:</span> ${property.byggeAar || "–"}</p>
-          <p><span class="property-label">Boligareal:</span> ${property.boligAreal ? property.boligAreal + " m²" : "–"}</p>
-          <p><span class="property-label">Antal værelser:</span> ${property.antalVaerelser || "–"}</p>
+          <p><span class="property-label">Boligareal:</span> <span id="shownBoligAreal">${property.boligAreal ? property.boligAreal + " m²" : "–"}</span></p>
+          <p><span class="property-label">Antal værelser:</span> <span id="shownAntalVaerelser">${property.antalVaerelser || "–"}</span></p>
           <p><span class="property-label">Grundareal:</span> ${property.grundAreal ? property.grundAreal + " m²" : "–"}</p>
+          <p><span class="property-label">Sidst ændret:</span> <span id="shownDatoAendret">${formatDatoTid(property.datoAendret)}</span></p>
+        </div>
+
+        <div class="property-actions">
+          <button type="button" id="toggleEditPropertyBtn">
+            Rediger ejendomsprofil
+          </button>
+        </div>
+
+        <div class="edit-property-box hidden" id="editPropertyBox">
+          <h3>Rediger ejendomsprofil</h3>
+          <p class="form-hint">Du kan kun ændre boligareal og antal værelser.</p>
+
+          <form id="editPropertyForm">
+            <div class="form-group">
+              <label for="editBoligAreal">Boligareal m²</label>
+              <input 
+              type="number" 
+              id="editBoligAreal" 
+              min="1" 
+              step="1" 
+              value="${property.boligAreal || ""}" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="editAntalVaerelser">Antal værelser</label>
+            <input 
+               type="number" 
+                id="editAntalVaerelser" 
+                min="1" 
+                step="1" 
+                value="${property.antalVaerelser || ""}" 
+                required
+              >
+            </div>
+
+            <button type="submit">Gem ændringer</button>
+            <button type="button" id="cancelEditPropertyBtn" class="secondary-btn">
+              Annuller
+            </button>
+
+            <p id="editPropertyMessage"></p>
+          </form>
         </div>
       `;
-      return;
 
-    } catch (error) {
-      console.error("Fejl ved hentning af ejendomsprofil:", error);
-      container.innerHTML = `<p>Kunne ikke hente ejendomsprofilen.</p>`;
-      return;
+      const toggleEditPropertyBtn = document.getElementById("toggleEditPropertyBtn");
+      const editPropertyBox = document.getElementById("editPropertyBox");
+      const cancelEditPropertyBtn = document.getElementById("cancelEditPropertyBtn");
+
+      if (toggleEditPropertyBtn && editPropertyBox) {
+        toggleEditPropertyBtn.addEventListener("click", () => {
+          editPropertyBox.classList.remove("hidden");
+          toggleEditPropertyBtn.classList.add("hidden");
+        });
+      }
+
+      if (cancelEditPropertyBtn && editPropertyBox && toggleEditPropertyBtn) {
+        cancelEditPropertyBtn.addEventListener("click", () => {
+          editPropertyBox.classList.add("hidden");
+          toggleEditPropertyBtn.classList.remove("hidden");
+
+          document.getElementById("editPropertyMessage").textContent = "";
+      });
     }
-  }
 
-  container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
-  return;
-}
+        const editPropertyForm = document.getElementById("editPropertyForm");
+
+        if (editPropertyForm) {
+          editPropertyForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = document.getElementById("editPropertyMessage");
+
+            const boligAreal = document.getElementById("editBoligAreal").value;
+            const antalVaerelser = document.getElementById("editAntalVaerelser").value;
+
+            try {
+              const updateResponse = await fetch(`/api/v1/ejendomsprofiler/${id}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  boligAreal,
+                  antalVaerelser
+                })
+              });
+
+              const updateResult = await updateResponse.json();
+
+              if (!updateResponse.ok || !updateResult.success) {
+                throw new Error(updateResult.message || "Kunne ikke gemme ændringer.");
+              }
+
+              const updatedProperty = updateResult.data;
+
+              document.getElementById("shownBoligAreal").textContent =
+                `${Number(updatedProperty.boligAreal).toLocaleString("da-DK")} m²`;
+
+              document.getElementById("shownAntalVaerelser").textContent =
+                updatedProperty.antalVaerelser;
+
+              document.getElementById("shownDatoAendret").textContent =
+                formatDatoTid(updatedProperty.datoAendret);
+
+              message.textContent = "Ændringerne er gemt.";
+              message.style.color = "green";
+
+              setTimeout(() => {
+                editPropertyBox.classList.add("hidden");
+                toggleEditPropertyBtn.classList.remove("hidden");
+                message.textContent = "";
+              }, 800);
+
+            } catch (error) {
+              console.error("Fejl ved redigering af ejendomsprofil:", error);
+
+              message.textContent = error.message;
+              message.style.color = "red";
+            }
+          });
+        }
+        return;
+
+      } catch (error) {
+        console.error("Fejl ved hentning af ejendomsprofil:", error);
+        container.innerHTML = `<p>Kunne ikke hente ejendomsprofilen.</p>`;
+        return;
+      }
+    }
+
+    container.innerHTML = `<p>Ingen adresse valgt. <a href="/">Gå tilbage til søgning</a>.</p>`;
+    return;
+  }
 
   const relatedHeading = document.getElementById("relatedCasesHeading");
   const relatedCases = document.getElementById("relatedCases");
