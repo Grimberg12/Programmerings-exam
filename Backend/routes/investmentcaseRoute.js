@@ -30,16 +30,19 @@ router.post("/investment-cases", async (req, res) => {
       laaneType,
       rente,
       loebetid,
+      afdragsFriPeriode,
 
       bankLaan,
       bankLaanType,
       bankLaanRente,
       bankLaanLoebetid,
+      bankLaanAfdragsFriPeriode,
 
       andreLaan,
       andreLaanType,
       andreLaanRente,
       andreLaanLoebetid,
+      andreLaanAfdragsFriPeriode,
 
       udlejning,
       udlejningIndkomst,
@@ -185,18 +188,21 @@ router.post("/investment-cases", async (req, res) => {
         type: laaneType,
         interest: rente,
         term: loebetid,
+        afdragsFriPeriode: afdragsFriPeriode,
       },
       {
         amount: bankLaan,
         type: bankLaanType,
         interest: bankLaanRente,
         term: bankLaanLoebetid,
+        afdragsFriPeriode: bankLaanAfdragsFriPeriode,
       },
       {
         amount: andreLaan,
         type: andreLaanType,
         interest: andreLaanRente,
         term: andreLaanLoebetid,
+        afdragsFriPeriode: andreLaanAfdragsFriPeriode,
       },
     ];
 
@@ -207,20 +213,24 @@ router.post("/investment-cases", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type).query(`
+          .input("laaneType", sql.VarChar(50), loan.type)
+          .input("afdragsFriPeriode", sql.Int, Number(loan.afdragsFriPeriode))
+          .query(`
             INSERT INTO Laan (
               investeringsCaseID,
               laaneBeloeb,
               rente,
               loebeTid,
-              laaneType
+              laaneType,
+              afdragsFriPeriode
             )
             VALUES (
               @investeringsCaseID,
               @laaneBeloeb,
               @rente,
               @loebeTid,
-              @laaneType
+              @laaneType,
+              @afdragsFriPeriode
             )
           `);
       }
@@ -452,16 +462,19 @@ router.put("/investment-cases/:id", async (req, res) => {
       laaneType,
       rente,
       loebetid,
+      afdragsFriPeriode,
 
       bankLaan,
       bankLaanType,
       bankLaanRente,
       bankLaanLoebetid,
+      bankLaanAfdragsFriPeriode,
 
       andreLaan,
       andreLaanType,
       andreLaanRente,
       andreLaanLoebetid,
+      andreLaanAfdragsFriPeriode,
 
       udlejning,
       udlejningIndkomst,
@@ -574,18 +587,25 @@ router.put("/investment-cases/:id", async (req, res) => {
     }
 
     const loans = [
-      { amount: laaneBeloeb, type: laaneType, interest: rente, term: loebetid },
+      { amount: laaneBeloeb, 
+        type: laaneType, 
+        interest: rente, 
+        term: loebetid,
+        afdragsFriPeriode: afdragsFriPeriode, 
+      },
       {
         amount: bankLaan,
         type: bankLaanType,
         interest: bankLaanRente,
         term: bankLaanLoebetid,
+        afdragsFriPeriode: bankLaanAfdragsFriPeriode,
       },
       {
         amount: andreLaan,
         type: andreLaanType,
         interest: andreLaanRente,
         term: andreLaanLoebetid,
+        afdragsFriPeriode: andreLaanAfdragsFriPeriode,
       },
     ];
 
@@ -596,12 +616,14 @@ router.put("/investment-cases/:id", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type).query(`
+          .input("laaneType", sql.VarChar(50), loan.type)
+          .input("afdragsFriPeriode", sql.Int, Number(loan.afdragsFriPeriode || 0))
+          .query(`
             INSERT INTO Laan (
-              investeringsCaseID, laaneBeloeb, rente, loebeTid, laaneType
+              investeringsCaseID, laaneBeloeb, rente, loebeTid, laaneType, afdragsFriPeriode
             )
             VALUES (
-              @id, @laaneBeloeb, @rente, @loebeTid, @laaneType
+              @id, @laaneBeloeb, @rente, @loebeTid, @laaneType, @afdragsFriPeriode
             )
           `);
       }
@@ -755,14 +777,16 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           laaneBeloeb,
           rente,
           loebeTid,
-          laaneType
+          laaneType,
+          afdragsFriPeriode
         )
         SELECT
           @nyId,
           laaneBeloeb,
           rente,
           loebeTid,
-          laaneType
+          laaneType,
+          afdragsFriPeriode
         FROM Laan
         WHERE investeringsCaseID = @gammelId;
       `);

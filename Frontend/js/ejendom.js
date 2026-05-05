@@ -92,21 +92,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       setSelect("mortgageType",  ec.realkreditlån.type);
       set("mortgageInterest",    (ec.realkreditlån.rente * 100).toFixed(2));
       set("mortgageTerm",        ec.realkreditlån.løbetid);
-      set("mortgageAfdragsFri",  ec.realkreditlån.afdragsFriMåneder || 0);
+      set("mortgageAfdragsFri",  ec.realkreditlån.afdragsFriPeriode || 0);
     }
     if (ec.banklån) {
       set("bankLoan",            ec.banklån.beløb);
       setSelect("bankLoanType",  ec.banklån.type);
       set("bankLoanInterest",    (ec.banklån.rente * 100).toFixed(2));
       set("bankLoanTerm",        ec.banklån.løbetid);
-      set("bankLoanAfdragsFri",  ec.banklån.afdragsFriMåneder || 0);
+      set("bankLoanAfdragsFri",  ec.banklån.afdragsFriPeriode || 0);
     }
     if (ec.andrelån) {
       set("otherLoans",          ec.andrelån.beløb);
       setSelect("otherLoansType", ec.andrelån.type);
       set("otherLoansInterest",  (ec.andrelån.rente * 100).toFixed(2));
       set("otherLoansTerm",      ec.andrelån.løbetid);
-      set("otherLoansAfdragsFri", ec.andrelån.afdragsFriMåneder || 0);
+      set("otherLoansAfdragsFri", ec.andrelån.afdragsFriPeriode || 0);
     }
 
     setSelect("rental", String(ec.udlejning?.udlejes ?? false));
@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           type:             document.getElementById("mortgageType")?.value,
           rente:            realkreditRente,
           løbetid:          Number(document.getElementById("mortgageTerm")?.value),
-          afdragsFriMåneder: Number(document.getElementById("mortgageAfdragsFri")?.value || "0")
+          afdragsFriPeriode: Number(document.getElementById("mortgageAfdragsFri")?.value || "0")
         } : null,
 
         banklån: parseNumber(document.getElementById("bankLoan")?.value) > 0 ? {
@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           type:             document.getElementById("bankLoanType")?.value,
           rente:            bankLaanRente,
           løbetid:          Number(document.getElementById("bankLoanTerm")?.value),
-          afdragsFriMåneder: Number(document.getElementById("bankLoanAfdragsFri")?.value || "0")
+          afdragsFriPeriode: Number(document.getElementById("bankLoanAfdragsFri")?.value || "0")
         } : null,
 
         andrelån: parseNumber(document.getElementById("otherLoans")?.value) > 0 ? {
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           type:             document.getElementById("otherLoansType")?.value,
           rente:            andreLaanRente,
           løbetid:          Number(document.getElementById("otherLoansTerm")?.value),
-          afdragsFriMåneder: Number(document.getElementById("otherLoansAfdragsFri")?.value || "0")
+          afdragsFriPeriode: Number(document.getElementById("otherLoansAfdragsFri")?.value || "0")
         } : null,
 
         udlejning: {
@@ -394,16 +394,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         laaneType:         opdateretCase.realkreditlån?.type     || "",
         rente:             realkreditRente * 100,
         loebetid:          opdateretCase.realkreditlån?.løbetid  || 0,
+        afdragsFriPeriode: opdateretCase.realkreditlån?.afdragsFriPeriode || 0,
 
         bankLaan:          opdateretCase.banklån?.beløb          || 0,
         bankLaanType:      opdateretCase.banklån?.type           || "",
         bankLaanRente:     bankLaanRente * 100,
         bankLaanLoebetid:  opdateretCase.banklån?.løbetid        || 0,
+        bankLaanAfdragsFriPeriode: opdateretCase.banklån?.afdragsFriPeriode || 0,
 
         andreLaan:         opdateretCase.andrelån?.beløb         || 0,
         andreLaanType:     opdateretCase.andrelån?.type          || "",
         andreLaanRente:    andreLaanRente * 100,
         andreLaanLoebetid: opdateretCase.andrelån?.løbetid       || 0,
+        andreLaanAfdragsFriPeriode: opdateretCase.andrelån?.afdragsFriPeriode || 0,
 
         udlejning:         String(udlejes),
         udlejningIndkomst: opdateretCase.udlejning.månedligLeje,
