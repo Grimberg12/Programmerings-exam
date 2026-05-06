@@ -40,12 +40,20 @@ function restgældEfterÅr(P, rente, løbetidMdr, år, afdragsFriMdr = 0) {
   return Math.max(0, P * Math.pow(1 + i, elapsed) - M * (Math.pow(1 + i, elapsed) - 1) / i);
 }
 
-// ── localStorage: låndata ────────────────────────────────────────────────────
-function hentLånDataFraStorage(caseId) {
-  try {
-    const raw = localStorage.getItem(`invCase_loans_${caseId}`);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+function normaliserLaan(beløb, type, rentePct, løbetid, afdragsFriPeriode) {
+  if (!beløb || Number(beløb) <= 0) return null;
+
+  const renType = String(type || "").includes(":")
+    ? String(type || "").split(":")[1]
+    : String(type || "");
+
+  return {
+    beløb: Number(beløb || 0),
+    type: renType,
+    rente: Number(rentePct || 0) / 100,
+    løbetid: Number(løbetid || 0),
+    afdragsFriPeriode: Number(afdragsFriPeriode || 0)
+  };
 }
 
 // ── hentCase ─────────────────────────────────────────────────────────────────
@@ -71,6 +79,7 @@ async function hentCase() {
     adresse:              `${f.vejNavn} ${f.vejNummer}, ${f.postnummer} ${f.bynavn}`,
     areal:                Number(f.areal || 0),
     antalVærelser:        Number(f.antalVaerelser || 0),
+
     købspris:             Number(f.koebsPris || 0),
     egenkapital:          Number(f.egenKapital || 0),
     advokat:              Number(f.advokat || 0),
@@ -78,25 +87,37 @@ async function hentCase() {
     koeberRaadgivning:    Number(f.koeberRaadgivning || 0),
     andre_omkostninger:   Number(f.andreOmkostninger || 0),
     renoveringsomkostninger: Number(f.renoveringsomkostninger || 0),
-    driftsOmkostninger:   0,
-    realkreditlån:        null,
-    banklån:              null,
-    andrelån:             null,
+
+    driftsOmkostninger: Number(f.driftsOmkostninger || 0),
+
+    realkreditlån: normaliserLaan(
+      f.realkreditBeloeb,
+      f.realkreditType,
+      f.realkreditRente,
+      f.realkreditLoebetid,
+      f.realkreditAfdragsFriPeriode
+    ),
+    banklån: normaliserLaan(
+      f.bankBeloeb,
+      f.bankType,
+      f.bankRente,
+      f.bankLoebetid,
+      f.bankAfdragsFriPeriode
+    ),
+    andrelån: normaliserLaan(
+      f.andreBeloeb,
+      f.andreType,
+      f.andreRente,
+      f.andreLoebetid,
+      f.andreAfdragsFriPeriode
+    ), 
+
     udlejning: {
       udlejes:          Boolean(f.erLejeBolig),
       månedligLeje:     Number(f.lejeIndkomst || 0),
       månedligUdgifter: Number(f.lejeUdgifter || 0)
-    }
+    },
   };
-
-  // Suppler med låndata fra localStorage — backend returnerer ikke låndata endnu
-  const lånData = hentLånDataFraStorage(c.id);
-  if (lånData) {
-    c.realkreditlån      = lånData.realkreditlån     || null;
-    c.banklån            = lånData.banklån            || null;
-    c.andrelån           = lånData.andrelån           || null;
-    c.driftsOmkostninger = lånData.driftsOmkostninger || 0;
-  }
   return c;
 }
 

@@ -187,6 +187,7 @@ router.post("/investment-cases", async (req, res) => {
     // Gem lån
     const loans = [
       {
+        kategori: "Realkredit",
         amount: laaneBeloeb,
         type: laaneType,
         interest: rente,
@@ -194,6 +195,7 @@ router.post("/investment-cases", async (req, res) => {
         afdragsFriPeriode: afdragsFriPeriode,
       },
       {
+        kategori: "Bank",
         amount: bankLaan,
         type: bankLaanType,
         interest: bankLaanRente,
@@ -201,6 +203,7 @@ router.post("/investment-cases", async (req, res) => {
         afdragsFriPeriode: bankLaanAfdragsFriPeriode,
       },
       {
+        kategori: "Andre",
         amount: andreLaan,
         type: andreLaanType,
         interest: andreLaanRente,
@@ -216,7 +219,7 @@ router.post("/investment-cases", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type)
+          .input("laaneType", sql.VarChar(50), `${loan.kategori}:${loan.type || ""}`)
           .input("afdragsFriPeriode", sql.Int, Number(loan.afdragsFriPeriode))
           .query(`
             INSERT INTO Laan (
@@ -301,7 +304,6 @@ router.post("/investment-cases", async (req, res) => {
 
 // ── GET /users/:brugerID/investment-cases ─────────────────────────────────────
 // JOIN-query samler data fra 5 tabeller. Renoveringsomkostninger summeres via subquery.
-// NB: Låndata (rente, løbetid, afdragsfri) returneres ikke — de hentes fra localStorage af frontend.
 router.get("/users/:brugerID/investment-cases", async (req, res) => {
   try {
     const { brugerID } = req.params;
@@ -335,9 +337,28 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
           ko.andreOmkostninger,
           ISNULL(ren.renoveringsomkostninger, 0) AS renoveringsomkostninger,
 
+          rk.laaneBeloeb AS realkreditBeloeb,
+          rk.laaneType AS realkreditType,
+          rk.rente AS realkreditRente,
+          rk.loebeTid AS realkreditLoebetid,
+          rk.afdragsFriPeriode AS realkreditAfdragsFriPeriode,
+
+          bl.laaneBeloeb AS bankBeloeb,
+          bl.laaneType AS bankType,
+          bl.rente AS bankRente,
+          bl.loebeTid AS bankLoebetid,
+          bl.afdragsFriPeriode AS bankAfdragsFriPeriode,
+
+          al.laaneBeloeb AS andreBeloeb,
+          al.laaneType AS andreType,
+          al.rente AS andreRente,
+          al.loebeTid AS andreLoebetid,
+          al.afdragsFriPeriode AS andreAfdragsFriPeriode,
+
           u.erLejeBolig,
           u.lejeIndkomst,
           u.lejeUdgifter
+
         FROM InvesteringsCase ic
         INNER JOIN EjendomsProfil ep ON ic.ejendomsProfilID = ep.ejendomsProfilID
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
@@ -350,6 +371,24 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
         FROM Renovation
         GROUP BY investeringsCaseID
         ) ren ON ic.investeringsCaseID = ren.investeringsCaseID
+
+        LEFT JOIN (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY investeringsCaseID ORDER BY investeringsCaseID) AS rn
+          FROM Laan
+        ) rk ON ic.investeringsCaseID = rk.investeringsCaseID
+          AND (rk.laaneType LIKE 'realkredit:%' OR (rk.laaneType NOT LIKE '%:%' AND rk.rn = 1))
+
+        LEFT JOIN (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY investeringsCaseID ORDER BY investeringsCaseID) AS rn
+          FROM Laan
+        ) bl ON ic.investeringsCaseID = bl.investeringsCaseID
+          AND (bl.laaneType LIKE 'bank:%' OR (bl.laaneType NOT LIKE '%:%' AND bl.rn = 2))
+
+        LEFT JOIN (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY investeringsCaseID ORDER BY investeringsCaseID) AS rn
+          FROM Laan
+        ) al ON ic.investeringsCaseID = al.investeringsCaseID
+          AND (al.laaneType LIKE 'andre:%' OR (al.laaneType NOT LIKE '%:%' AND al.rn = 3))
         WHERE ep.brugerID = @brugerID
         ORDER BY ic.datoOprettet DESC
       `);
@@ -592,13 +631,16 @@ router.put("/investment-cases/:id", async (req, res) => {
     }
 
     const loans = [
-      { amount: laaneBeloeb, 
+      { 
+        kategori: "Realkredit",
+        amount: laaneBeloeb, 
         type: laaneType, 
         interest: rente, 
         term: loebetid,
         afdragsFriPeriode: afdragsFriPeriode, 
       },
       {
+        kategori: "Bank",
         amount: bankLaan,
         type: bankLaanType,
         interest: bankLaanRente,
@@ -606,6 +648,7 @@ router.put("/investment-cases/:id", async (req, res) => {
         afdragsFriPeriode: bankLaanAfdragsFriPeriode,
       },
       {
+        kategori: "Andre",
         amount: andreLaan,
         type: andreLaanType,
         interest: andreLaanRente,
@@ -621,7 +664,7 @@ router.put("/investment-cases/:id", async (req, res) => {
           .input("laaneBeloeb", sql.Decimal(10, 2), Number(loan.amount))
           .input("rente", sql.Decimal(5, 2), Number(loan.interest))
           .input("loebeTid", sql.Int, Number(loan.term))
-          .input("laaneType", sql.VarChar(50), loan.type)
+          .input("laaneType", sql.VarChar(50), `${loan.kategori}:${loan.type || ""}`)
           .input("afdragsFriPeriode", sql.Int, Number(loan.afdragsFriPeriode || 0))
           .query(`
             INSERT INTO Laan (

@@ -382,8 +382,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       // Backend-payload: rente sendes som procent (fx 3.5 for 3,5%) — backend gemmer det direkte i DB.
-      // Låndata gemmes BÅDE i DB (beløb/rente/løbetid) OG i localStorage (fuld objekt inkl. afdragsfri),
-      // fordi backend ikke returnerer låndata i GET — investeringscase.js henter det fra localStorage.
       const backendPayload = {
         ejendomsProfilID:  opdateretCase.ejendomsProfilID,
         caseNavn:          opdateretCase.navn,
@@ -422,13 +420,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         udlejningUdgifter: opdateretCase.udlejning.månedligUdgifter
       };
 
-      // Låndata der gemmes lokalt (inkl. decimale renter og afdragsfri)
-      const lånDataTilStorage = {
-        realkreditlån: opdateretCase.realkreditlån,
-        banklån:       opdateretCase.banklån,
-        andrelån:      opdateretCase.andrelån,
-        driftsOmkostninger: opdateretCase.driftsOmkostninger
-      };
 
       if (isEditMode) {
         try {
@@ -440,7 +431,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           const result = await response.json();
           if (!response.ok) { alert(result.message || "Kunne ikke gemme ændringer."); return; }
 
-          localStorage.setItem(`invCase_loans_${editCaseId}`, JSON.stringify(lånDataTilStorage));
           window.location.href = `/investeringscase.html?id=${editCaseId}`;
         } catch (error) {
           console.error("Fejl ved opdatering:", error);
@@ -459,7 +449,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (response.ok) {
           const caseID = result.data.investeringsCaseID;
-          localStorage.setItem(`invCase_loans_${caseID}`, JSON.stringify(lånDataTilStorage));
 
           if (investeringscaseMessage) {
             investeringscaseMessage.textContent = "Case oprettet! Åbner casen om lidt...";
