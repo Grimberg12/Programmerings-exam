@@ -5,7 +5,6 @@ const { db, sql } = require("../services/db");
 
 // ── POST /investment-cases ────────────────────────────────────────────────────
 // Opretter case i én SQL-transaktion: InvesteringsCase → KoebsOmkostninger → Renovation → Laan → Udlejning.
-// Driftsomkostninger gemmes i Renovation-tabellen (genbrug af eksisterende tabel til løbende udgifter).
 // Op til 3 lån (realkredit, bank, andre) — kun dem med beløb > 0 indsættes.
 router.post("/investment-cases", async (req, res) => {
   let transaction;
@@ -27,6 +26,7 @@ router.post("/investment-cases", async (req, res) => {
       koeberRaadgivning,
       andreOmkostninger,
       renovations,
+      
       driftsOmkostninger,
 
       laaneBeloeb,
@@ -160,26 +160,15 @@ router.post("/investment-cases", async (req, res) => {
     if (Number(driftsOmkostninger) > 0) {
       await new sql.Request(transaction)
         .input("investeringsCaseID", sql.Int, investeringsCaseID)
-        .input("navn", sql.VarChar(255), "Driftsomkostninger")
-        .input("beskrivelse", sql.VarChar(255), "Samlede driftsomkostninger")
-        .input("planlagtStartDato", sql.Date, null)
-        .input("omkostninger", sql.Decimal(10, 2), Number(driftsOmkostninger))
-        .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
-          INSERT INTO Renovation (
+        .input("beloeb", sql.Decimal(10, 2), driftsOmkostninger || 0)
+        .query(`
+          INSERT INTO DriftsOmkostninger (
             investeringsCaseID,
-            navn,
-            beskrivelse,
-            planlagtStartDato,
-            omkostninger,
-            forventetVaerdiStigning
+            beloeb
           )
           VALUES (
             @investeringsCaseID,
-            @navn,
-            @beskrivelse,
-            @planlagtStartDato,
-            @omkostninger,
-            @forventetVaerdiStigning
+            @beloeb
           )
         `);
     }
@@ -258,20 +247,18 @@ router.post("/investment-cases", async (req, res) => {
         sql.Decimal(10, 2),
         erLejeBolig ? Number(udlejningUdgifter || 0) : 0,
       )
-      .input("depositum", sql.Decimal(10, 2), 0).query(`
+      .query(`
         INSERT INTO Udlejning (
           investeringsCaseID,
           erLejeBolig,
           lejeIndkomst,
-          lejeUdgifter,
-          depositum
+          lejeUdgifter
         )
         VALUES (
           @investeringsCaseID,
           @erLejeBolig,
           @lejeIndkomst,
-          @lejeUdgifter,
-          @depositum
+          @lejeUdgifter
         )
       `);
 
@@ -337,6 +324,8 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
           ko.andreOmkostninger,
           ISNULL(ren.renoveringsomkostninger, 0) AS renoveringsomkostninger,
 
+          ISNULL(drift.driftsOmkostninger, 0) AS driftsOmkostninger,
+
           rk.laaneBeloeb AS realkreditBeloeb,
           rk.laaneType AS realkreditType,
           rk.rente AS realkreditRente,
@@ -364,6 +353,7 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
         INNER JOIN Adresse a ON ep.adresseID = a.adresseID
         LEFT JOIN KoebsOmkostninger ko ON ic.investeringsCaseID = ko.investeringsCaseID
         LEFT JOIN Udlejning u ON ic.investeringsCaseID = u.investeringsCaseID
+
         LEFT JOIN (
         SELECT 
         investeringsCaseID,
@@ -371,6 +361,14 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
         FROM Renovation
         GROUP BY investeringsCaseID
         ) ren ON ic.investeringsCaseID = ren.investeringsCaseID
+
+        LEFT JOIN (
+        SELECT 
+        investeringsCaseID,
+        SUM(beloeb) AS driftsOmkostninger
+        FROM DriftsOmkostninger
+        GROUP BY investeringsCaseID
+        ) drift ON ic.investeringsCaseID = drift.investeringsCaseID
 
         LEFT JOIN (
           SELECT *, ROW_NUMBER() OVER (PARTITION BY investeringsCaseID ORDER BY investeringsCaseID) AS rn
@@ -460,6 +458,7 @@ router.delete("/investment-cases/:id", async (req, res) => {
         DELETE FROM Udlejning WHERE investeringsCaseID = @investeringsCaseID;
         DELETE FROM Laan WHERE investeringsCaseID = @investeringsCaseID;
         DELETE FROM Renovation WHERE investeringsCaseID = @investeringsCaseID;
+        DELETE FROM DriftsOmkostninger WHERE investeringsCaseID = @investeringsCaseID;
         DELETE FROM KoebsOmkostninger WHERE investeringsCaseID = @investeringsCaseID;
         DELETE FROM InvesteringsCase WHERE investeringsCaseID = @investeringsCaseID;
       `);
@@ -541,6 +540,7 @@ router.put("/investment-cases/:id", async (req, res) => {
     await new sql.Request(transaction).input("id", sql.Int, Number(id)).query(`
         DELETE FROM KoebsOmkostninger WHERE investeringsCaseID = @id;
         DELETE FROM Renovation WHERE investeringsCaseID = @id;
+        DELETE FROM DriftsOmkostninger WHERE investeringsCaseID = @id;
         DELETE FROM Laan WHERE investeringsCaseID = @id;
         DELETE FROM Udlejning WHERE investeringsCaseID = @id;
       `);
@@ -548,28 +548,17 @@ router.put("/investment-cases/:id", async (req, res) => {
     if (Number(driftsOmkostninger) > 0) {
       await new sql.Request(transaction)
         .input("id", sql.Int, Number(id))
-        .input("navn", sql.VarChar(255), "Driftsomkostninger")
-        .input("beskrivelse", sql.VarChar(255), "Samlede driftsomkostninger")
-        .input("planlagtStartDato", sql.Date, null)
-        .input("omkostninger", sql.Decimal(10, 2), Number(driftsOmkostninger))
-        .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
-      INSERT INTO Renovation (
-        investeringsCaseID,
-        navn,
-        beskrivelse,
-        planlagtStartDato,
-        omkostninger,
-        forventetVaerdiStigning
-      )
-      VALUES (
-        @id,
-        @navn,
-        @beskrivelse,
-        @planlagtStartDato,
-        @omkostninger,
-        @forventetVaerdiStigning
-      )
-    `);
+        .input("beloeb", sql.Decimal(10, 2), Number(driftsOmkostninger))
+        .query(`
+          INSERT INTO DriftsOmkostninger (
+            investeringsCaseID,
+            beloeb
+          )
+          VALUES (
+            @id,
+            @beloeb
+          )
+        `);
     }
 
     await new sql.Request(transaction)
@@ -692,12 +681,12 @@ router.put("/investment-cases/:id", async (req, res) => {
         sql.Decimal(10, 2),
         erLejeBolig ? Number(udlejningUdgifter || 0) : 0,
       )
-      .input("depositum", sql.Decimal(10, 2), 0).query(`
+      .query(`
         INSERT INTO Udlejning (
-          investeringsCaseID, erLejeBolig, lejeIndkomst, lejeUdgifter, depositum
+          investeringsCaseID, erLejeBolig, lejeIndkomst, lejeUdgifter 
         )
         VALUES (
-          @id, @erLejeBolig, @lejeIndkomst, @lejeUdgifter, @depositum
+          @id, @erLejeBolig, @lejeIndkomst, @lejeUdgifter
         )
       `);
 
@@ -723,7 +712,6 @@ router.put("/investment-cases/:id", async (req, res) => {
 
 // ── POST /investment-cases/:id/duplicate ──────────────────────────────────────
 // Kopierer hele casen med SQL SELECT INTO: InvesteringsCase, KoebsOmkostninger, Renovation, Laan, Udlejning.
-// OBS: Kopierer ikke localStorage-låndata — bruger skal åbne kopien og gemme for at synkronisere.
 router.post("/investment-cases/:id/duplicate", async (req, res) => {
   let transaction;
 
@@ -793,7 +781,7 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
         WHERE investeringsCaseID = @gammelId;
       `);
 
-    // Kopier renoveringer og driftsomkostninger
+    // Kopier renoveringer
     await new sql.Request(transaction)
       .input("gammelId", sql.Int, Number(id))
       .input("nyId", sql.Int, nyInvesteringsCaseID)
@@ -814,6 +802,21 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           omkostninger,
           forventetVaerdiStigning
         FROM Renovation
+        WHERE investeringsCaseID = @gammelId;
+      `);
+
+    await new sql.Request(transaction)
+      .input("gammelId", sql.Int, Number(id))
+      .input("nyId", sql.Int, nyInvesteringsCaseID)
+      .query(`
+        INSERT INTO DriftsOmkostninger (
+          investeringsCaseID,
+          beloeb
+        )
+        SELECT
+          @nyId,
+          beloeb
+        FROM DriftsOmkostninger
         WHERE investeringsCaseID = @gammelId;
       `);
 
@@ -850,15 +853,13 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           investeringsCaseID,
           erLejeBolig,
           lejeIndkomst,
-          lejeUdgifter,
-          depositum
+          lejeUdgifter
         )
         SELECT
           @nyId,
           erLejeBolig,
           lejeIndkomst,
-          lejeUdgifter,
-          depositum
+          lejeUdgifter
         FROM Udlejning
         WHERE investeringsCaseID = @gammelId;
       `);
