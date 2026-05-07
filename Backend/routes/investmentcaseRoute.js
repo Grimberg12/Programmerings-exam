@@ -17,7 +17,6 @@ router.post("/investment-cases", async (req, res) => {
       ejendomsProfilID,
       caseNavn,
       beskrivelse,
-      simuleringsAar,
 
       koebsPris,
       egenKapital,
@@ -52,7 +51,7 @@ router.post("/investment-cases", async (req, res) => {
       udlejningUdgifter,
     } = req.body;
 
-    if (!ejendomsProfilID || !caseNavn || !simuleringsAar) {
+    if (!ejendomsProfilID || !caseNavn) {
       return res.status(400).json({
         success: false,
         message: "Mangler nødvendige felter.",
@@ -67,19 +66,17 @@ router.post("/investment-cases", async (req, res) => {
       .input("ejendomsProfilID", sql.Int, Number(ejendomsProfilID))
       .input("caseNavn", sql.VarChar(50), caseNavn)
       .input("beskrivelse", sql.VarChar(255), beskrivelse || null)
-      .input("simuleringsAar", sql.Int, Number(simuleringsAar)).query(`
+      .query(`
         INSERT INTO InvesteringsCase (
           ejendomsProfilID,
           caseNavn,
-          beskrivelse,
-          simuleringsAar
+          beskrivelse
         )
         OUTPUT INSERTED.investeringsCaseID
         VALUES (
           @ejendomsProfilID,
           @caseNavn,
-          @beskrivelse,
-          @simuleringsAar
+          @beskrivelse
         )
       `);
 
@@ -94,7 +91,7 @@ router.post("/investment-cases", async (req, res) => {
       .input("tinglysning", sql.Decimal(10, 2), Number(tinglysning))
       .input("koeberRaadgivning", sql.Decimal(10, 2), Number(koeberRaadgivning))
       .input("andreOmkostninger", sql.Decimal(10, 2), Number(andreOmkostninger))
-      .input("noter", sql.VarChar(255), "Købspris").query(`
+      .query(`
         INSERT INTO KoebsOmkostninger (
           investeringsCaseID,
           pris,
@@ -102,8 +99,7 @@ router.post("/investment-cases", async (req, res) => {
           advokat,
           tinglysning,
           koeberRaadgivning,
-          andreOmkostninger,
-          noter
+          andreOmkostninger
         )
         VALUES (
           @investeringsCaseID,
@@ -112,8 +108,7 @@ router.post("/investment-cases", async (req, res) => {
           @advokat,
           @tinglysning,
           @koeberRaadgivning,
-          @andreOmkostninger,
-          @noter
+          @andreOmkostninger
         )
       `);
 
@@ -135,22 +130,20 @@ router.post("/investment-cases", async (req, res) => {
               renovation.planlagtStartDato || null,
             )
             .input("omkostninger", sql.Decimal(10, 2), Number(renovation.pris))
-            .input("forventetVaerdiStigning", sql.Decimal(10, 2), 0).query(`
+            .query(`
             INSERT INTO Renovation (
               investeringsCaseID,
               navn,
               beskrivelse,
               planlagtStartDato,
-              omkostninger,
-              forventetVaerdiStigning
+              omkostninger
             )
             VALUES (
               @investeringsCaseID,
               @navn,
               @beskrivelse,
               @planlagtStartDato,
-              @omkostninger,
-              @forventetVaerdiStigning
+              @omkostninger
             )
           `);
         }
@@ -303,7 +296,6 @@ router.get("/users/:brugerID/investment-cases", async (req, res) => {
           ic.investeringsCaseID AS id,
           ic.caseNavn AS navn,
           ic.beskrivelse,
-          ic.simuleringsAar,
           ic.datoOprettet,
           ic.datoAendret,
 
@@ -414,7 +406,6 @@ router.get("/ejendomsprofiler/:id/investment-cases", async (req, res) => {
           ic.investeringsCaseID AS id,
           ic.caseNavn AS navn,
           ic.beskrivelse,
-          ic.simuleringsAar,
           ic.datoOprettet,
           ic.datoAendret,
 
@@ -490,7 +481,6 @@ router.put("/investment-cases/:id", async (req, res) => {
     const {
       caseNavn,
       beskrivelse,
-      simuleringsAar,
 
       koebsPris,
       egenKapital,
@@ -528,11 +518,10 @@ router.put("/investment-cases/:id", async (req, res) => {
       .input("id", sql.Int, Number(id))
       .input("caseNavn", sql.VarChar(50), caseNavn)
       .input("beskrivelse", sql.VarChar(255), beskrivelse || null)
-      .input("simuleringsAar", sql.Int, Number(simuleringsAar || 30)).query(`
+      .query(`
         UPDATE InvesteringsCase
         SET caseNavn = @caseNavn,
             beskrivelse = @beskrivelse,
-            simuleringsAar = @simuleringsAar,
             datoAendret = GETDATE()
         WHERE investeringsCaseID = @id
       `);
@@ -569,14 +558,14 @@ router.put("/investment-cases/:id", async (req, res) => {
       .input("tinglysning", sql.Decimal(10, 2), Number(tinglysning))
       .input("koeberRaadgivning", sql.Decimal(10, 2), Number(koeberRaadgivning))
       .input("andreOmkostninger", sql.Decimal(10, 2), Number(andreOmkostninger))
-      .input("noter", sql.VarChar(255), "Redigeret købspris").query(`
+      .query(`
         INSERT INTO KoebsOmkostninger (
           investeringsCaseID, pris, egenKapital, advokat,
-          tinglysning, koeberRaadgivning, andreOmkostninger, noter
+          tinglysning, koeberRaadgivning, andreOmkostninger
         )
         VALUES (
           @id, @pris, @egenKapital, @advokat,
-          @tinglysning, @koeberRaadgivning, @andreOmkostninger, @noter
+          @tinglysning, @koeberRaadgivning, @andreOmkostninger
         )
       `);
 
@@ -603,16 +592,14 @@ router.put("/investment-cases/:id", async (req, res) => {
                 navn,
                 beskrivelse,
                 planlagtStartDato,
-                omkostninger,
-                forventetVaerdiStigning
+                omkostninger
               )
               VALUES (
                 @id,
                 @navn,
                 @beskrivelse,
                 @planlagtStartDato,
-                @omkostninger,
-                0
+                @omkostninger
               )
             `);
         }
@@ -729,15 +716,13 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
         INSERT INTO InvesteringsCase (
           ejendomsProfilID,
           caseNavn,
-          beskrivelse,
-          simuleringsAar
+          beskrivelse
         )
         OUTPUT INSERTED.investeringsCaseID
         SELECT
           ejendomsProfilID,
           LEFT('Kopi af ' + caseNavn, 50),
-          beskrivelse,
-          simuleringsAar
+          beskrivelse
         FROM InvesteringsCase
         WHERE investeringsCaseID = @id;
       `);
@@ -765,8 +750,7 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           advokat,
           tinglysning,
           koeberRaadgivning,
-          andreOmkostninger,
-          noter
+          andreOmkostninger
         )
         SELECT
           @nyId,
@@ -775,8 +759,7 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           advokat,
           tinglysning,
           koeberRaadgivning,
-          andreOmkostninger,
-          'Kopieret fra tidligere case'
+          andreOmkostninger
         FROM KoebsOmkostninger
         WHERE investeringsCaseID = @gammelId;
       `);
@@ -791,16 +774,14 @@ router.post("/investment-cases/:id/duplicate", async (req, res) => {
           navn,
           beskrivelse,
           planlagtStartDato,
-          omkostninger,
-          forventetVaerdiStigning
+          omkostninger
         )
         SELECT
           @nyId,
           navn,
           beskrivelse,
           planlagtStartDato,
-          omkostninger,
-          forventetVaerdiStigning
+          omkostninger
         FROM Renovation
         WHERE investeringsCaseID = @gammelId;
       `);

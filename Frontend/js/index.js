@@ -85,7 +85,6 @@ async function renderRelateredeCases(ejendomsProfilID) {
           <p>${c.beskrivelse || "Ingen beskrivelse"}</p>
 
           <p><strong>Oprettet:</strong> ${dato}</p>
-          <p><strong>Simuleringsperiode:</strong> ${c.simuleringsAar || "–"} år</p>
           <p><strong>Købspris:</strong> ${koebsPris} kr.</p>
           <p><strong>Egenkapital:</strong> ${egenKapital} kr.</p>
 

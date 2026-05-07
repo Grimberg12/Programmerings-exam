@@ -386,7 +386,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         ejendomsProfilID:  opdateretCase.ejendomsProfilID,
         caseNavn:          opdateretCase.navn,
         beskrivelse:       opdateretCase.beskrivelse,
-        simuleringsAar:    30,
 
         koebsPris:         opdateretCase.koebsPris,
         egenKapital:       opdateretCase.egenKapital,
