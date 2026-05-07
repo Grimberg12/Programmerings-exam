@@ -429,6 +429,7 @@ function render30ÅrTabel() {
   let akkumuleret   = 0;
   const cashflowData    = [];
   const egenkapitalData = [];
+  const restgaeldData   = [];
 
   for (let år = 1; år <= 30; år++) {
     akkumuleret += cashflowÅr;
@@ -441,6 +442,7 @@ function render30ÅrTabel() {
 
     const egenkapital = caseData.købspris - restgæld;
     egenkapitalData.push(egenkapital);
+    restgaeldData.push(restgæld);
 
     const erMilepæl  = år % 5 === 0;
     const begivenheder = begivenhedForÅr(år);
@@ -480,7 +482,7 @@ function render30ÅrTabel() {
       <div id="graf30Ar" class="graf-container"></div>
     </div>`;
 
-  return { html, cashflowData, egenkapitalData };
+  return { html, cashflowData, egenkapitalData, restgaeldData };
 }
 
 // ── DOMContentLoaded ──────────────────────────────────────────────────────────
@@ -527,37 +529,10 @@ const grafContainer = document.getElementById("graf30Ar");
 
 if (grafContainer) {
   grafContainer.innerHTML = "";
-
-  // Her beregner vi restgæld igen, så vi også kan vise gæld i grafen
-  // Det gør grafen mere sikker i forhold til opgaven, fordi opgaven nævner cashflow, egenkapital og gæld
-  const alleLaan = [
-    caseData.realkreditlån,
-    caseData.banklån,
-    caseData.andrelån
-  ].filter(Boolean);
-
-  const restgaeldData = [];
-
-  for (let aar = 1; aar <= 30; aar++) {
-    let samletRestgaeld = 0;
-
-    alleLaan.forEach(laan => {
-      samletRestgaeld += restgældEfterÅr(
-        laan.beløb,
-        laan.rente,
-        laan.løbetid,
-        aar,
-        laan.afdragsFriMåneder || 0
-      );
-    });
-
-    restgaeldData.push(samletRestgaeld);
-  }
-
   tegnLinjeGraf(grafContainer, [
     { label: "Akkumuleret cashflow", data: sim.cashflowData },
-    { label: "Egenkapital",          data: sim.egenkapitalData },
-    { label: "Restgæld",             data: restgaeldData }
+    { label: "Egenkapital",          data: sim.egenkapitalData, stiplet: true },
+    { label: "Restgæld",             data: sim.restgaeldData,   farve: "#e74c3c" }
   ]);
 }
     }

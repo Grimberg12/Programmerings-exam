@@ -501,6 +501,7 @@ const cases = alleCases.filter(c =>
         const caseKolorer = ["var(--primary-color)", "var(--secondary-color)", "var(--accent-color)"];
         const serier = [];
         //forEach loopet her tilføjer både cashflow og egenkapital data for hver case til serier arrayet, som vi senere kan bruge til at tegne grafer baseret på disse data. Vi giver hver serie en label, der inkluderer casens navn og om det er cashflow eller egenkapital, og vi tildeler farver baseret på caseKolorer arrayet, så hver case har en konsistent farve for både cashflow og egenkapital, hvilket gør det nemmere at skelne mellem dem i grafen.
+        const gaeldKolorer = ["#e74c3c", "#c0392b", "#922b21"];
         cases.forEach((c, i) => {
   serier.push({
     label: c.navn + " driftscashflow",
@@ -518,8 +519,7 @@ const cases = alleCases.filter(c =>
   serier.push({
     label: c.navn + " restgæld",
     data: alleGaeldData[i],
-    farve: caseKolorer[i % caseKolorer.length],
-    stiplet: true
+    farve: gaeldKolorer[i % gaeldKolorer.length]
   });
 });
 
