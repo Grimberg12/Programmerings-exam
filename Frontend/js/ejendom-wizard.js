@@ -1,353 +1,619 @@
 // ejendom-wizard.js
-// Styrer wizard-navigationen på ejendom.html og viser valideringsbeskeder
-// Deler formularen op i 5 trin så det er nemmere for brugeren at udfylde
+// Styrer wizard navigationen på ejendom.html og viser valideringsbeskeder
+// Formularen er delt op i 5 trin, så brugeren ikke skal udfylde alt på en gang
+// Denne version bruger almindelig JavaScript uden private felter med #
+// Det gør koden nemmere at forklare til eksamen
 
 class InvesteringWizard {
-  // Private variabler med # foran - kan kun bruges inde i denne klasse
-  #currentStep = 1;
-  #totalSteps = 5;
-  #finansieringAdvaret = false;
-
   constructor() {
-    // Henter de elementer vi skal bruge fra DOM'en
-    this.form       = document.getElementById("investmentForm");
-    this.nextBtn    = document.getElementById("wizardNextBtn");
-    this.prevBtn    = document.getElementById("wizardPrevBtn");
+    /*
+      Her gemmer vi de vigtigste værdier for wizarden.
+
+      currentStep fortæller hvilket trin brugeren er på lige nu.
+      totalSteps fortæller hvor mange trin formularen har i alt.
+      finansieringAdvaret bruges til at huske om brugeren allerede har set advarslen om finansiering.
+    */
+    this.currentStep = 1;
+    this.totalSteps = 5;
+    this.finansieringAdvaret = false;
+
+    /*
+      Her henter vi de HTML elementer, som wizarden skal arbejde med.
+
+      investmentForm er selve formularen.
+      wizardNextBtn er knappen brugeren trykker på for at gå videre.
+      wizardPrevBtn er knappen brugeren trykker på for at gå tilbage.
+      wizardStepSubtitle er teksten, som viser hvilket trin brugeren er på.
+    */
+    this.form = document.getElementById("investmentForm");
+    this.nextBtn = document.getElementById("wizardNextBtn");
+    this.prevBtn = document.getElementById("wizardPrevBtn");
     this.subtitleEl = document.getElementById("wizardStepSubtitle");
 
-    // Tjekker at vi er på ejendom.html, ellers gør vi ingenting
-    if (!this.form) return;
+    /*
+      Hvis formularen ikke findes på siden, stopper vi her.
+      Det gør, at filen godt kan være loaded på andre sider uden at give fejl.
+    */
+    if (!this.form) {
+      return;
+    }
 
-    // Sætter klik-events på Næste og Tilbage
-    this.#bindNavigation();
-
-    // Sætter valideringslyttere på alle inputfelter i formularen
-    this.#opsaetValideringsListeners();
-
-    // Sørger for at progress bar og knapper viser trin 1 fra start
-    this.#opdaterProgress();
-    this.#opdaterKnapper();
+    /*
+      Her starter vi de dele af wizarden, som skal være klar fra starten.
+    */
+    this.bindNavigation();
+    this.opsaetValideringsListeners();
+    this.opdaterProgress();
+    this.opdaterKnapper();
   }
 
-  // Springer direkte til et bestemt trin-nummer
-  // Bruges af DOMContentLoaded nedenfor til at synkronisere edit-mode tekst
+  /*
+    Denne metode skifter til et bestemt trin.
+
+    Den bruges både når brugeren trykker Næste, når brugeren trykker Tilbage,
+    og hvis et andet script vil sende brugeren direkte til et bestemt trin.
+  */
   goToStep(n) {
-    // Skjuler det nuværende trin
-    const fraTrin = this.#getTrinElement(this.#currentStep);
-    if (fraTrin) fraTrin.hidden = true;
+    /*
+      Vi tjekker først, at trin nummeret faktisk findes.
+      Hvis nogen prøver at gå til trin 0 eller trin 6, gør vi ingenting.
+    */
+    if (n < 1 || n > this.totalSteps) {
+      return;
+    }
 
-    // Viser det nye trin
-    const tilTrin = this.#getTrinElement(n);
-    if (tilTrin) tilTrin.hidden = false;
+    /*
+      Først finder vi det trin, som brugeren står på lige nu.
+      Det trin skjuler vi.
+    */
+    var fraTrin = this.getTrinElement(this.currentStep);
 
-    this.#currentStep = n;
-    this.#opdaterProgress();
-    this.#opdaterKnapper();
-    this.#scrollTilFormular();
+    if (fraTrin) {
+      fraTrin.hidden = true;
+    }
 
-    // Når brugeren når trin 4, tjekker vi straks om finansieringen passer med købsprisen
-    // På det tidspunkt er trin 2 allerede udfyldt, så vi har tallene
-    if (n === 4) this.#tjekFinansieringBalance();
+    /*
+      Derefter finder vi det nye trin.
+      Det trin viser vi.
+    */
+    var tilTrin = this.getTrinElement(n);
+
+    if (tilTrin) {
+      tilTrin.hidden = false;
+    }
+
+    /*
+      Nu opdaterer vi currentStep, så klassen ved hvilket trin brugeren er på.
+    */
+    this.currentStep = n;
+
+    /*
+      Når trinnet er ændret, skal progress baren, knapperne og scroll også opdateres.
+    */
+    this.opdaterProgress();
+    this.opdaterKnapper();
+    this.scrollTilFormular();
+
+    /*
+      Når brugeren kommer til trin 4, tjekker vi om finansiering og købsomkostninger passer.
+      Her opretter vi ikke en ny advarsel.
+      Vi fjerner kun en gammel advarsel, hvis tallene nu passer.
+    */
+    if (n === 4) {
+      this.tjekFinansieringBalance();
+    }
   }
 
-  // Går et trin frem - validerer det nuværende trin inden vi skifter
+  /*
+    Denne metode kaldes, når brugeren trykker på Næste.
+
+    Først validerer vi felterne på det nuværende trin.
+    Hvis noget mangler, bliver brugeren på samme trin.
+  */
   next() {
-    // Stopper hvis der er tomme required felter i det nuværende trin
-    if (!this.#validerNuvaaerendeTrin()) return;
+    /*
+      Hvis det nuværende trin ikke er gyldigt, stopper vi her.
+    */
+    if (!this.validerNuvaaerendeTrin()) {
+      return;
+    }
 
-    // På trin 4 - spørg brugeren hvis finansiering ikke stemmer med købspris
-    if (!this.#bekraeftFinansiering()) return;
+    /*
+      Hvis brugeren er på trin 4, tjekker vi også finansieringen.
+      Hvis der er forskel, får brugeren først en advarsel.
+    */
+    if (!this.bekraeftFinansiering()) {
+      return;
+    }
 
-    if (this.#currentStep < this.#totalSteps) {
-      this.goToStep(this.#currentStep + 1);
+    /*
+      Hvis brugeren ikke allerede er på sidste trin, går vi et trin frem.
+    */
+    if (this.currentStep < this.totalSteps) {
+      this.goToStep(this.currentStep + 1);
     }
   }
 
-  // Kun kaldt ved klik på Næste fra trin 4.
-  // Første klik: vis advarsel UNDER formularen og bloker.
-  // Andet klik: lad brugeren gå videre uanset.
-  #bekraeftFinansiering() {
-    if (this.#currentStep !== 4) return true;
+  /*
+    Denne metode bruges kun ved klik på Næste fra trin 4.
 
-    const parseVal = (id) => Number(document.getElementById(id)?.value.replace(/\D/g, "") || 0);
+    Hvis finansieringen passer med købsomkostningerne, får brugeren lov at gå videre.
+    Hvis der er forskel, får brugeren først en advarsel.
+    Hvis brugeren trykker Næste igen, får brugeren lov at gå videre alligevel.
+  */
+  bekraeftFinansiering() {
+    /*
+      Denne kontrol skal kun ske på trin 4.
+      På alle andre trin returnerer vi true med det samme.
+    */
+    if (this.currentStep !== 4) {
+      return true;
+    }
 
-    const koebsPris     = parseVal("koebsPris");
-    const advokat       = parseVal("advokat");
-    const tinglysning   = parseVal("tinglysning");
-    const koeberRadg    = parseVal("koeberRaadgivning");
-    const andreOmk      = parseVal("andreOmkostninger");
-    const egenkapital   = parseVal("egenkapital");
-    const realkredit    = parseVal("mortgage");
-    const bankLaan      = parseVal("bankLoan");
-    const andreLaan     = parseVal("otherLoans");
+    /*
+      Hjælpefunktion som læser et beløb fra et inputfelt.
 
-    // Samlede købs­omk. der skal finansieres (ekskl. drifts­omk. som er løbende)
-    const totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
-    const finansiering  = egenkapital + realkredit + bankLaan + andreLaan;
+      Den fjerner alt andet end tal.
+      Det gør, at feltet både kan indeholde 1000000 og 1.000.000 kr.
+      Hvis feltet ikke findes, returnerer funktionen 0.
+    */
+    function parseVal(id) {
+      var element = document.getElementById(id);
 
+      if (!element || !element.value) {
+        return 0;
+      }
+
+      return Number(element.value.replace(/\D/g, "") || 0);
+    }
+
+    /*
+      Her henter vi alle felter, som indgår i købsomkostninger og finansiering.
+    */
+    var koebsPris = parseVal("koebsPris");
+    var advokat = parseVal("advokat");
+    var tinglysning = parseVal("tinglysning");
+    var koeberRadg = parseVal("koeberRaadgivning");
+    var andreOmk = parseVal("andreOmkostninger");
+
+    var egenkapital = parseVal("egenkapital");
+    var realkredit = parseVal("mortgage");
+    var bankLaan = parseVal("bankLoan");
+    var andreLaan = parseVal("otherLoans");
+
+    /*
+      Her lægger vi købsomkostningerne sammen.
+      Driftsomkostninger er ikke med her, fordi de er løbende udgifter.
+    */
+    var totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
+
+    /*
+      Her lægger vi finansieringen sammen.
+      Det er de penge brugeren har angivet, at købet skal betales med.
+    */
+    var finansiering = egenkapital + realkredit + bankLaan + andreLaan;
+
+    /*
+      Hvis der ikke er noget at sammenligne, eller hvis tallene passer, går vi bare videre.
+    */
     if (totalKoebsOmk === 0 || finansiering === 0 || finansiering === totalKoebsOmk) {
-      this.#finansieringAdvaret = false;
+      this.finansieringAdvaret = false;
       return true;
     }
 
-    if (this.#finansieringAdvaret) {
-      // Brugeren har set advarslen og trykker Næste igen — lad dem gå videre
-      this.#finansieringAdvaret = false;
+    /*
+      Hvis brugeren allerede har set advarslen og trykker Næste igen,
+      giver vi lov til at fortsætte.
+    */
+    if (this.finansieringAdvaret) {
+      this.finansieringAdvaret = false;
       return true;
     }
 
-    // Første klik med mismatch — vis advarsel UNDER form-section og bloker
-    this.#finansieringAdvaret = true;
-    const trin4 = this.#getTrinElement(4);
-    let advarsel = trin4?.querySelector(".finansiering-advarsel");
+    /*
+      Første gang der er forskel, viser vi en advarsel og stopper brugeren.
+    */
+    this.finansieringAdvaret = true;
+
+    var trin4 = this.getTrinElement(4);
+
+    /*
+      Hvis trin 4 ikke findes, kan vi ikke vise advarslen.
+      I den situation stopper vi ikke brugeren.
+    */
+    if (!trin4) {
+      return true;
+    }
+
+    /*
+      Vi prøver først at finde en eksisterende advarsel.
+      Hvis den ikke findes, opretter vi en ny.
+    */
+    var advarsel = trin4.querySelector(".finansiering-advarsel");
+
     if (!advarsel) {
       advarsel = document.createElement("div");
       advarsel.className = "finansiering-advarsel";
-      trin4?.appendChild(advarsel);   // append = under, ikke prepend = over
-    }
-    const forskel    = totalKoebsOmk - finansiering;
-    const forskelTxt = forskel > 0
-      ? `${forskel.toLocaleString("da-DK")} kr. mangler i finansiering`
-      : `${Math.abs(forskel).toLocaleString("da-DK")} kr. for meget finansiering`;
 
+      /*
+        appendChild placerer advarslen nederst i trin 4.
+        Det gør, at beskeden kommer under formularens indhold.
+      */
+      trin4.appendChild(advarsel);
+    }
+
+    /*
+      Her beregner vi forskellen.
+      Hvis forskellen er positiv, mangler der penge.
+      Hvis forskellen er negativ, er der angivet for meget finansiering.
+    */
+    var forskel = totalKoebsOmk - finansiering;
+    var forskelTxt = "";
+
+    if (forskel > 0) {
+      forskelTxt = forskel.toLocaleString("da-DK") + " kr. mangler i finansiering";
+    } else {
+      forskelTxt = Math.abs(forskel).toLocaleString("da-DK") + " kr. for meget finansiering";
+    }
+
+    /*
+      Her viser vi beskeden til brugeren.
+      Brugeren kan stadig fortsætte, men skal trykke Næste en ekstra gang.
+    */
     advarsel.innerHTML =
-      `<strong>Er du sikker?</strong> Din samlede finansiering er ` +
-      `<strong>${finansiering.toLocaleString("da-DK")} kr.</strong>, men de samlede ` +
-      `købs­omkostninger er <strong>${totalKoebsOmk.toLocaleString("da-DK")} kr.</strong> ` +
-      `— <em>${forskelTxt}</em>. Tryk Næste igen for at fortsætte alligevel.`;
+      "<strong>Er du sikker?</strong> Din samlede finansiering er " +
+      "<strong>" + finansiering.toLocaleString("da-DK") + " kr.</strong>, men de samlede " +
+      "købsomkostninger er <strong>" + totalKoebsOmk.toLocaleString("da-DK") + " kr.</strong>. " +
+      "<em>" + forskelTxt + "</em>. Tryk Næste igen for at fortsætte alligevel.";
+
     return false;
   }
 
-  // Går et trin tilbage - ingen validering, brugeren må gerne rette data
+  /*
+    Denne metode kaldes, når brugeren trykker på Tilbage.
+
+    Vi validerer ikke når brugeren går tilbage.
+    Brugeren skal altid have lov til at rette tidligere indtastninger.
+  */
   prev() {
-    if (this.#currentStep > 1) {
-      this.goToStep(this.#currentStep - 1);
+    if (this.currentStep > 1) {
+      this.goToStep(this.currentStep - 1);
     }
   }
 
-  // Getter så andre scripts kan aflæse nuværende trin hvis det skulle blive nødvendigt
-  get currentStep() {
-    return this.#currentStep;
-  }
+  /*
+    Denne metode ændrer teksten på knappen på sidste trin.
 
-  // Bruges til at sætte teksten på submit-knappen
-  // I edit-mode kalder vi denne med "Gem ændringer" i stedet for "Opret investeringscase"
+    Den bruges især ved edit mode, hvor knappen skal sige Gem ændringer
+    i stedet for Opret investeringscase.
+  */
   setSubmitLabel(label) {
-    // Gemmer label som data-attribut på formularen så den huskes ved trin-skift
+    /*
+      Vi gemmer teksten på formularens dataset.
+      Så kan teksten bruges igen, når brugeren skifter trin.
+    */
     this.form.dataset.submitLabel = label;
 
-    // Hvis vi allerede er på trin 5, ændres knappteksten med det samme
-    if (this.#currentStep === this.#totalSteps && this.nextBtn) {
+    /*
+      Hvis brugeren allerede står på sidste trin, opdaterer vi teksten med det samme.
+    */
+    if (this.currentStep === this.totalSteps && this.nextBtn) {
       this.nextBtn.textContent = label;
     }
   }
 
-  // ----- Valideringslogik - viser popup-beskeder ved ugyldigt input -----
+  /*
+    Denne metode sætter alle valideringslyttere op.
 
-  // Tilknytter event listeners til alle relevante felter i formularen
-  // Hver felttype har sin egen logik for hvornår og hvad der vises
-  #opsaetValideringsListeners() {
+    Den kobler små funktioner på felterne, så brugeren får beskeder,
+    når noget er tomt eller forkert indtastet.
+  */
+  opsaetValideringsListeners() {
+    var self = this;
 
-    // --- DKK-beløb felter (class="number-input") ---
-    // Disse felter må kun indeholde tal - bogstaver skal give en popup
-    // ejendom.js fjerner bogstaver stille, så vi fanger dem på keydown inden de slettes
-    this.form.querySelectorAll(".number-input").forEach(input => {
+    /*
+      Først finder vi alle beløbsfelter.
+      De skal kun indeholde tal.
+    */
+    var beloebsFelter = this.form.querySelectorAll(".number-input");
 
-      input.addEventListener("keydown", (e) => {
-        // Tjekker om det er en synlig karakter (length === 1) og ikke et tal eller genvej
-        const erSynligKarakter = e.key.length === 1;
-        const erTal = /\d/.test(e.key);
-        const erGenvej = e.ctrlKey || e.metaKey;
+    beloebsFelter.forEach(function(input) {
+      /*
+        keydown bruges til at opdage bogstaver og symboler,
+        før de når at blive skrevet i feltet.
+      */
+      input.addEventListener("keydown", function(e) {
+        var erSynligKarakter = e.key.length === 1;
+        var erTal = /\d/.test(e.key);
+        var erGenvej = e.ctrlKey || e.metaKey;
 
-        // Hvis brugeren taster et bogstav eller symbol vises en popup-hint
+        /*
+          Hvis brugeren skriver andet end tal, viser vi en kort besked.
+        */
         if (erSynligKarakter && !erTal && !erGenvej) {
-          this.#visPopup(input, "Kun tal er tilladt her");
-          // Beskeden forsvinder automatisk efter 2 sekunder
+          self.visPopup(input, "Kun tal er tilladt her");
+
           clearTimeout(input._valTimeout);
-          input._valTimeout = setTimeout(() => this.#skjulPopup(input), 2000);
+
+          input._valTimeout = setTimeout(function() {
+            self.skjulPopup(input);
+          }, 2000);
         }
       });
 
-      // Fjerner popup med det samme når brugeren begynder at taste gyldige tal
-      input.addEventListener("input", () => {
-        const renVaerdi = input.value.replace(/\D/g, "");
+      /*
+        input event kører hver gang feltets værdi ændrer sig.
+        Her fjerner vi popup beskeden, hvis feltet nu ser gyldigt ud.
+      */
+      input.addEventListener("input", function() {
+        var renVaerdi = input.value.replace(/\D/g, "");
+
         if (renVaerdi !== "" || !input.hasAttribute("required")) {
-          this.#skjulPopup(input);
+          self.skjulPopup(input);
         }
-        // Opdaterer finansieringsbalancen løbende når beløb ændres
-        // Nulstiller bekræftelsesflag så advarslen vises igen ved næste klik
-        this.#finansieringAdvaret = false;
-        this.#tjekFinansieringBalance();
+
+        /*
+          Når et beløb ændres, kan finansieringsbalancen også ændre sig.
+          Derfor nulstiller vi advarslen og tjekker balancen igen.
+        */
+        self.finansieringAdvaret = false;
+        self.tjekFinansieringBalance();
       });
 
-      // Tjekker om et required felt er tomt når brugeren forlader det
-      // Tal-felter viser "Skal minimum være 0" fordi det altid er et beløb der forventes
-      input.addEventListener("blur", () => {
-        const erTom = input.value.replace(/\D/g, "") === "";
+      /*
+        blur kører når brugeren forlader feltet.
+        Hvis feltet er required og tomt, viser vi en besked.
+      */
+      input.addEventListener("blur", function() {
+        var erTom = input.value.replace(/\D/g, "") === "";
+
         if (input.hasAttribute("required") && erTom) {
-          this.#visPopup(input, "Skal minimum være 0");
+          self.visPopup(input, "Skal minimum være 0");
         }
-        // Tjekker også balance ved blur - måske er koebsPris netop udfyldt
-        this.#tjekFinansieringBalance();
+
+        self.tjekFinansieringBalance();
       });
 
-      // Fjerner popup når brugeren klikker ind i feltet igen
-      input.addEventListener("focus", () => this.#skjulPopup(input));
+      /*
+        Når brugeren klikker ind i feltet igen, fjerner vi popup beskeden.
+      */
+      input.addEventListener("focus", function() {
+        self.skjulPopup(input);
+      });
     });
 
-    // --- Tal-inputs med type="number" (rente og løbetid på lån) ---
-    // Browseren blokerer selv bogstaver, men vi tjekker for negative tal og urealistiske værdier
-    this.form.querySelectorAll("input[type='number']").forEach(input => {
+    /*
+      Her finder vi almindelige number felter.
+      Det kan for eksempel være rente og løbetid.
+    */
+    var numberFelter = this.form.querySelectorAll("input[type='number']");
 
-      input.addEventListener("blur", () => {
-        // Feltet er tomt - ingen besked nødvendig
-        if (input.value === "") return;
+    numberFelter.forEach(function(input) {
+      input.addEventListener("blur", function() {
+        /*
+          Hvis feltet er tomt, gør vi ingenting her.
+          Required felter bliver fanget af trin valideringen.
+        */
+        if (input.value === "") {
+          return;
+        }
 
-        const vaerdi = parseFloat(input.value);
+        var vaerdi = parseFloat(input.value);
 
         if (isNaN(vaerdi)) {
-          this.#visPopup(input, "Skal være et tal");
+          self.visPopup(input, "Skal være et tal");
           return;
         }
 
         if (vaerdi < 0) {
-          this.#visPopup(input, "Skal minimum være 0");
+          self.visPopup(input, "Skal minimum være 0");
           return;
         }
 
-        // Rente-felterne bør ikke overstige 100 procent
-        if (input.name.toLowerCase().includes("interest") && vaerdi > 100) {
-          this.#visPopup(input, "Renten kan ikke overstige 100%");
+        /*
+          Hvis feltets name indeholder interest, behandler vi det som et rentefelt.
+        */
+        if (input.name.toLowerCase().indexOf("interest") !== -1 && vaerdi > 100) {
+          self.visPopup(input, "Renten kan ikke overstige 100%");
           return;
         }
 
-        // Løbetid bør være realistisk - over 0 og max 600 måneder (50 år)
-        if (input.name.toLowerCase().includes("term")) {
+        /*
+          Hvis feltets name indeholder term, behandler vi det som løbetid.
+        */
+        if (input.name.toLowerCase().indexOf("term") !== -1) {
           if (vaerdi <= 0) {
-            this.#visPopup(input, "Løbetiden skal være mere end 0");
+            self.visPopup(input, "Løbetiden skal være mere end 0");
             return;
           }
+
           if (vaerdi > 600) {
-            this.#visPopup(input, "Løbetiden er usandsynlig høj");
+            self.visPopup(input, "Løbetiden er usandsynlig høj");
             return;
           }
         }
 
-        // Alt er i orden - fjern eventuel gammel popup
-        this.#skjulPopup(input);
+        /*
+          Hvis ingen fejl blev fundet, fjerner vi en eventuel gammel popup besked.
+        */
+        self.skjulPopup(input);
       });
 
-      input.addEventListener("focus", () => this.#skjulPopup(input));
+      input.addEventListener("focus", function() {
+        self.skjulPopup(input);
+      });
     });
 
-    // --- Tekst-inputs og textarea med required (Navn og Beskrivelse på trin 1) ---
-    // Viser besked hvis brugeren forlader feltet uden at udfylde det
-    this.form.querySelectorAll("input[type='text']:not(.number-input)[required], textarea[required]").forEach(input => {
+    /*
+      Her finder vi tekstfelter og tekstområder, som er required.
+      Det bruges for eksempel til navn og beskrivelse.
+    */
+    var tekstFelter = this.form.querySelectorAll("input[type='text']:not(.number-input)[required], textarea[required]");
 
-      input.addEventListener("blur", () => {
+    tekstFelter.forEach(function(input) {
+      input.addEventListener("blur", function() {
         if (input.value.trim() === "") {
-          this.#visPopup(input, "Feltet er påkrævet");
+          self.visPopup(input, "Feltet er påkrævet");
         }
       });
 
-      // Fjerner beskeden med det samme når brugeren begynder at skrive
-      input.addEventListener("input", () => {
+      input.addEventListener("input", function() {
         if (input.value.trim() !== "") {
-          this.#skjulPopup(input);
+          self.skjulPopup(input);
         }
       });
     });
 
-    // --- Dropdowns med required (fx "Udlejer du ejendommen?") ---
-    // Viser besked hvis brugeren klikker væk uden at vælge en mulighed
-    this.form.querySelectorAll("select[required]").forEach(select => {
+    /*
+      Her finder vi dropdown felter, som er required.
+      Hvis brugeren ikke har valgt noget, viser vi en besked.
+    */
+    var dropdowns = this.form.querySelectorAll("select[required]");
 
-      select.addEventListener("blur", () => {
+    dropdowns.forEach(function(select) {
+      select.addEventListener("blur", function() {
         if (select.value === "") {
-          this.#visPopup(select, "Vælg venligst en mulighed");
+          self.visPopup(select, "Vælg venligst en mulighed");
         }
       });
 
-      // Fjerner beskeden med det samme når brugeren vælger noget
-      select.addEventListener("change", () => {
+      select.addEventListener("change", function() {
         if (select.value !== "") {
-          this.#skjulPopup(select);
+          self.skjulPopup(select);
         }
       });
     });
   }
 
-  // Tjekker om finansiering svarer til samlede købs­omk. (ekskl. drifts­omk.)
-  // Bruges til at fjerne en eksisterende advarsel når tallene nu passer.
-  // Opretter IKKE ny advarsel live — det gør #bekraeftFinansiering() ved klik på Næste.
-  #tjekFinansieringBalance() {
-    const parseVal = (id) => Number(document.getElementById(id)?.value.replace(/\D/g, "") || 0);
+  /*
+    Denne metode tjekker om finansiering og købsomkostninger passer sammen.
 
-    const koebsPris    = parseVal("koebsPris");
-    const advokat      = parseVal("advokat");
-    const tinglysning  = parseVal("tinglysning");
-    const koeberRadg   = parseVal("koeberRaadgivning");
-    const andreOmk     = parseVal("andreOmkostninger");
-    const egenkapital  = parseVal("egenkapital");
-    const realkredit   = parseVal("mortgage");
-    const bankLaan     = parseVal("bankLoan");
-    const andreLaan    = parseVal("otherLoans");
+    Den opretter ikke en ny advarsel.
+    Den fjerner kun en eksisterende advarsel, hvis tallene nu passer.
+  */
+  tjekFinansieringBalance() {
+    function parseVal(id) {
+      var element = document.getElementById(id);
 
-    const totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
-    const finansiering  = egenkapital + realkredit + bankLaan + andreLaan;
+      if (!element || !element.value) {
+        return 0;
+      }
 
-    const trin4    = this.#getTrinElement(4);
-    if (!trin4) return;
-    const advarsel = trin4.querySelector(".finansiering-advarsel");
-
-    // Fjern eksisterende advarsel og nulstil flag hvis tallene nu er i balance
-    if (totalKoebsOmk === 0 || finansiering === 0 || finansiering === totalKoebsOmk) {
-      if (advarsel) advarsel.remove();
-      this.#finansieringAdvaret = false;
+      return Number(element.value.replace(/\D/g, "") || 0);
     }
-    // Vis ikke ny advarsel live — det sker kun ved klik på Næste
+
+    var koebsPris = parseVal("koebsPris");
+    var advokat = parseVal("advokat");
+    var tinglysning = parseVal("tinglysning");
+    var koeberRadg = parseVal("koeberRaadgivning");
+    var andreOmk = parseVal("andreOmkostninger");
+
+    var egenkapital = parseVal("egenkapital");
+    var realkredit = parseVal("mortgage");
+    var bankLaan = parseVal("bankLoan");
+    var andreLaan = parseVal("otherLoans");
+
+    var totalKoebsOmk = koebsPris + advokat + tinglysning + koeberRadg + andreOmk;
+    var finansiering = egenkapital + realkredit + bankLaan + andreLaan;
+
+    var trin4 = this.getTrinElement(4);
+
+    if (!trin4) {
+      return;
+    }
+
+    var advarsel = trin4.querySelector(".finansiering-advarsel");
+
+    /*
+      Hvis tallene passer, fjerner vi advarslen.
+      Vi fjerner også advarslen hvis der endnu ikke er tal nok til at sammenligne.
+    */
+    if (totalKoebsOmk === 0 || finansiering === 0 || finansiering === totalKoebsOmk) {
+      if (advarsel) {
+        advarsel.remove();
+      }
+
+      this.finansieringAdvaret = false;
+    }
   }
 
-  // Opretter og viser en rød popup-besked direkte over det givne felt
-  // Indsættes som element lige før input-feltet inde i form-group
-  #visPopup(felt, tekst) {
-    // Fjerner evt. eksisterende popup for dette felt inden vi laver en ny
-    this.#skjulPopup(felt);
+  /*
+    Denne metode viser en popup besked over et bestemt felt.
 
-    const popup = document.createElement("div");
+    Den bruges både når et felt mangler, og når brugeren skriver noget ugyldigt.
+  */
+  visPopup(felt, tekst) {
+    /*
+      Hvis feltet ikke findes, eller feltet ikke har et parent element,
+      kan vi ikke placere popup beskeden.
+    */
+    if (!felt || !felt.parentElement) {
+      return;
+    }
+
+    /*
+      Først fjerner vi en gammel popup besked, så der ikke kommer flere oven på hinanden.
+    */
+    this.skjulPopup(felt);
+
+    var popup = document.createElement("div");
     popup.className = "validerings-popup";
     popup.textContent = tekst;
 
-    // Indsæt lige før inputfeltet - vil visuelt fremstå over det
+    /*
+      Popup beskeden bliver sat lige før feltet.
+      Det gør, at den visuelt ligger tæt på det felt, som fejlen handler om.
+    */
     felt.parentElement.insertBefore(popup, felt);
   }
 
-  // Fjerner popup-beskeden for det givne felt hvis den er der
-  #skjulPopup(felt) {
-    const eksisterende = felt.parentElement?.querySelector(".validerings-popup");
-    if (eksisterende) eksisterende.remove();
+  /*
+    Denne metode fjerner popup beskeden for et felt.
+  */
+  skjulPopup(felt) {
+    if (!felt || !felt.parentElement) {
+      return;
+    }
+
+    var eksisterende = felt.parentElement.querySelector(".validerings-popup");
+
+    if (eksisterende) {
+      eksisterende.remove();
+    }
   }
 
-  // ----- Resten af wizard-logikken -----
-
-  // Returnerer det div-element der svarer til et bestemt trin-nummer
-  #getTrinElement(n) {
-    return this.form.querySelector(`.wizard-step[data-step="${n}"]`);
+  /*
+    Denne metode finder HTML elementet for et bestemt wizard trin.
+  */
+  getTrinElement(n) {
+    return this.form.querySelector('.wizard-step[data-step="' + n + '"]');
   }
 
-  // Gennemgår alle required felter i det nuværende trin og validerer dem
-  // Bruger vores egne popups i stedet for browserens standard-boble
-  // Returnerer true hvis alle felter er korrekt udfyldt
-  #validerNuvaaerendeTrin() {
-    const trinElement = this.#getTrinElement(this.#currentStep);
-    if (!trinElement) return true;
+  /*
+    Denne metode validerer kun det trin, som brugeren står på lige nu.
 
-    let foersteUgyldigt = null;
-    let altGyldig = true;
+    Den tjekker alle required felter i det aktive trin.
+    Hvis et felt mangler, viser den en popup besked og stopper brugeren.
+  */
+  validerNuvaaerendeTrin() {
+    var trinElement = this.getTrinElement(this.currentStep);
 
-    trinElement.querySelectorAll("[required]").forEach(felt => {
-      // Tjekker om feltet er tomt - afhænger af felttype
-      let erTom;
+    if (!trinElement) {
+      return true;
+    }
+
+    var foersteUgyldigt = null;
+    var altGyldig = true;
+
+    var requiredFelter = trinElement.querySelectorAll("[required]");
+
+    requiredFelter.forEach(function(felt) {
+      var erTom;
+
+      /*
+        Her tjekker vi om feltet er tomt.
+        Det afhænger af hvilken type felt det er.
+      */
       if (felt.classList.contains("number-input")) {
         erTom = felt.value.replace(/\D/g, "") === "";
       } else if (felt.tagName === "SELECT") {
@@ -356,10 +622,18 @@ class InvesteringWizard {
         erTom = felt.value.trim() === "";
       }
 
-      if (!erTom) return;
+      /*
+        Hvis feltet ikke er tomt, går vi videre til næste felt.
+      */
+      if (!erTom) {
+        return;
+      }
 
-      // Vælger besked baseret på felttype
-      let besked;
+      /*
+        Her vælger vi den besked, som passer bedst til felttypen.
+      */
+      var besked;
+
       if (felt.classList.contains("number-input")) {
         besked = "Skriv 0 hvis det skal være tomt";
       } else if (felt.tagName === "SELECT") {
@@ -368,56 +642,110 @@ class InvesteringWizard {
         besked = "Feltet er påkrævet";
       }
 
-      this.#visPopup(felt, besked);
-      if (!foersteUgyldigt) foersteUgyldigt = felt;
-      altGyldig = false;
-    });
+      this.visPopup(felt, besked);
 
-    // Scroller til og fokuserer det første ugyldige felt
+      /*
+        Vi gemmer det første ugyldige felt.
+        Det bruger vi bagefter til at scrolle brugeren hen til fejlen.
+      */
+      if (!foersteUgyldigt) {
+        foersteUgyldigt = felt;
+      }
+
+      altGyldig = false;
+    }, this);
+
+    /*
+      Hvis der er et ugyldigt felt, scroller vi brugeren hen til det.
+    */
     if (foersteUgyldigt) {
-      foersteUgyldigt.scrollIntoView({ behavior: "smooth", block: "center" });
+      foersteUgyldigt.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
       foersteUgyldigt.focus();
     }
 
     return altGyldig;
   }
 
-  // Opdaterer progress baren - markerer aktive og gennemførte trin med CSS klasser
-  // Henter trin-titlen fra data-title attributten i HTML, så den kun defineres ét sted
-  #opdaterProgress() {
-    document.querySelectorAll(".wizard-step-item").forEach(item => {
-      const trinNummer = Number(item.dataset.step);
+  /*
+    Denne metode opdaterer progress baren.
 
-      // Fjerner eksisterende klasser og sætter den rigtige baseret på position
+    Den markerer det aktive trin.
+    Den markerer også de trin, som brugeren allerede er kommet forbi.
+  */
+  opdaterProgress() {
+    var items = document.querySelectorAll(".wizard-step-item");
+
+    items.forEach(function(item) {
+      var trinNummer = Number(item.dataset.step);
+
+      /*
+        Først fjerner vi de gamle klasser.
+        Derefter tilføjer vi den klasse, som passer til det aktuelle trin.
+      */
       item.classList.remove("active", "completed");
 
-      if (trinNummer === this.#currentStep) {
+      if (trinNummer === this.currentStep) {
         item.classList.add("active");
-      } else if (trinNummer < this.#currentStep) {
+      } else if (trinNummer < this.currentStep) {
         item.classList.add("completed");
       }
-    });
+    }, this);
 
-    // Henter titelnavnet fra data-title på det aktive trin i HTML - én kilde til sandhed
-    const aktivtItem = document.querySelector(`.wizard-step-item[data-step="${this.#currentStep}"]`);
-    const trinTitel = aktivtItem?.dataset.title ?? "";
+    /*
+      Her finder vi titlen på det aktive trin.
+      Titlen ligger i data title i HTML.
+    */
+    var aktivtItem = document.querySelector('.wizard-step-item[data-step="' + this.currentStep + '"]');
+    var trinTitel = "";
 
+    if (aktivtItem && aktivtItem.dataset && aktivtItem.dataset.title) {
+      trinTitel = aktivtItem.dataset.title;
+    }
+
+    /*
+      Her opdaterer vi teksten under overskriften.
+    */
     if (this.subtitleEl) {
-      this.subtitleEl.textContent = `Trin ${this.#currentStep} af ${this.#totalSteps} - ${trinTitel}`;
+      this.subtitleEl.textContent = "Trin " + this.currentStep + " af " + this.totalSteps + ": " + trinTitel;
     }
   }
 
-  // Opdaterer Tilbage og Næste knapperne afhængigt af hvilket trin vi er på
-  #opdaterKnapper() {
-    if (!this.prevBtn || !this.nextBtn) return;
+  /*
+    Denne metode opdaterer Tilbage og Næste knapperne.
 
-    // Trin 1 - skjuler Tilbage, men bevarer plads i layoutet med visibility
-    this.prevBtn.style.visibility = this.#currentStep === 1 ? "hidden" : "visible";
+    På første trin skjuler vi Tilbage.
+    På sidste trin bliver Næste knappen ændret til en submit knap.
+  */
+  opdaterKnapper() {
+    if (!this.prevBtn || !this.nextBtn) {
+      return;
+    }
 
-    // Trin 5 - Næste skifter til en submit-knap så ejendom.js' submit-handler tager over
-    // Teksten hentes fra data-submitLabel hvis den er sat (fx "Gem ændringer" i edit-mode)
-    if (this.#currentStep === this.#totalSteps) {
-      const label = this.form.dataset.submitLabel ?? "Opret investeringscase";
+    /*
+      På trin 1 skal brugeren ikke kunne gå tilbage.
+      Vi bruger visibility, så layoutet ikke hopper.
+    */
+    if (this.currentStep === 1) {
+      this.prevBtn.style.visibility = "hidden";
+    } else {
+      this.prevBtn.style.visibility = "visible";
+    }
+
+    /*
+      På sidste trin skal knappen sende formularen.
+      På de andre trin skal knappen bare skifte trin.
+    */
+    if (this.currentStep === this.totalSteps) {
+      var label = "Opret investeringscase";
+
+      if (this.form.dataset.submitLabel) {
+        label = this.form.dataset.submitLabel;
+      }
+
       this.nextBtn.textContent = label;
       this.nextBtn.type = "submit";
     } else {
@@ -426,43 +754,89 @@ class InvesteringWizard {
     }
   }
 
-  // Scroller op til toppen af formularen når brugeren skifter trin
-  // Uden dette kan brugeren ende med at se et tomt trin midt på siden
-  #scrollTilFormular() {
-    const sektion = document.getElementById("inputSectionInvesteringscase");
+  /*
+    Denne metode scroller op til formularen, når brugeren skifter trin.
+
+    Det gør flowet mere overskueligt, fordi brugeren starter samme sted på hvert trin.
+  */
+  scrollTilFormular() {
+    var sektion = document.getElementById("inputSectionInvesteringscase");
+
     if (sektion) {
-      sektion.scrollIntoView({ behavior: "smooth", block: "start" });
+      sektion.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
   }
 
-  // Tilknytter klik-events til Næste og Tilbage knapperne
-  #bindNavigation() {
-    this.nextBtn?.addEventListener("click", (e) => {
-      // Trin 1-4 - forhindrer browser-submit og navigerer til næste trin
-      // Trin 5 - knappen er type="submit", ejendom.js' submit-handler tager over
-      if (this.#currentStep < this.#totalSteps) {
-        e.preventDefault();
-        this.next();
-      }
-    });
+  /*
+    Denne metode sætter klik funktioner på Næste og Tilbage knapperne.
+  */
+  bindNavigation() {
+    var self = this;
 
-    this.prevBtn?.addEventListener("click", () => this.prev());
+    /*
+      Næste knappen har to forskellige roller.
+
+      På trin 1 til trin 4 skifter den bare trin.
+      På trin 5 er den en submit knap, så ejendom.js kan gemme formularen.
+    */
+    if (this.nextBtn) {
+      this.nextBtn.addEventListener("click", function(e) {
+        if (self.currentStep < self.totalSteps) {
+          e.preventDefault();
+          self.next();
+        }
+      });
+    }
+
+    /*
+      Tilbage knappen kalder bare prev metoden.
+    */
+    if (this.prevBtn) {
+      this.prevBtn.addEventListener("click", function() {
+        self.prev();
+      });
+    }
   }
 }
 
-// Starter wizarden når DOM'en er klar
-// Loades efter ejendom.js, så vi kan læse om edit-mode er aktiveret
-document.addEventListener("DOMContentLoaded", () => {
-  if (!document.getElementById("investmentForm")) return;
+/*
+  Her starter vi wizarden, når HTML siden er klar.
 
+  Vi venter på DOMContentLoaded, så vi er sikre på,
+  at formularen og knapperne findes i DOM'en.
+*/
+document.addEventListener("DOMContentLoaded", function() {
+  /*
+    Hvis formularen ikke findes på siden, skal der ikke startes en wizard.
+  */
+  if (!document.getElementById("investmentForm")) {
+    return;
+  }
+
+  /*
+    Vi lægger wizarden på window, så andre scripts kan bruge den.
+    Det svarer til den måde din gamle kode gjorde det på.
+  */
   window.wizard = new InvesteringWizard();
 
-  // Tjekker om ejendom.js har sat "Gem ændringer" på den skjulte submit-knap
-  // Det sker i edit-mode, og vi synkroniserer teksten til wizard-knappen
-  const skjultSubmitKnap = document.getElementById("submitFormButton-investeringscase");
-  const editTekst = skjultSubmitKnap?.textContent?.trim();
+  /*
+    Her tjekker vi om ejendom.js har sat tekst på den skjulte submit knap.
+    Det bruges ved edit mode, hvor teksten for eksempel kan være Gem ændringer.
+  */
+  var skjultSubmitKnap = document.getElementById("submitFormButton-investeringscase");
+  var editTekst = "";
 
-  if (editTekst && editTekst !== "") {
+  if (skjultSubmitKnap && skjultSubmitKnap.textContent) {
+    editTekst = skjultSubmitKnap.textContent.trim();
+  }
+
+  /*
+    Hvis der findes en tekst, sætter vi samme tekst på wizard knappen.
+  */
+  if (editTekst !== "") {
     window.wizard.setSubmitLabel(editTekst);
   }
 });

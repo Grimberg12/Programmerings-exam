@@ -1,18 +1,21 @@
-// ── Importer moduler ──────────────────────────────────────────────────────────
+// ── Importer moduler ─────────────────────────────────────────────────────────
+//Vi sørger for at importere de nødvendige moduler og services, som vi skal bruge i vores routes. Vi importerer Express for at oprette routeren, og vi importerer de relevante funktioner fra datafordelerService, luftfotoService og matrikelkortService for at håndtere vores API-kald.
 const express = require("express");
 const router = express.Router();
 
+//vi importerer kun de funktioner vi rent faktisk bruger i vores routes, for at holde det overskueligt og undgå unødvendige imports
 const {
   hentEnhederFraAdresseId,
   hentBygningFraId,
   hentGrundFraId,
   hentJordstykkeViaDawa,
-} = require("../services/datafordelerService");
+} = require("../services/datafordelerservice");
 
 const { hentLuftfotoUrl } = require("../services/luftfotoService");
 const { hentMatrikelkortUrl } = require("../services/matrikelkortService");
 
 // ── GET /properties/enheder ───────────────────────────────────────────────────
+// Denne route håndterer GET-forespørgsler til /properties/enheder, hvor den forventer en query-parameter adresseid. Den bruger denne adresseid til at hente enheder fra Datafordeler ved hjælp af funktionen hentEnhederFraAdresseId. Hvis adresseid mangler, returnerer den en 400-fejl. Hvis der opstår en fejl under hentningen af data, returnerer den en 502-fejl.
 router.get("/properties/enheder", async (req, res) => {
   try {
     const { adresseid } = req.query;
@@ -42,6 +45,7 @@ router.get("/properties/enheder", async (req, res) => {
 });
 
 // ── GET /properties/bygning ───────────────────────────────────────────────────
+// Denne route håndterer GET-forespørgsler til /properties/bygning, hvor den forventer en query-parameter adresseid. Den bruger denne adresseid til at hente bygning fra Datafordeler ved hjælp af funktionen hentBygningFraId. Hvis adresseid mangler, returnerer den en 400-fejl. Hvis der opstår en fejl under hentningen af data, returnerer den en 502-fejl.
 router.get("/properties/bygning", async (req, res) => {
   try {
     const { adresseid } = req.query;

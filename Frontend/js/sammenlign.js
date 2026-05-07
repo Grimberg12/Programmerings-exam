@@ -13,8 +13,7 @@ function normaliserLaan(beløb, type, rentePct, løbetid, afdragsFriPeriode) {
     type: renType,
     rente: Number(rentePct || 0) / 100,
     løbetid: Number(løbetid || 0),
-    afdragsFriPeriode: Number(afdragsFriPeriode || 0)
-  };
+    afdragsFriMåneder: Number(afdragsFriPeriode || 0)  };
 }
 
 // ── hentCases ─────────────────────────────────────────────────────────────────
@@ -232,8 +231,8 @@ function renderTabel(cases, metrikker) {
         ` : ""}
 
         ${sektionRow("Simulering")}
-        ${row("Cashflow / md.",            (c, m, i) => m.cashflowMd !== null ? formatKr(m.cashflowMd) : "—",     bedsteCF)}
-        ${row("Cashflow / år",             (c, m, i) => m.cashflowÅr !== null ? formatKr(m.cashflowÅr) : "—",     bedsteCF)}
+       ${row("Driftscashflow / md.",      (c, m, i) => m.cashflowMd !== null ? formatKr(m.cashflowMd) : "—",     bedsteCF)}
+${row("Driftscashflow / år",       (c, m, i) => m.cashflowÅr !== null ? formatKr(m.cashflowÅr) : "—",     bedsteCF)}
         ${row("Egenkapitalforrentning/md.", (c, m) => m.ekfMd !== null ? formatPct(m.ekfMd) : "—",                bedsteEKF)}
         ${row("Egenkapitalforrentning/år",  (c, m) => m.ekfÅr !== null ? formatPct(m.ekfÅr) : "—",                bedsteEKF)}
         ${row("Gældsgrad",                 (c, m) => formatPct(m.gældsgrad),                                       bedsteGæld)}
@@ -377,7 +376,8 @@ function render30ÅrSammenligning(cases) {
   const akkumulerede   = cases.map(() => 0);
   const alleCFData     = cases.map(() => []);
   const alleEKData     = cases.map(() => []);
-  let rækker           = "";
+const alleGaeldData  = cases.map(() => []);
+let rækker           = "";
 
   //sætter et for-loop til at iterere gennem årene 1 til 30, og for hvert år opdaterer den akkumulerede cashflow for hver case ved at tilføje det årlige cashflow, beregner restgæld for hver case ved at summere restgælden for alle lån (realkreditlån, banklån, andre lån) ved hjælp af restgældEfterÅr funktionen, og beregner egenkapitalen for hver case som købspris minus restgæld. Derefter tilføjer den en række til HTML-tabellen med disse værdier, og markerer milepæle (hver 5 år) med en særlig klasse "sim30-milepæl" for at gøre det nemmere at se disse i tabellen.
   for (let år = 1; år <= 30; år++) {
@@ -396,9 +396,10 @@ function render30ÅrSammenligning(cases) {
 
     //for each loopet her tilføjer de akkumulerede cashflow og egenkapital data for hver case til alleCFData og alleEKData arrays, som vi senere kan bruge til at tegne grafer baseret på disse data. Dette gør det nemt at visualisere udviklingen af cashflow og egenkapital over tid for hver case, ved at have disse data struktureret på en måde, der er let at arbejde med for graftegning.
     cases.forEach((_, i) => {
-      alleCFData[i].push(akkumulerede[i]);
-      alleEKData[i].push(egenkapitaler[i]);
-    });
+  alleCFData[i].push(akkumulerede[i]);
+  alleEKData[i].push(egenkapitaler[i]);
+  alleGaeldData[i].push(restgælde[i]);
+});
 
     //sætter html for hver række i tabellen ved at iterere gennem cases og bruge kr() funktionen til at formatere cashflow, akkumuleret cashflow, restgæld og egenkapital som danske kroner, og tilføje disse værdier i de tilsvarende celler i rækken. Vi markerer også milepæle (hver 5 år) med en særlig klasse "sim30-milepæl" for at gøre det nemmere at se disse i tabellen.
     rækker += `<tr class="${erMilepæl ? "sim30-milepæl" : ""}">
@@ -423,7 +424,7 @@ function render30ÅrSammenligning(cases) {
           </tr>
           <tr>
             ${cases.map(() => `
-              <th class="sim30-sub-header">Cashflow/år</th>
+              <th class="sim30-sub-header">Driftscashflow/år</th>
               <th class="sim30-sub-header">Akkumuleret</th>
               <th class="sim30-sub-header">Restgæld</th>
               <th class="sim30-sub-header">Egenkapital</th>
@@ -433,7 +434,8 @@ function render30ÅrSammenligning(cases) {
         <tbody>${rækker}</tbody>
       </table>`,
     alleCFData,
-    alleEKData
+    alleEKData,
+    alleGaeldData
   };
 }
 
@@ -488,7 +490,7 @@ const cases = alleCases.filter(c =>
       btn.textContent      = "Simuler cashflow over 30 år";
       if (grafDiv) grafDiv.innerHTML = "";
     } else {
-      const { html, alleCFData, alleEKData } = render30ÅrSammenligning(cases);
+      const { html, alleCFData, alleEKData, alleGaeldData } = render30ÅrSammenligning(cases);
       result.innerHTML     = html;
       result.style.display = "block";
       btn.textContent      = "Skjul 30-årig simulering";
@@ -500,9 +502,26 @@ const cases = alleCases.filter(c =>
         const serier = [];
         //forEach loopet her tilføjer både cashflow og egenkapital data for hver case til serier arrayet, som vi senere kan bruge til at tegne grafer baseret på disse data. Vi giver hver serie en label, der inkluderer casens navn og om det er cashflow eller egenkapital, og vi tildeler farver baseret på caseKolorer arrayet, så hver case har en konsistent farve for både cashflow og egenkapital, hvilket gør det nemmere at skelne mellem dem i grafen.
         cases.forEach((c, i) => {
-          serier.push({ label: c.navn + " — cashflow",    data: alleCFData[i], farve: caseKolorer[i % caseKolorer.length] });
-          serier.push({ label: c.navn + " — egenkapital", data: alleEKData[i], farve: caseKolorer[i % caseKolorer.length], stiplet: true });
-        });
+  serier.push({
+    label: c.navn + " driftscashflow",
+    data: alleCFData[i],
+    farve: caseKolorer[i % caseKolorer.length]
+  });
+
+  serier.push({
+    label: c.navn + " egenkapital",
+    data: alleEKData[i],
+    farve: caseKolorer[i % caseKolorer.length],
+    stiplet: true
+  });
+
+  serier.push({
+    label: c.navn + " restgæld",
+    data: alleGaeldData[i],
+    farve: caseKolorer[i % caseKolorer.length],
+    stiplet: true
+  });
+});
 
         // Tegner linjegrafen ved at kalde tegnLinjeGraf funktionen med grafDiv som container, og serier arrayet som indeholder både cashflow og egenkapital data for hver case, med passende labels og farver. Vi sætter også en specifik højde for grafen via options parameteren, så den passer godt ind i layoutet af siden.
         tegnLinjeGraf(grafDiv, serier, { height: 320 });

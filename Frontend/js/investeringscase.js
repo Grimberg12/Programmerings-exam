@@ -518,19 +518,48 @@ document.addEventListener("DOMContentLoaded", async () => {
       result.style.display = "none";
       btn.textContent      = "Simuler over 30 år";
     } else {
-      const { html, cashflowData, egenkapitalData } = render30ÅrTabel();
-      result.innerHTML     = html;
-      result.style.display = "block";
-      btn.textContent      = "Skjul 30-årig simulering";
+      const sim = render30ÅrTabel();
+result.innerHTML     = sim.html;
+result.style.display = "block";
+btn.textContent      = "Skjul 30-årig simulering";
 
-      const grafContainer = document.getElementById("graf30Ar");
-      if (grafContainer) {
-        grafContainer.innerHTML = "";
-        tegnLinjeGraf(grafContainer, [
-          { label: "Akkumuleret cashflow", data: cashflowData },
-          { label: "Egenkapital",          data: egenkapitalData }
-        ]);
-      }
+const grafContainer = document.getElementById("graf30Ar");
+
+if (grafContainer) {
+  grafContainer.innerHTML = "";
+
+  // Her beregner vi restgæld igen, så vi også kan vise gæld i grafen
+  // Det gør grafen mere sikker i forhold til opgaven, fordi opgaven nævner cashflow, egenkapital og gæld
+  const alleLaan = [
+    caseData.realkreditlån,
+    caseData.banklån,
+    caseData.andrelån
+  ].filter(Boolean);
+
+  const restgaeldData = [];
+
+  for (let aar = 1; aar <= 30; aar++) {
+    let samletRestgaeld = 0;
+
+    alleLaan.forEach(laan => {
+      samletRestgaeld += restgældEfterÅr(
+        laan.beløb,
+        laan.rente,
+        laan.løbetid,
+        aar,
+        laan.afdragsFriMåneder || 0
+      );
+    });
+
+    restgaeldData.push(samletRestgaeld);
+  }
+
+  tegnLinjeGraf(grafContainer, [
+    { label: "Akkumuleret cashflow", data: sim.cashflowData },
+    { label: "Egenkapital",          data: sim.egenkapitalData },
+    { label: "Restgæld",             data: restgaeldData }
+  ]);
+}
     }
   });
 });
