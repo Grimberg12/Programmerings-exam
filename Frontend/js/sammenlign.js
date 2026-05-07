@@ -33,7 +33,7 @@ async function hentCases() {
   // Mapper backend-data til det format, frontend forventer. Sørger også for at supplere med låndata fra localStorage, så de er tilgængelige i metrik-beregningerne og visningen, selvom de ikke er en del af casens primære data i backend.
   return result.data.map(c => {
     const caseObj = {
-      id:                   Number(c.id),
+      id: Number(c.id ?? c.investeringsCaseID),
       ejendomsProfilID:     Number(c.ejendomsProfilID),
       oprettetDato:         c.datoOprettet,
       navn:                 c.navn,
@@ -80,6 +80,7 @@ async function hentCases() {
         månedligUdgifter: Number(c.lejeUdgifter || 0)
       }
     };
+    return caseObj;
   });
 }
 
@@ -440,12 +441,22 @@ function render30ÅrSammenligning(cases) {
 //Sørger for at alt indhold på siden er indlæst, før vi forsøger at hente data, beregne metrikker og manipulere DOM'en for at vise sammenligningen. Dette sikrer, at alle elementer, som vi har brug for at interagere med (f.eks. "sammenlignIndhold", "sim30Btn", "sim30Result", "sam30Graf"), er tilgængelige og klar til at blive opdateret med de relevante data og event listeners.
 //Vi starter med en eventlistener der er sat op med params, ids, alleCases, cases og indhold. Vi tjekker først om der er mindst 2 cases at sammenligne, og hvis ikke viser vi en fejlbesked. Hvis der er nok cases, beregner vi metrikkerne for hver case og renderer tabellen med disse metrikker. Vi gør også simuleringssektionen synlig, og sætter en eventlistener på simuleringsknappen, som når den klikkes, enten viser eller skjuler 30-års simuleringen ved at opdatere innerHTML og display-stil for resultatelementet, og tegner grafen hvis simuleringen vises.
 document.addEventListener("DOMContentLoaded", async () => {
-  const params    = new URLSearchParams(window.location.search);
-  const ids       = (params.get("ids") || "").split(",").map(Number).filter(Boolean);
-  const alleCases = await hentCases();
-  //cases variablen indeholder de cases, som brugeren har valgt at sammenligne, baseret på "ids" parameteren i URL'en. Vi finder disse cases ved at matche id'erne i URL'en med id'erne i alleCases arrayet, og filtrerer for at sikre, at vi kun får gyldige cases (filter(Boolean) fjerner eventuelle undefined værdier, hvis et id ikke matcher nogen case).
-  const cases     = ids.map(id => alleCases.find(c => Number(c.id) === id)).filter(Boolean);
-  const indhold   = document.getElementById("sammenlignIndhold");
+  const indhold = document.getElementById("sammenlignIndhold");
+
+  const params = new URLSearchParams(window.location.search);
+  const ids = (params.get("ids") || "")
+  .split(",")
+  .map(id => Number(id))
+  .filter(id => !Number.isNaN(id));
+
+const alleCases = await hentCases();
+
+console.log("URL ids:", ids);
+console.log("Alle cases:", alleCases.map(c => c?.id));
+
+const cases = alleCases.filter(c =>
+  c && ids.includes(Number(c.id))
+);
 
   //hvis der er under 2 cases, viser vi en fejlbesked i indholdselementet, som informerer brugeren om, at de skal vælge mindst 2 cases for at kunne sammenligne, og giver dem et link til at gå tilbage til sammenligningssiden. Vi returnerer derefter for at stoppe yderligere eksekvering af koden, da vi ikke kan vise en sammenligning uden mindst 2 cases.
   if (cases.length < 2) {

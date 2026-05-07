@@ -13,7 +13,7 @@ async function hentCases() {
   }
 
   return result.data.map(c => ({
-    id:           c.id,
+    id: Number(c.id ?? c.investeringsCaseID),
     oprettetDato: c.oprettetDato,
     navn:         c.navn,
     adresse:      `${c.vejNavn} ${c.vejNummer}, ${c.postnummer} ${c.bynavn}`,
