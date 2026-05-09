@@ -198,7 +198,7 @@ function renderInvestmentCaseDetails() {
 
   function visLån(lån, titel) {
     if (!lån) return "";
-    const afdragsFri  = lån.afdragsFriMåneder || 0;
+    const afdragsFri  = lån.afdragsFriPeriode || 0;
     const amortYdelse = Math.round(beregnMånedligYdelse(lån.beløb, lån.rente, lån.løbetid, afdragsFri));
     const renteYdelse = Math.round(beregnRenteYdelse(lån.beløb, lån.rente));
     const løbetidÅr   = Math.floor(lån.løbetid / 12);
@@ -221,7 +221,7 @@ function renderInvestmentCaseDetails() {
   const harFinansiering = caseData.realkreditlån || caseData.banklån || caseData.andrelån;
   const samletYdelse    = [caseData.realkreditlån, caseData.banklån, caseData.andrelån]
     .filter(Boolean)
-    .reduce((s, l) => s + beregnMånedligYdelse(l.beløb, l.rente, l.løbetid, l.afdragsFriMåneder || 0), 0);
+    .reduce((s, l) => s + beregnMånedligYdelse(l.beløb, l.rente, l.løbetid, l.afdragsFriPeriode || 0), 0);
 
   container.innerHTML = `
     <button class="edit-case-btn" id="editCaseBtn" title="Rediger case">✏️</button>
@@ -297,7 +297,7 @@ function renderSimulationTabel() {
   const ekfÅrligPct = ekfÅrlig * 100;
 
   const samletYdelse = alleLån.reduce((s, l) =>
-    s + beregnMånedligYdelse(l.beløb, l.rente, l.løbetid, l.afdragsFriMåneder || 0), 0);
+    s + beregnMånedligYdelse(l.beløb, l.rente, l.løbetid, l.afdragsFriPeriode || 0), 0);
 
   const cfStatus  = månedligtCashflow > 0 ? "god" : "dårlig";
   const ekfStatus = ekfÅrligPct > 8 ? "god" : ekfÅrligPct > 3 ? "neutral" : "dårlig";
@@ -322,8 +322,8 @@ function renderSimulationTabel() {
       { lån: caseData.banklån,       navn: "Banklån" },
       { lån: caseData.andrelån,      navn: "Andre lån" }
     ].filter(x => x.lån).map(({ lån, navn }) => {
-      const ydelse   = beregnMånedligYdelse(lån.beløb, lån.rente, lån.løbetid, lån.afdragsFriMåneder || 0);
-      const rYdelse  = (lån.afdragsFriMåneder || 0) > 0 ? beregnRenteYdelse(lån.beløb, lån.rente) : null;
+      const ydelse   = beregnMånedligYdelse(lån.beløb, lån.rente, lån.løbetid, lån.afdragsFriPeriode || 0);
+      const rYdelse  = (lån.afdragsFriPeriode || 0) > 0 ? beregnRenteYdelse(lån.beløb, lån.rente) : null;
       return row(
         navn + " ydelse/md.",
         kr(Math.round(ydelse)),
@@ -359,6 +359,12 @@ function renderSimulationTabel() {
           ${row("Udlejningsindtægt/år",  kr(månedligLeje * 12), "Månedlig leje × 12")}
           ${row("Udlejningsudgift/md.",  kr(månedligeUdgifter), "Månedlige driftsudgifter")}
           ${row("Udlejningsudgift/år",   kr(månedligeUdgifter * 12), "Månedlige udgifter × 12")}
+          ` : ""}
+
+          ${driftsMd > 0 ? `
+          ${sektion("Driftsomkostninger")}
+          ${row("Driftsomkostninger/md.", kr(driftsMd), "Løbende månedlige driftsomkostninger til ejendommen")}
+          ${row("Driftsomkostninger/år",  kr(driftsMd * 12), "Månedlige driftsomkostninger × 12")}
           ` : ""}
 
           ${sektion("Samlet vurdering")}
@@ -413,7 +419,7 @@ function render30ÅrTabel() {
   function begivenhedForÅr(år) {
     const list = [];
     for (const { lån, navn } of alleLån) {
-      const afdFri   = lån.afdragsFriMåneder || 0;
+      const afdFri   = lån.afdragsFriPeriode || 0;
       const udløbÅr  = lån.løbetid / 12;
       if (afdFri > 0 && år === Math.ceil(afdFri / 12)) {
         list.push(`${navn}: afdragsfri periode slutter`);
@@ -437,7 +443,7 @@ function render30ÅrTabel() {
 
     let restgæld = 0;
     for (const { lån } of alleLån) {
-      restgæld += restgældEfterÅr(lån.beløb, lån.rente, lån.løbetid, år, lån.afdragsFriMåneder || 0);
+      restgæld += restgældEfterÅr(lån.beløb, lån.rente, lån.løbetid, år, lån.afdragsFriPeriode || 0);
     }
 
     const egenkapital = caseData.købspris - restgæld;
