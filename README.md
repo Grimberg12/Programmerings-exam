@@ -1,11 +1,9 @@
 ﻿# Ejendomsinvestering app
-
 Dette projekt er en Ejendomsinvesterings platform. Brugeren kan oprette ejendomsprofiler, oprette investeringscases og sammenligne forskellige investeringsscenarier.
 
 Projektet er lavet som en del af eksamensprojektet i Programmering og udvikling af små systemer.
 
 ## Teknologier
-
 HTML
 CSS
 JavaScript
@@ -18,7 +16,6 @@ DAWA
 Datafordeler/BBR
 
 ## Funktioner
-
 Brugeren kan oprette sig og logge ind
 Brugeren kan søge efter en dansk adresse
 Systemet kan hente ejendomsdata fra offentlige API'er
@@ -33,7 +30,6 @@ Brugeren kan sammenligne flere investeringscases
 Systemet kan vise kort og luftfoto for ejendomme
 
 ## Filstruktur
-
 -Backend
 config
 middleware
@@ -53,16 +49,27 @@ public
 README.md
 
 ## Krav før opstart
-
 Node.js skal være installeret
 npm skal være installeret
 Der skal være adgang til en SQL Server database
 Der skal være adgang til de nødvendige API oplysninger
 
 ## Opsætning
+1. Åbn projektmappen
 
-Gå ind i Backend mappen:
-
-```bash
+2. Gå til backend-mappen:
 cd Backend
-node server.js
+
+3. Installer dependencies:
+npm install
+
+5. Start serveren:
+npm start
+
+6. Åbn applikationen i browseren:
+http://localhost:3000
+
+## Kør tests
+
+cd Backend
+npm test
