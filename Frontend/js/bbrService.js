@@ -190,35 +190,6 @@ console.log("payload sendt til backend:", payload);
   }
 });
 
-// ── Kan muligvis slettes: saveAddressToDatabase() kaldes ingen steder ─────────
-// Funktion der sender adresse til backend
-function saveAddressToDatabase(adresseData) {
-    fetch("/api/v1/address/register", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(adresseData)
-    })
-        .then(response => {
-            return response.json().then(data => ({
-                ok: response.ok,
-                status: response.status,
-                body: data
-            }));
-        })
-        .then(result => {
-            if (!result.ok) {
-                throw new Error(result.body.message || "Kunne ikke gemme adressen");
-            }
-
-            console.log("Adresse gemt i database:", result.body);
-        })
-        .catch(error => {
-            console.error("Fejl ved lagring i database:", error);
-        });
-}
-
 // ── Kort-tabs tilstand ────────────────────────────────────────────────────────
 // State for kort-tabs i preview – holder de seneste URLs så vi kan skifte
 // mellem dem uden at hente data igen, og husker hvilken tab der er aktiv.

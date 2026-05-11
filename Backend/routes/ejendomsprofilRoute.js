@@ -326,6 +326,7 @@ router.delete("/ejendomsprofiler/:id", async (req, res) => {
           DELETE FROM Udlejning WHERE investeringsCaseID = @investeringsCaseID;
           DELETE FROM Laan WHERE investeringsCaseID = @investeringsCaseID;
           DELETE FROM Renovation WHERE investeringsCaseID = @investeringsCaseID;
+          DELETE FROM DriftsOmkostninger WHERE investeringsCaseID = @investeringsCaseID;
           DELETE FROM KoebsOmkostninger WHERE investeringsCaseID = @investeringsCaseID;
           DELETE FROM InvesteringsCase WHERE investeringsCaseID = @investeringsCaseID;
         `);

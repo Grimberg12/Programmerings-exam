@@ -1,27 +1,10 @@
-# --------------------------------------------------
-# Git ignore rules for this project
-#
-# This file tells Git which files and folders
-# should NOT be tracked or uploaded to the repository.
-#
-# Typical examples:
-# - node_modules → dependencies installed locally
-# - .env → environment variables / secrets
-# - logs / build files → generated files
-# - editor configs → local IDE settings
-#
-# Important:
-# Files already committed before being added here
-# will still be tracked by Git.
-# --------------------------------------------------
-
 # dependencies
 node_modules/
 
 # environment variables
-#.env
-#.env.*
-#!.env.example
+.env
+.env.*
+!.env.example
 
 # logs
 *.log
@@ -37,18 +20,3 @@ build/
 # editor files
 .vscode/
 .idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Claude Code (lokal kontekst, ikke til repo)
-CLAUDE.md
-.claude/
-
-# Lokale dokumentationsfiler (ikke til repo)
-BBR-readme.md
-Json-examples.md
-opgavebeskrivelse.md
-project-readme.md
-

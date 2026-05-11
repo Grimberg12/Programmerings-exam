@@ -1,43 +1,68 @@
-﻿# Programmerings-exam
+﻿# Ejendomsinvestering app
 
-## Backend
+Dette projekt er en Ejendomsinvesterings platform. Brugeren kan oprette ejendomsprofiler, oprette investeringscases og sammenligne forskellige investeringsscenarier.
 
-The backend is a simple Express server with a small router structure to support API routes and incoming webhooks.
+Projektet er lavet som en del af eksamensprojektet i Programmering og udvikling af små systemer.
 
-### Run locally
+## Teknologier
 
-1. Install dependencies:
+HTML
+CSS
+JavaScript
+Node.js
+Express
+SQL Server
+Azure SQL
+Jest
+DAWA
+Datafordeler/BBR
 
-   ```powershell
-   cd Backend
-   npm install
-   ```
+## Funktioner
 
-2. Copy the example env file and set values:
+Brugeren kan oprette sig og logge ind
+Brugeren kan søge efter en dansk adresse
+Systemet kan hente ejendomsdata fra offentlige API'er
+Brugeren kan oprette ejendomsprofiler
+Brugeren kan se, redigere og slette ejendomsprofiler
+Brugeren kan oprette investeringscases
+Brugeren kan se, redigere, slette og duplikere investeringscases
+Systemet kan beregne månedlig låneydelse
+Systemet kan beregne restgæld over tid
+Systemet kan vise økonomiske nøgletal
+Brugeren kan sammenligne flere investeringscases
+Systemet kan vise kort og luftfoto for ejendomme
 
-   ```powershell
-   cp .env.example .env
-   # then edit .env to set any required values
-   ```
+## Filstruktur
 
-3. Start the server:
+-Backend
+config
+middleware
+routes
+services
+tests
+package.json
+server.js
 
-   ```powershell
-   npm run dev
-   ```
+-Frontend
+css
+js
+layout
+pictures
+public
 
-4. Verify the health endpoint:
+README.md
 
-   ```powershell
-   curl http://localhost:3000/health
-   ```
+## Krav før opstart
 
-### Available endpoints
+Node.js skal være installeret
+npm skal være installeret
+Der skal være adgang til en SQL Server database
+Der skal være adgang til de nødvendige API oplysninger
 
-- `GET /health` - server health check
-- `GET /api/v1/ping` - basic API ping
-- `POST /webhooks/incoming` - placeholder webhook receiver
+## Opsætning
 
-## Notes
+Gå ind i Backend mappen:
 
-- The project currently does not connect to a database. A placeholder file is available at `Backend/services/db.js` for wiring up an Azure database connection in the future.
+```bash
+cd Backend
+node server.js
